@@ -1,0 +1,301 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.glite.ce</groupId>
+    <artifactId>cream-parent</artifactId>
+    <version>1.15</version>
+  </parent>
+
+  <groupId>org.glite.ce</groupId>
+  <artifactId>cream</artifactId>
+  <version>${cream.version}</version>
+  <packaging>jar</packaging>
+
+  <build>
+  
+    <plugins>
+    
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+        <executions>
+        
+          <execution>
+            <id>cream-client</id>
+            <phase>package</phase>
+            <goals><goal>jar</goal></goals>
+            <configuration>
+              <finalName>cream-client</finalName>
+              <includes>
+                <include>org/glite/ce/cream/client/**</include>
+              </includes>
+              <archive>
+                <index>true</index>
+                <manifest><addDefaultSpecificationEntries/></manifest>
+              </archive>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>blahExecutor</id>
+            <phase>package</phase>
+            <goals><goal>jar</goal></goals>
+            <configuration>
+              <finalName>cream-blahExecutor</finalName>
+              <outputDirectory>${project.build.directory}/plugins</outputDirectory>
+              <includes>
+                <include>org/glite/ce/cream/jobmanagement/cmdexecutor/blah/**</include>
+                <include>org/glite/ce/cream/jobmanagement/db/**</include>
+                <include>org/glite/ce/cream/jobmanagement/jdl/**</include>
+              </includes>
+              <archive>
+                <index>true</index>
+                <manifest><addDefaultSpecificationEntries/></manifest>
+              </archive>
+            </configuration>
+          </execution>
+          
+          <execution>
+            <id>delegationExecutor</id>
+            <phase>package</phase>
+            <goals><goal>jar</goal></goals>
+            <configuration>
+              <finalName>cream-delegationExecutor</finalName>
+              <outputDirectory>${project.build.directory}/plugins</outputDirectory>
+              <includes>
+                <include>org/glite/ce/cream/delegationmanagement/cmdexecutor/*.class</include>
+              </includes>
+              <archive>
+                <index>true</index>
+                <manifest><addDefaultSpecificationEntries/></manifest>
+              </archive>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>activityExecutor</id>
+            <phase>package</phase>
+            <goals><goal>jar</goal></goals>
+            <configuration>
+              <finalName>cream-activityExecutor</finalName>
+              <outputDirectory>${project.build.directory}/plugins</outputDirectory>
+              <includes>
+                <include>org/glite/ce/cream/activitymanagement/**</include>
+                <include>org/glite/ce/cream/blahmanagement/**</include>
+              </includes>
+              <archive>
+                <index>true</index>
+                <manifest><addDefaultSpecificationEntries/></manifest>
+              </archive>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>authorization</id>
+            <phase>package</phase>
+            <goals><goal>jar</goal></goals>
+            <configuration>
+              <finalName>cream-authorization</finalName>
+              <outputDirectory>${project.build.directory}/axis2</outputDirectory>
+              <includes>
+                <include>org/glite/ce/cream/authz/axis2/**</include>
+                <include>**/module.xml</include>
+              </includes>
+              <archive>
+                <index>true</index>
+                <manifest><addDefaultSpecificationEntries/></manifest>
+              </archive>
+            </configuration>
+          </execution>
+
+          <!-- this must be the project's main artifact -->
+          <execution>
+            <id>default-jar</id>
+            <phase>package</phase>
+            <goals><goal>jar</goal></goals>
+            <configuration>
+              <includes>
+                <include>org/glite/ce/cream/dbmanagement/**</include>
+                <include>org/glite/ce/cream/configuration/**</include>
+                <include>org/glite/ce/cream/cmdmanagement/**</include>
+                <include>org/glite/ce/cream/delegationmanagement/*.class</include>
+                <include>org/glite/ce/cream/authz/argus/**</include>
+                <include>**/services/*</include>
+              </includes>
+              <archive>
+                <index>true</index>
+                <manifest><addDefaultSpecificationEntries/></manifest>
+              </archive>
+            </configuration>
+          </execution>
+
+        </executions>
+      </plugin>
+
+    </plugins>
+
+  </build>
+
+
+  <dependencies>
+  
+    <dependency>
+      <groupId>eu.eu-emi.security</groupId>
+      <artifactId>canl</artifactId>
+      <version>${canl.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glite.voms</groupId>
+      <artifactId>voms-api-java</artifactId>
+      <version>${voms.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glite.authz</groupId>
+      <artifactId>pep-common</artifactId>
+      <version>${pep.common.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glite.authz</groupId>
+      <artifactId>pep-java</artifactId>
+      <version>${pep.java.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glite.jdl</groupId>
+      <artifactId>jdl-api-java</artifactId>
+      <version>${jdlapij.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glite.security</groupId>
+      <artifactId>trustmanager</artifactId>
+      <version>${trustman.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glite.security.trustmanager.axis2</groupId>
+      <artifactId>trustmanager-axis2</artifactId>
+      <version>${trustman.axis2.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glite.security.delegation</groupId>
+      <artifactId>delegation-java</artifactId>
+      <version>${delegation.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glite.ce</groupId>
+      <artifactId>cream-common</artifactId>
+      <version>${common.java.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glite.ce</groupId>
+      <artifactId>cream-api-java</artifactId>
+      <version>${creamapi.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glite.ce</groupId>
+      <artifactId>cream-skeleton</artifactId>
+      <version>${creamapi.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glite.ce</groupId>
+      <artifactId>delegation-skeleton</artifactId>
+      <version>${creamapi.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glite.ce</groupId>
+      <artifactId>es-skeleton</artifactId>
+      <version>${creamapi.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk15</artifactId>
+      <version>${bcprov.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.axis2</groupId>
+      <artifactId>axis2</artifactId>
+      <version>${axis2.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.apache.ws.commons.axiom</groupId>
+      <artifactId>axiom-api</artifactId>
+      <version>${axiom.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>wsdl4j</groupId>
+      <artifactId>wsdl4j</artifactId>
+      <version>${wsdl4j.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.condor</groupId>
+      <artifactId>classad</artifactId>
+      <version>${classad.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>${log4j.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>${commons.httpclient.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  
+</project>
