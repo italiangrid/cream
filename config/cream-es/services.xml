@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This file was auto-generated from WSDL -->
+<!-- by the Apache Axis2 version: 1.6.1  Built on : Aug 31, 2011 (12:22:40 CEST) -->
+<serviceGroup name="CREAM-ES">
+    <service name="ActivityInfoService" scope="application">
+        <messageReceivers>
+            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="org.glite.ce.creamapi.ws.es.activityinfo.ActivityInfoServiceMessageReceiverInOut"/>
+        </messageReceivers>
+        <module ref="cream-authorization"/>
+        <parameter name="ServiceClass">org.glite.ce.cream.ws.es.ActivityInfoService</parameter>
+        <parameter name="useOriginalwsdl">true</parameter>
+        <parameter name="modifyUserWSDLPortAddress">true</parameter>
+        <operation name="ListActivities" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/activity">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/ListActivitiesRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/ListActivitiesResponse</outputActionMapping>
+            <faultActionMapping faultName="InvalidParameterFault">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/ListActivities/Fault/InvalidParameterFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidParameterFault_Exception">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/ListActivities/Fault/InvalidParameterFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/ListActivities/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/ListActivities/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/ListActivities/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/ListActivities/Fault/AccessControlFault</faultActionMapping>
+        </operation>
+        <operation name="GetActivityInfo" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/activity">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityInfoRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityInfoResponse</outputActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityInfo/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault_Exception">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityInfo/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityInfo/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityInfo/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityInfo/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityInfo/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="UnknownGlue2ActivityAttributeFault">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityInfo/Fault/UnknownGlue2ActivityAttributeFault</faultActionMapping>
+            <faultActionMapping faultName="UnknownGlue2ActivityAttributeFault_Exception">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityInfo/Fault/UnknownGlue2ActivityAttributeFault</faultActionMapping>
+        </operation>
+        <operation name="GetActivityStatus" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/activity">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityStatusRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityStatusResponse</outputActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityStatus/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault_Exception">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityStatus/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityStatus/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityStatus/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityStatus/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/activity/ActivityInfoService/GetActivityStatus/Fault/AccessControlFault</faultActionMapping>
+        </operation>
+    </service>
+    <service name="CreationService" scope="application">
+        <messageReceivers>
+            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="org.glite.ce.creamapi.ws.es.creation.CreationServiceMessageReceiverInOut"/>
+        </messageReceivers>
+        <module ref="cream-authorization"/>
+        <parameter name="ServiceClass">org.glite.ce.cream.ws.es.CreationService</parameter>
+        <parameter name="useOriginalwsdl">true</parameter>
+        <parameter name="modifyUserWSDLPortAddress">true</parameter>
+        <parameter name="esdbDatabaseVersion">1.1</parameter>
+        <parameter name="esdbStoredProcedureVersion">1.0</parameter>
+        <parameter name="delegationesdbDatabaseVersion">1.1</parameter>
+        <parameter name="serviceLogConfigurationFile">/etc/glite-ce-cream-es/log4j.properties</parameter>
+<operation name="CreateActivity" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/creation">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/creation/CreateActivityService/CreateActivityRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/creation/CreateActivityService/CreateActivityResponse</outputActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault">http://www.eu-emi.eu/es/2010/12/creation/CreateActivityService/CreateActivity/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault_Exception">http://www.eu-emi.eu/es/2010/12/creation/CreateActivityService/CreateActivity/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/creation/CreateActivityService/CreateActivity/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/creation/CreateActivityService/CreateActivity/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/creation/CreateActivityService/CreateActivity/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/creation/CreateActivityService/CreateActivity/Fault/AccessControlFault</faultActionMapping>
+        </operation>
+    </service>    
+    <service name="ActivityManagementService" scope="application">
+        <messageReceivers>
+            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="org.glite.ce.creamapi.ws.es.activitymanagement.ActivityManagementServiceMessageReceiverInOut"/>
+        </messageReceivers>
+        <module ref="cream-authorization"/>
+        <parameter name="ServiceClass">org.glite.ce.cream.ws.es.ActivityManagementService</parameter>
+        <parameter name="useOriginalwsdl">true</parameter>
+        <parameter name="modifyUserWSDLPortAddress">true</parameter>
+        <operation name="RestartActivity" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/activitymanagement">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/RestartActivityRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/RestartActivityResponse</outputActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/RestartActivity/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/RestartActivity/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/RestartActivity/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/RestartActivity/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/RestartActivity/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/RestartActivity/Fault/AccessControlFault</faultActionMapping>
+        </operation>
+        <operation name="WipeActivity" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/activitymanagement">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/WipeActivityRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/WipeActivityResponse</outputActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/WipeActivity/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/WipeActivity/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/WipeActivity/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/WipeActivity/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/WipeActivity/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/WipeActivity/Fault/AccessControlFault</faultActionMapping>
+        </operation>
+        <operation name="GetActivityStatus" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/activitymanagement">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityStatusRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityStatusResponse</outputActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityStatus/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityStatus/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityStatus/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityStatus/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityStatus/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityStatus/Fault/AccessControlFault</faultActionMapping>
+        </operation>
+        <operation name="GetActivityInfo" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/activitymanagement">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityInfoRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityInfoResponse</outputActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityInfo/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityInfo/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityInfo/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityInfo/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityInfo/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityInfo/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="UnknownGlue2ActivityAttributeFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityInfo/Fault/UnknownGlue2ActivityAttributeFault</faultActionMapping>
+            <faultActionMapping faultName="UnknownGlue2ActivityAttributeFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/GetActivityInfo/Fault/UnknownGlue2ActivityAttributeFault</faultActionMapping>
+        </operation>
+        <operation name="CancelActivity" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/activitymanagement">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/CancelActivityRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/CancelActivityResponse</outputActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/CancelActivity/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/CancelActivity/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/CancelActivity/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/CancelActivity/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/CancelActivity/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/CancelActivity/Fault/AccessControlFault</faultActionMapping>
+        </operation>
+        <operation name="NotifyService" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/activitymanagement">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/NotifyServiceRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/NotifyServiceResponse</outputActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/NotifyService/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/NotifyService/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/NotifyService/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/NotifyService/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/NotifyService/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/NotifyService/Fault/AccessControlFault</faultActionMapping>
+        </operation>
+        <operation name="PauseActivity" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/activitymanagement">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/PauseActivityRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/PauseActivityResponse</outputActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/PauseActivity/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/PauseActivity/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/PauseActivity/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/PauseActivity/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/PauseActivity/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/PauseActivity/Fault/AccessControlFault</faultActionMapping>
+        </operation>
+        <operation name="ResumeActivity" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/activitymanagement">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/ResumeActivityRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/ResumeActivityResponse</outputActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/ResumeActivity/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="VectorLimitExceededFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/ResumeActivity/Fault/VectorLimitExceededFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/ResumeActivity/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/ResumeActivity/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/ResumeActivity/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/activitymanagement/ActivityManagementService/ResumeActivity/Fault/AccessControlFault</faultActionMapping>
+        </operation>
+    </service>
+    <service name="DelegationService" scope="application">
+        <messageReceivers>
+            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="org.glite.ce.creamapi.ws.es.delegation.DelegationServiceMessageReceiverInOut"/>
+        </messageReceivers>
+        <module ref="cream-authorization"/>
+        <parameter name="ServiceClass">org.glite.ce.cream.ws.es.DelegationService</parameter>
+        <parameter name="useOriginalwsdl">true</parameter>
+        <parameter name="modifyUserWSDLPortAddress">true</parameter>
+        <operation name="GetDelegationInfo" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/delegation">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/GetDelegationInfoRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/GetDelegationInfoResponse</outputActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/GetDelegationInfo/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/GetDelegationInfo/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/GetDelegationInfo/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/GetDelegationInfo/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="UnknownDelegationIDFault">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/GetDelegationInfo/Fault/UnknownDelegationIDFault</faultActionMapping>
+            <faultActionMapping faultName="UnknownDelegationIDFault_Exception">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/GetDelegationInfo/Fault/UnknownDelegationIDFault</faultActionMapping>
+        </operation>
+        <operation name="InitDelegation" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/delegation">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/InitDelegationRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/InitDelegationResponse</outputActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/InitDelegation/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/InitDelegation/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/InitDelegation/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/InitDelegation/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="InternalServiceDelegationFault">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/InitDelegation/Fault/InternalServiceDelegationFault</faultActionMapping>
+            <faultActionMapping faultName="InternalServiceDelegationFault_Exception">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/InitDelegation/Fault/InternalServiceDelegationFault</faultActionMapping>
+        </operation>
+        <operation name="PutDelegation" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/delegation">
+            <actionMapping>http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/PutDelegationRequest</actionMapping>
+            <outputActionMapping>http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/PutDelegationResponse</outputActionMapping>
+            <faultActionMapping faultName="InternalBaseFault">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/PutDelegation/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="InternalBaseFault_Exception">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/PutDelegation/Fault/InternalBaseFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/PutDelegation/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="AccessControlFault_Exception">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/PutDelegation/Fault/AccessControlFault</faultActionMapping>
+            <faultActionMapping faultName="UnknownDelegationIDFault">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/PutDelegation/Fault/UnknownDelegationIDFault</faultActionMapping>
+            <faultActionMapping faultName="UnknownDelegationIDFault_Exception">http://www.eu-emi.eu/es/2010/12/delegation/DelegationService/PutDelegation/Fault/UnknownDelegationIDFault</faultActionMapping>
+        </operation>
+    </service>
+</serviceGroup>

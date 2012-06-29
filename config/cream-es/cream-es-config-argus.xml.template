@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<service id="CREAM service (core2)">
+
+  <commandexecutor id="ActivityExecutor"
+                   category="ACTIVITY_MANAGEMENT"
+                   commandqueuesize="500"
+                   commandqueueshared="false"
+                   commandworkerpoolsize="50"
+                   filename="/usr/share/java/glite-ce-cream-activityExecutor.jar">
+      <parameter name="ACTIVITY_STATUS_MONITOR_AGE" value="24" /> <!-- hours -->
+      <parameter name="ACTIVITY_STATUS_MONITOR_RATE" value="6" /> <!-- hours -->
+      <parameter name="DEFAULT_LRMS_NAME" value="changeme" />
+      <parameter name="DEFAULT_QUEUE_NAME" value="changeme" />
+      <parameter name="SANDBOX_DIR" value="/var/cream-es_sandbox" />
+      <parameter name="CREATE_WRAPPER_BIN_PATH" value="/usr/bin/glite-ce-cream-create-wrapper" />
+      <parameter name="CREATE_SANDBOX_BIN_PATH" value="/usr/bin/glite-cream-createsandboxdir" />
+      <parameter name="PURGE_SANDBOX_BIN_PATH" value="/usr/bin/glite-ce-cream-purge-sandbox" />
+      <parameter name="DELEGATION_PURGE_RATE" value="10" />
+      <parameter name="BLAH_BIN_PATH" value="/usr/bin/blahpd" />
+      <parameter name="BLAH_PREFIX" value="cres1_" />
+      <parameter name="BLAH_COMMAND_TIMEOUT" value="30000"/>
+      <parameter name="BLAH_NOTIFICATION_LISTENER_PORT" value="49155" />
+      <parameter name="BLAH_NOTIFIER_RETRY_COUNT" value="100" />
+      <parameter name="BLAH_NOTIFIER_RETRY_DELAY" value="60000" />
+      <!--parameter name="ACTIVITY_WRAPPER_TEMPLATE_PATH" value="/etc/glite-ce-cream-es/" /-->
+      <parameter name="DELEGATION_TIME_SLOT" value="3600" /> <!-- sec. -->
+      <parameter name="COPY_PROXY_MIN_RETRY_WAIT" value="60" /> <!-- sec. -->
+      <parameter name="COPY_RETRY_COUNT_ISB" value="2" />
+      <parameter name="COPY_RETRY_FIRST_WAIT_ISB" value="60" /> <!-- sec. -->
+      <parameter name="COPY_RETRY_COUNT_OSB" value="6" />
+      <parameter name="COPY_RETRY_FIRST_WAIT_OSB" value="300" /> <!-- sec. -->
+      <parameter name="LIMIT_FOR_LIST_ACTIVITIES" value="1000" />
+  </commandexecutor>
+
+  <commandexecutor id="DelegationExecutor"
+                   category="DELEGATION_MANAGEMENT"
+                   commandqueuesize="0"
+                   commandqueueshared="false"
+                   commandworkerpoolsize="0"
+                   filename="/usr/share/java/glite-ce-cream-delegationExecutor.jar">
+      <parameter name="CREAM_COPY_PROXY_TO_SANDBOX_BIN_PATH" value="/usr/bin/glite-cream-copyProxyToSandboxDir.sh" />
+      <parameter name="CREAM_PURGE_PROXY_FROM_SANDBOX_BIN_PATH" value="/usr/bin/glite-ce-cream-purge-proxy" />
+      <parameter name="CREAM_SANDBOX_DIR" value="/var/cream-es_sandbox" />
+      <parameter name="DELEGATION_PURGE_RATE" value="10" /> <!-- minutes -->
+  </commandexecutor>
+  
+  <dataSource name="datasource_delegationdb"
+              type="javax.sql.DataSource"
+              factory="org.apache.commons.dbcp.BasicDataSourceFactory"
+              driverClassName="org.gjt.mm.mysql.Driver"
+              username="SetThisToAUser" password="SetThisToAGoodPassword"
+              maxActive="200"
+              maxIdle="30"
+              maxWait="10000"
+              url="jdbc:mysql://localhost:3306/delegationesdb?autoReconnect=true"
+              validationQuery="SELECT 1"
+              testOnBorrow="true"
+              testWhileIdle="true"
+              timeBetweenEvictionRunsMillis="20000"
+              minEvictableIdleTimeMillis="90000"
+              logAbandoned="false"
+              removeAbandoned="true"
+              removeAbandonedTimeout="30"
+  />
+  
+  <dataSource name="datasource_esdb"
+              type="javax.sql.DataSource"
+              factory="org.apache.commons.dbcp.BasicDataSourceFactory"
+              driverClassName="org.gjt.mm.mysql.Driver"
+              username="SetThisToAUser" password="SetThisToAGoodPassword"
+              maxActive="200"
+              maxIdle="30"
+              maxWait="10000"
+              url="jdbc:mysql://localhost:3306/esdb?autoReconnect=true"
+              validationQuery="SELECT 1"
+              testOnBorrow="true"
+              testWhileIdle="true"
+              timeBetweenEvictionRunsMillis="20000"
+              minEvictableIdleTimeMillis="90000"
+              logAbandoned="false"
+              removeAbandoned="true"
+              removeAbandonedTimeout="30"
+  />
+  
+  <adminlist filename="/etc/grid-security/admin-list"/>
+  <argus-pep name="pep-client1"
+             resource_id="CREAM_PEPC_RESOURCEID"
+             cert="TOMCAT_HOSTCERT_LOCATION"
+             key="TOMCAT_HOSTKEY_LOCATION"
+             passwd=""
+             mapping_class="org.glite.ce.cream.authz.argus.ActionMapping">
+    <endpoint url="ARGUS_PEPD_ENDPOINTS" />
+  </argus-pep>
+
+</service>
