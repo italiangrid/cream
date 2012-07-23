@@ -18,8 +18,18 @@
 
 package org.glite.ce.cream.client;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringReader;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -31,6 +41,8 @@ import java.util.StringTokenizer;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.databinding.utils.ConverterUtil;
 import org.apache.commons.httpclient.protocol.Protocol;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.openssl.PEMReader;
 import org.glite.ce.creamapi.ws.cream2.CREAMStub;
 import org.glite.ce.creamapi.ws.cream2.types.BaseFaultType;
 import org.glite.ce.creamapi.ws.cream2.types.Command;
@@ -43,11 +55,12 @@ import org.glite.ce.creamapi.ws.cream2.types.ResultChoice_type0;
 import org.glite.ce.creamapi.ws.cream2.types.Status;
 import org.glite.ce.security.delegation.DelegationException;
 import org.glite.ce.security.delegation.DelegationServiceStub;
-import org.glite.security.delegation.GrDPX509Util;
-import org.glite.security.delegation.GrDProxyDlgorOptions;
-import org.glite.security.delegation.GrDProxyGenerator;
-import org.glite.security.trustmanager.ContextWrapper;
-import org.glite.security.trustmanager.axis2.AXIS2SocketFactory;
+
+import eu.emi.security.authn.x509.impl.CertificateUtils;
+import eu.emi.security.authn.x509.impl.PEMCredential;
+import eu.emi.security.authn.x509.proxy.ProxyGenerator;
+import eu.emi.security.authn.x509.proxy.ProxyRequestOptions;
+import eu.emi.security.canl.axis2.CANLAXIS2SocketFactory;
 
 public abstract class JobCommand {
     public static final String EPR = "epr";
@@ -689,68 +702,150 @@ public abstract class JobCommand {
     }
 
     private void setSSLProperties() throws AxisFault {
-        Protocol.registerProtocol("https", new Protocol("https", new AXIS2SocketFactory(), 8443));
+        Protocol.registerProtocol("https", new Protocol("https", new CANLAXIS2SocketFactory(), 8443));
 
         Properties sslConfig = new Properties();
-        sslConfig.put(ContextWrapper.SSL_PROTOCOL, "SSLv3");
-        sslConfig.put(ContextWrapper.CA_FILES, "/etc/grid-security/certificates/*.0");
-        sslConfig.put(ContextWrapper.CRL_ENABLED, "true");
-        sslConfig.put(ContextWrapper.CRL_FILES, "/etc/grid-security/certificates/*.r0");
-        sslConfig.put(ContextWrapper.CRL_UPDATE_INTERVAL, "0s");
+        sslConfig.put("truststore", "/etc/grid-security/certificates");
+        sslConfig.put("crlcheckingmode", "ifvalid");
 
         if (proxy != null) {
-            sslConfig.put(ContextWrapper.CREDENTIALS_PROXY_FILE, proxy);
+            sslConfig.put("proxy", proxy);
         } else {
+            
             String confFileName = System.getProperty("user.home") + "/.glite/dlgor.properties";
-            GrDProxyDlgorOptions dlgorOpt;
+            Properties dlgorOpt = null;
             try {
-                dlgorOpt = new GrDProxyDlgorOptions(confFileName);
+                dlgorOpt = this.loadProperties(confFileName);
             } catch (IOException e) {
                 throw new AxisFault(e.getMessage());
             }
 
-            String proxyFilename = dlgorOpt.getDlgorProxyFile();
+            String proxyFilename = dlgorOpt.getProperty("issuerProxyFile");
 
             if (proxyFilename != null) {
-                sslConfig.put(ContextWrapper.CREDENTIALS_PROXY_FILE, proxyFilename);
+                sslConfig.put("proxy", proxyFilename);
             } else {
-                String certFilename = dlgorOpt.getDlgorCertFile();
+                String certFilename = dlgorOpt.getProperty("issuerCertFile");
                 if (certFilename == null || "".equals(certFilename)) {
                     throw new AxisFault("Missing user credentials: issuerCertFile not found in " + confFileName);
                 }
 
-                String keyFilename = dlgorOpt.getDlgorKeyFile();
-                if (certFilename == null || "".equals(certFilename)) {
+                String keyFilename = dlgorOpt.getProperty("issuerKeyFile");
+                if (keyFilename == null || "".equals(keyFilename)) {
                     throw new AxisFault("Missing user credentials: issuerKeyFile not found in " + confFileName);
                 }
 
-                String passwd = dlgorOpt.getDlgorPass();
+                String passwd = dlgorOpt.getProperty("issuerPass");
                 passwd = passwd == null ? "" : passwd;
 
-                sslConfig.put(ContextWrapper.CREDENTIALS_CERT_FILE, certFilename);
-                sslConfig.put(ContextWrapper.CREDENTIALS_KEY_FILE, keyFilename);
-                sslConfig.put(ContextWrapper.CREDENTIALS_KEY_PASSWD, passwd);
+                sslConfig.put("cert", certFilename);
+                sslConfig.put("key", keyFilename);
+                sslConfig.put("password", passwd);
             }
         }
 
-        AXIS2SocketFactory.setCurrentProperties(sslConfig);
+        CANLAXIS2SocketFactory.setCurrentProperties(sslConfig);
     }
     
-    protected String signRequest(String certReq, String delegationID) throws IOException {
-        String strX509CertChain = null;
+    protected String signRequest(String certReq, String delegationID) 
+            throws IOException, KeyStoreException, CertificateException,
+            InvalidKeyException, SignatureException, 
+            NoSuchAlgorithmException, NoSuchProviderException {
+        
         String confFileName = System.getProperty("user.home") + "/.glite/dlgor.properties";
-        GrDProxyDlgorOptions dlgorOpt = new GrDProxyDlgorOptions(confFileName);
-
-        try {
-            GrDProxyGenerator proxyGenerator = new GrDProxyGenerator();
-
-            byte[] x509Cert = proxyGenerator.x509MakeProxyCert(certReq.getBytes(), GrDPX509Util.getFilesBytes(new File(dlgorOpt.getDlgorCertFile())), "null");
-
-            strX509CertChain = new String(x509Cert);
-        } catch (Exception e) {
-            e.printStackTrace();
+        Properties dlgorOpt = this.loadProperties(confFileName);
+        
+        X509Certificate[] parentChain = null;
+        PrivateKey pKey = null;
+        
+        String proxyFilename = dlgorOpt.getProperty("issuerProxyFile", "");
+        String certFilename = dlgorOpt.getProperty("issuerCertFile", "");
+        String keyFilename = dlgorOpt.getProperty("issuerKeyFile", "");
+        String passwd = dlgorOpt.getProperty("issuerPass", "");
+        
+        if (proxyFilename.length() == 0) {
+            
+            if (certFilename.length() == 0) {
+                throw new AxisFault("Missing user credentials: issuerCertFile not found in " + confFileName);
+            }
+            
+            if (keyFilename.length() == 0) {
+                throw new AxisFault("Missing user credentials: issuerKeyFile not found in " + confFileName);
+            }
+            
+            char[] tmppwd = null;
+            if (passwd.length() != 0) {
+                tmppwd = passwd.toCharArray();
+            }
+            
+            FileInputStream inStream = null;
+            try {
+                inStream = new FileInputStream(keyFilename);
+                pKey = CertificateUtils.loadPrivateKey(inStream, CertificateUtils.Encoding.PEM, tmppwd);
+            } finally {
+                if (inStream != null) {
+                    inStream.close();
+                }
+            }
+                        
+            inStream = null;
+            try {
+                inStream = new FileInputStream(certFilename);
+                parentChain = CertificateUtils.loadCertificateChain(inStream, CertificateUtils.Encoding.PEM);
+            } finally {
+                if (inStream != null) {
+                    inStream.close();
+                }
+            }
+            
+        }else{
+            
+            FileInputStream inStream = null;
+            try {
+                
+                inStream = new FileInputStream(proxyFilename);
+                PEMCredential credentials = new PEMCredential(inStream, null);
+                pKey = credentials.getKey();
+                parentChain = credentials.getCertificateChain();
+                
+            } finally {
+                if (inStream != null) {
+                    inStream.close();
+                }
+            }
+            
         }
+            
+        
+        PEMReader pemReader = new PEMReader(new StringReader(certReq));
+        PKCS10CertificationRequest proxytReq = (PKCS10CertificationRequest) pemReader.readObject();
+        ProxyRequestOptions csrOpt = new ProxyRequestOptions(parentChain, proxytReq);
+        
+        X509Certificate[] certChain = ProxyGenerator.generate(csrOpt, pKey);
+        
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        for (X509Certificate tmpcert : certChain) {
+            CertificateUtils.saveCertificate(outStream, tmpcert, CertificateUtils.Encoding.PEM);
+        }
+        
+        return outStream.toString();
 
-        return strX509CertChain;
+    }
+    
+    private Properties loadProperties(String filename)  throws  IOException {
+        Properties dlgorOpt = new Properties();
+        
+        FileInputStream inStream = null;
+        try {
+            inStream = new FileInputStream(filename);
+            dlgorOpt.load(inStream);
+        } finally {
+            if (inStream != null) {
+                    inStream.close();
+            }
+        }
+        
+        return dlgorOpt;
+
     }
 }

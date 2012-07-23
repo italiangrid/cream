@@ -158,6 +158,13 @@
     </dependency>
 
     <dependency>
+      <groupId>eu.eu-emi.security</groupId>
+      <artifactId>canl-java-axis2</artifactId>
+      <version>${canl.axis2.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
       <groupId>org.glite.voms</groupId>
       <artifactId>voms-api-java</artifactId>
       <version>${voms.version}</version>
@@ -191,7 +198,13 @@
       <version>${trustman.version}</version>
       <scope>compile</scope>
     </dependency>
-
+    
+    <dependency>
+      <groupId>eu.eu-emi.security</groupId>
+	  <artifactId>canl-java-axis2</artifactId>
+	  <version>${canl.axis2.version}</version>
+    </dependency>
+    
     <dependency>
       <groupId>org.glite.security.trustmanager.axis2</groupId>
       <artifactId>trustmanager-axis2</artifactId>

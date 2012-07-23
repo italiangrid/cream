@@ -57,7 +57,7 @@ public class JobRegister extends JobCommand {
                 printFault(e);
             } catch (RemoteException e) {
                 e.printStackTrace();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.out.println("error: " + e.getMessage());
             }
         }
