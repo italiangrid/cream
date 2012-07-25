@@ -28,16 +28,15 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.security.GeneralSecurityException;
-import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.PublicKey;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
@@ -71,16 +70,17 @@ import org.glite.ce.creamapi.delegationmanagement.DelegationCommand;
 import org.glite.ce.creamapi.delegationmanagement.DelegationManagerInterface;
 import org.glite.ce.creamapi.delegationmanagement.DelegationRequest;
 import org.glite.ce.creamapi.jobmanagement.db.DBInfoManager;
-import org.glite.security.delegation.GrDPConstants;
-import org.glite.security.delegation.GrDPX509Util;
-import org.glite.security.util.CertUtil;
-import org.glite.security.util.FileCertReader;
-import org.glite.security.util.PrivateKeyReader;
 import org.glite.voms.PKIStore;
 import org.glite.voms.VOMSAttribute;
 import org.glite.voms.VOMSValidator;
 import org.glite.voms.ac.ACValidator;
 import org.glite.voms.ac.VOMSTrustStore;
+
+import eu.emi.security.authn.x509.impl.CertificateUtils;
+import eu.emi.security.authn.x509.proxy.ProxyCSR;
+import eu.emi.security.authn.x509.proxy.ProxyCSRGenerator;
+import eu.emi.security.authn.x509.proxy.ProxyCertificateOptions;
+import eu.emi.security.authn.x509.proxy.ProxyUtils;
 
 public class DelegationExecutor extends AbstractCommandExecutor {
     private static final Logger logger = Logger.getLogger(DelegationExecutor.class.getName());
@@ -93,23 +93,6 @@ public class DelegationExecutor extends AbstractCommandExecutor {
     private int keySize = 2048;
     private ACValidator acValidator;
     private VOMSTrustStore vomsStore = null;
-
-    /** the cert reader, make static to avoid initializing it for each read. */
-    private static FileCertReader s_reader = null;
-
-    /**
-     * The static class initializer that loads single FileCertReader that is
-     * shared by all instances to save resources.
-     */
-    {
-        try {
-            s_reader = new FileCertReader();
-        } catch (CertificateException e3) {
-            logger.error("Failed to initialize certificate reader: " + e3.getMessage());
-            throw new RuntimeException("Failed to initialize certificate reader: " + e3.getMessage());
-
-        }
-    }
 
     public static final String DELEGATION_PURGE_RATE = "DELEGATION_PURGE_RATE";
     public static final String CREAM_SANDBOX_DIR = "CREAM_SANDBOX_DIR";
@@ -143,26 +126,43 @@ public class DelegationExecutor extends AbstractCommandExecutor {
     private String createAndStoreCertificateRequest(X509Certificate parentCert, String delegationId, String dn, String localUser, List<VOMSAttribute> vomsAttributes) throws CommandException {
         logger.debug("BEGIN createAndStoreCertificateRequest");
 
-        // Get a random KeyPair
-        KeyPair keyPair = GrDPX509Util.getKeyPair(keySize);
-
-        String privateKey = PrivateKeyReader.getPEM(keyPair.getPrivate());
-        logger.debug("KeyPair generation was successfull.");
-        logger.debug("Public key is: " + keyPair.getPublic());
-
-        // Generate the certificate request
+        ProxyCertificateOptions prOpts = new ProxyCertificateOptions(new X509Certificate[] { parentCert });
+        prOpts.setKeyLength(keySize);
+        
+        ProxyCSR pCSRContainer = null;
+        String privateKey = null;
+        PublicKey publicKey = null; 
         String certificateRequest = null;
         try {
-            certificateRequest = GrDPX509Util.createCertificateRequest(parentCert, GrDPConstants.DEFAULT_SIGNATURE_ALGORITHM, keyPair);
-        } catch (GeneralSecurityException e) {
+            
+            pCSRContainer = ProxyCSRGenerator.generate(prOpts);
+            PKCS10CertificationRequest pRequest = pCSRContainer.getCSR();
+            publicKey = pRequest.getPublicKey();
+            
+            ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            CertificateUtils.savePrivateKey(outStream, pCSRContainer.getPrivateKey(), CertificateUtils.Encoding.PEM, null, null);
+            outStream.close();
+            privateKey = outStream.toString();
+            
+            StringWriter strWriter = new StringWriter();
+            PEMWriter pemWriter = new PEMWriter(strWriter);
+            pemWriter.writeObject(pRequest);
+            pemWriter.close();
+            certificateRequest = strWriter.toString();
+            
+            logger.debug("Public key is: " + publicKey.toString());
+            logger.debug("Private key is: " + privateKey);
+            logger.debug("Certificate request is: " + certificateRequest);
+            
+        } catch (Exception ex) {
             throw new CommandException("Error while generating the certificate request [delegId=" + delegationId + "; dn=" + dn + "; localUser=" + localUser + "]: "
-                    + e.getMessage());
+                    + ex.getMessage());
         }
-        logger.debug("Certificate request generation was successfull.");
-
+        
+        
         String reqId = null;
         try {
-            reqId = delegationId + '+' + GrDPX509Util.generateSessionID(keyPair.getPublic());
+            reqId = delegationId + '+' + this.generateSessionID(publicKey);
             logger.debug("DelegationRequestId (delegationId + sessionId): " + reqId);
         } catch (GeneralSecurityException e) {
             throw new CommandException("Error while generating the sessionId [delegId=" + delegationId + "; dn=" + dn + "; localUser=" + localUser + "]: " + e.getMessage());
@@ -188,7 +188,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
             delegationRequest.setDN(dn);
             delegationRequest.setVOMSAttributes(vomsAttributeList);
             delegationRequest.setCertificateRequest(certificateRequest);
-            delegationRequest.setPublicKey(keyPair.getPublic().toString());
+            delegationRequest.setPublicKey(publicKey.toString());
             delegationRequest.setPrivateKey(privateKey);
             delegationRequest.setLocalUser(localUser);
 
@@ -701,17 +701,17 @@ public class DelegationExecutor extends AbstractCommandExecutor {
         String localUserGroup = getParameterValueAsString(command, DelegationCommand.LOCAL_USER_GROUP);
         // X509Certificate userCert = (X509Certificate)getParameterValue(command, "USER_CERTIFICATE");
 
-        // Load given proxy
         X509Certificate[] certChain = null;
         try {
-            certChain = s_reader.readCertChain(new BufferedInputStream(new ByteArrayInputStream(deleg.getBytes()))).toArray(new X509Certificate[] {});
+            BufferedInputStream pemStream = new BufferedInputStream(new ByteArrayInputStream(deleg.getBytes()));
+            certChain = CertificateUtils.loadCertificateChain(pemStream, CertificateUtils.Encoding.PEM);
         } catch (IOException ex) {
             throw new CommandException("Failed to load certificate chain [delegId=" + delegationId + "; dn=" + userDN + "; localUser=" + localUser + "]: " + ex.getMessage());
         }
 
-        if (certChain == null || certChain.length == 0) {
+        if (certChain.length == 0) {
             throw new CommandException("Failed to load certificate chain [delegId=" + delegationId + "; dn=" + userDN + "; localUser=" + localUser
-                    + "]: chain was null or size 0.");
+                    + "]: no certificates in the delegated proxy chain.");
         }
         logger.debug("Given proxy certificate loaded successfully.");
 
@@ -763,8 +763,9 @@ public class DelegationExecutor extends AbstractCommandExecutor {
 
         String clientDN;
         try {
-            clientDN = CertUtil.getUserDN(certChain).getRFCDN();
-        } catch (IOException ex) {
+            X509Certificate eeCert = ProxyUtils.getEndUserCertificate(certChain);
+            clientDN = eeCert.getSubjectDN().getName();
+        } catch (Exception ex) {
             throw new CommandException("No user certificate found in the delegation chain [delegId=" + delegationId + "; dn=" + userDN + "; localUser=" + localUser + "]: "
                     + ex.getMessage());
         }
@@ -781,7 +782,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
 
         String reqId = delegationId;
         try {
-            reqId = delegationId + '+' + GrDPX509Util.generateSessionID(certChain[0].getPublicKey());
+            reqId = delegationId + '+' + this.generateSessionID(certChain[0].getPublicKey());
             logger.debug("reqId (delegationId + sessionId): " + reqId);
         } catch (GeneralSecurityException e) {
             throw new CommandException("Failed to generate the session ID [delegId=" + delegationId + "; dn=" + userDN + "; localUser=" + localUser + "]: " + e.getMessage());
@@ -1087,4 +1088,19 @@ public class DelegationExecutor extends AbstractCommandExecutor {
 
         return delegation.getFullPath();
     }
+    
+    /*
+     * This code has been extracted from org.glite.security.delegation.GrDPX509Util
+     */
+    private String generateSessionID(PublicKey pk) throws java.security.NoSuchAlgorithmException {
+
+        MessageDigest digester = MessageDigest.getInstance("SHA-256");
+        byte[] oldDigest = digester.digest(pk.getEncoded());
+        byte[] newDigest = new byte[20];
+        for (int i = 0; i < 20; ++i) {
+            newDigest[i] = oldDigest[i];
+        }
+        return new String(Hex.encode(newDigest));
+    }
+
 }
