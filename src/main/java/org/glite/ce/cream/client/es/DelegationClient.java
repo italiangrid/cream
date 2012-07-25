@@ -127,7 +127,7 @@ public class DelegationClient extends ActivityCommand {
                         System.out.println(e.getFaultMessage().getMessage());
                     } catch (InternalServiceDelegationFault e) {
                         System.out.println(e.getFaultMessage().getMessage());
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         System.out.println(e.getMessage());
                     }
                 }
@@ -174,7 +174,7 @@ public class DelegationClient extends ActivityCommand {
                     System.out.println(e.getFaultMessage().getMessage());
                 } catch (InternalServiceDelegationFault e) {
                     System.out.println(e.getFaultMessage().getMessage());
-                } catch (IOException e) {
+                } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
             }
