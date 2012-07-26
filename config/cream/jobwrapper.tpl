@@ -10,6 +10,9 @@ trap 'fatal_error "Job has been terminated (got SIGTERM)" "OSB"' TERM
 #                           Environment
 ###################################################################
 
+#trick. 
+export EDG_WL_NOSETPGRP=1 
+
 export GLITE_WMS_LOCATION=${GLITE_LOCATION:-/opt/glite}
 export GLITE_WMS_JOBID=${__gridjobid}
 export GLITE_WMS_SEQUENCE_CODE="$1"
@@ -932,9 +935,9 @@ if (!defined($jobpid = fork())) {
     }
     
     if (defined($ENV{"EDG_WL_NOSETPGRP"})) {
-        kill(9, $jobpid);
-    } else {
         kill(-15, getpgrp(0));
+    } else {
+        kill(9, $jobpid);
     }
     exit(0);
 } else {
