@@ -107,7 +107,6 @@
             <goals><goal>jar</goal></goals>
             <configuration>
               <finalName>cream-authorization</finalName>
-              <outputDirectory>${project.build.directory}/axis2</outputDirectory>
               <includes>
                 <include>org/glite/ce/cream/authz/axis2/**</include>
                 <include>**/module.xml</include>
@@ -119,7 +118,44 @@
             </configuration>
           </execution>
 
+          <execution>
+            <id>legacyService</id>
+            <phase>package</phase>
+            <goals><goal>jar</goal></goals>
+            <configuration>
+              <finalName>cream-legacy-interface</finalName>
+              <includes>
+                <!-- Missing glite-ce-cream-skeleton.jar and glite-ce-delegation-skeleton.jar -->
+                <include>org/glite/ce/cream/ws/CREAM2Service.class</include>
+                <include>org/glite/ce/cream/ws/delegation/CREAMDelegationService.class</include>
+                <include>org/glite/ce/cream/ws/utils/FaultFactory.class</include>
+                <include>org/glite/ce/cream/jobmanagement/command/**</include>
+              </includes>
+              <archive>
+                <index>true</index>
+                <manifest><addDefaultSpecificationEntries/></manifest>
+              </archive>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>ESInterface</id>
+            <phase>package</phase>
+            <goals><goal>jar</goal></goals>
+            <configuration>
+              <finalName>cream-es-interface</finalName>
+              <includes>
+                <include>org/glite/ce/cream/ws/es/**</include>
+              </includes>
+              <archive>
+                <index>true</index>
+                <manifest><addDefaultSpecificationEntries/></manifest>
+              </archive>
+            </configuration>
+          </execution>
+
           <!-- this must be the project's main artifact -->
+          <!-- this is the cream-core jar file -->
           <execution>
             <id>default-jar</id>
             <phase>package</phase>
@@ -129,6 +165,7 @@
                 <include>org/glite/ce/cream/dbmanagement/**</include>
                 <include>org/glite/ce/cream/configuration/**</include>
                 <include>org/glite/ce/cream/cmdmanagement/**</include>
+                <include>org/glite/ce/cream/activitymanagement/*.class</include>
                 <include>org/glite/ce/cream/delegationmanagement/*.class</include>
                 <include>org/glite/ce/cream/authz/argus/**</include>
                 <include>**/services/*</include>
