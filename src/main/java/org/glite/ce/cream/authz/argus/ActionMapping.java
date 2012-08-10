@@ -23,6 +23,7 @@ import java.util.Iterator;
 import javax.xml.namespace.QName;
 
 import org.glite.authz.common.profile.GLiteAuthorizationProfileConstants;
+import org.glite.authz.pep.profile.AbstractAuthorizationProfile;
 import org.glite.authz.pep.profile.GridCEAuthorizationProfile;
 import org.glite.ce.commonj.authz.AuthZConstants;
 import org.glite.ce.commonj.authz.AuthorizationException;
@@ -147,28 +148,32 @@ public class ActionMapping
     public String[] getMandatoryProperties() {
         return mandProperties;
     }
-    
+
     public void checkMandatoryProperties(Iterator<String> props)
-            throws AuthorizationException {
-        
+        throws AuthorizationException {
+
         boolean missingUser = true;
         boolean missingGroup = true;
-        
-        while(props.hasNext()) {
+
+        while (props.hasNext()) {
             String prop = props.next();
-            if(prop.equals(AuthZConstants.LOCAL_USER_ID)) {
+            if (prop.equals(AuthZConstants.LOCAL_USER_ID)) {
                 missingUser = false;
-            }else if(prop.equals(AuthZConstants.LOCAL_GROUP_ID)) {
+            } else if (prop.equals(AuthZConstants.LOCAL_GROUP_ID)) {
                 missingGroup = false;
             }
         }
-        
+
         if (missingUser) {
             throw new AuthorizationException("Cannot map grid user onto a local account");
         }
-        
-        if(missingGroup){
+
+        if (missingGroup) {
             throw new AuthorizationException("Cannot map grid user onto a local group");
         }
+    }
+
+    public AbstractAuthorizationProfile getProfile() {
+        return GridCEAuthorizationProfile.getInstance();
     }
 }
