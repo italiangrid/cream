@@ -25,19 +25,6 @@ for((idx=0; idx<${#__environment[*]}; idx++)); do
   eval export ${__environment[$idx]}
 done
 
-for lb_logevent_command in "${GLITE_WMS_LOCATION}/bin/glite-lb-logevent" \
-                           "/usr/bin/glite-lb-logevent" \
-                           "`which glite-lb-logevent 2>/dev/null`"; do
-  if [ -x "${lb_logevent_command}" ]; then
-     break;
-  fi
-done
-if [ ! -x "${lb_logevent_command}" ]; then
-   fatal_error "Cannot find lb_logevent command"
-fi
-
-LB_LOGEVENT=${lb_logevent_command}
-
 #if [ -z "${GLITE_LOCAL_MAX_OSB_SIZE}" ]; then
 #  __max_osb_size=-1
 #else
@@ -654,6 +641,19 @@ fi
 ###################################################################
 #                           let's start it up
 ###################################################################
+
+for lb_logevent_command in "${GLITE_WMS_LOCATION}/bin/glite-lb-logevent" \
+                           "/usr/bin/glite-lb-logevent" \
+                           "`which glite-lb-logevent 2>/dev/null`"; do
+  if [ -x "${lb_logevent_command}" ]; then
+     break;
+  fi
+done
+if [ ! -x "${lb_logevent_command}" ]; then
+   fatal_error "Cannot find lb_logevent command"
+fi
+
+LB_LOGEVENT=${lb_logevent_command}
 
 # customization point #1
 # Be sure to update workdir as it may be changed by cp_1.sh
