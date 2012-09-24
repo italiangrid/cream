@@ -131,7 +131,7 @@ public class ActivityDBInMemory implements ActivityDBInterface {
         activity.getStates().add(activityStatus);
     }
 
-    public ListActivitiesResult listActivities(XMLGregorianCalendar fromDate, XMLGregorianCalendar toDate, List<StatusName> statusList, List<StatusAttributeName> attributeList, int limit, String userId) throws DatabaseException, IllegalArgumentException {
+    public ListActivitiesResult listActivities(XMLGregorianCalendar fromDate, XMLGregorianCalendar toDate, List<ActivityStatus> statusList, int limit, String userId) throws DatabaseException, IllegalArgumentException {
         if (userId == null) {
             throw new IllegalArgumentException("userId not specified!");
         }

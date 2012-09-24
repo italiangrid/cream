@@ -978,10 +978,11 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         }
 
         try {
-            ListActivitiesResult result = activityDB.listActivities(CEUtils.getXMLGregorianCalendar(fromDate), CEUtils.getXMLGregorianCalendar(toDate), statusList, attributeList, limit, command.getUserId());
+            //TODO
+            //ListActivitiesResult result = activityDB.listActivities(CEUtils.getXMLGregorianCalendar(fromDate), CEUtils.getXMLGregorianCalendar(toDate), statusList, attributeList, limit, command.getUserId());
 
-            command.getResult().addParameter(ActivityCommandField.ACTIVITY_ID_LIST.name(), result.getActivityIdList());
-            command.getResult().addParameter(ActivityCommandField.IS_TRUNCATED.name(), result.isTruncated());  
+            //command.getResult().addParameter(ActivityCommandField.ACTIVITY_ID_LIST.name(), result.getActivityIdList());
+           // command.getResult().addParameter(ActivityCommandField.IS_TRUNCATED.name(), result.isTruncated());  
         } catch (Throwable t) {
             throw new CommandException(t.getMessage());
         }

@@ -52,7 +52,7 @@
         <parameter name="useOriginalwsdl">true</parameter>
         <parameter name="modifyUserWSDLPortAddress">true</parameter>
         <parameter name="esdbDatabaseVersion">1.1</parameter>
-        <parameter name="esdbStoredProcedureVersion">1.0</parameter>
+        <parameter name="esdbStoredProcedureVersion">1.1</parameter>
         <parameter name="delegationesdbDatabaseVersion">1.1</parameter>
         <parameter name="serviceLogConfigurationFile">/etc/glite-ce-cream-es/log4j.properties</parameter>
 <operation name="CreateActivity" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/creation">

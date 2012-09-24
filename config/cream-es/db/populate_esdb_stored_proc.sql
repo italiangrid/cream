@@ -13,7 +13,7 @@ source /etc/glite-ce-cream-es/storedprocedures/esdb_delete_stored_proc.sql
 DELIMITER ;
 
 /************ Insert values in db_info ***************/    
-update db_info set stored_proc_version = '1.0';
+update db_info set stored_proc_version = '1.1';
 
 commit;
 

@@ -62,17 +62,22 @@ DROP PROCEDURE IF EXISTS selectListActivities //
 CREATE PROCEDURE selectListActivities(
                  fromDate_param TIMESTAMP,
                  toDate_param TIMESTAMP,
-                 statusList_param VARCHAR(254),
+                 status_param VARCHAR(254),
                  statusAttributeNameList_param VARCHAR(254),
                  userId_param TEXT,
                  limit_param INT) COMMENT 'select ListActivities'
 BEGIN
 set @sql = 'SELECT DISTINCT a.activityId 
-FROM activity a, activity_command acommand, activity_status AS astatus LEFT OUTER JOIN activity_status AS latest ON latest.activityId=astatus.activityId AND astatus.id < latest.id
+FROM activity a, activity_status_attribute asa, activity_command acommand, activity_status AS astatus LEFT OUTER JOIN activity_status AS latest ON latest.activityId=astatus.activityId AND astatus.id < latest.id
 WHERE latest.id IS null 
 AND a.activityId=astatus.activityId 
 AND acommand.activityId = a.activityId
 AND acommand.name=\'CREATE_ACTIVITY\'';
+
+IF (statusAttributeNameList_param IS NOT NULL)
+ THEN 
+   set @sql =concat(@sql, " \nAND asa.activity_status_id = astatus.id", "", "");
+END IF;
 
 IF (userId_param IS NOT NULL)
  THEN 
@@ -89,10 +94,16 @@ IF (toDate_param IS NOT NULL)
    set @sql =concat(@sql, " \nAND acommand.timestamp <= '", toDate_param, "'");
 END IF;
 
-IF (statusList_param IS NOT NULL)
+IF (status_param IS NOT NULL)
  THEN 
-   set @sql =concat(@sql, " \nAND astatus.status in (", statusList_param, ")");
+   set @sql =concat(@sql, " \nAND astatus.status = '", status_param, "'");
 END IF;
+
+IF (statusAttributeNameList_param IS NOT NULL)
+ THEN 
+   set @sql =concat(@sql, " \nAND asa.attribute in (", statusAttributeNameList_param, ")");
+END IF;
+
 set @sql =concat(@sql, " \nLIMIT ",limit_param);
 prepare STMT from @sql;
 execute STMT; 
