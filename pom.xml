@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.glite.ce</groupId>
     <artifactId>cream-parent</artifactId>
-    <version>1.15</version>
+    <version>1.15.1</version>
   </parent>
 
   <groupId>org.glite.ce</groupId>
@@ -320,5 +320,12 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-  
+
+  <repositories>
+    <repository>
+      <id>emi-infn-repo</id>
+      <url>http://devel12.cnaf.infn.it:7444/pub/emi/packaging/maven</url>
+    </repository>
+  </repositories>
+
 </project>
