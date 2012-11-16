@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+import javax.security.auth.x500.X500Principal;
 import javax.xml.namespace.QName;
 
 import org.apache.axiom.om.OMAbstractFactory;
@@ -37,12 +38,15 @@ import org.apache.axis2.engine.Handler;
 import org.apache.axis2.handlers.AbstractHandler;
 import org.apache.log4j.Logger;
 import org.glite.ce.commonj.authz.AuthZConstants;
+import org.glite.ce.commonj.authz.VOMSResultCollector;
 import org.glite.ce.commonj.authz.axis2.AuthorizationModule;
 import org.glite.ce.security.delegation.DelegationException;
-import org.glite.voms.VOMSAttribute;
-import org.glite.voms.VOMSValidator;
-import org.glite.voms.ac.ACValidator;
+import org.italiangrid.voms.VOMSAttribute;
+import org.italiangrid.voms.VOMSValidators;
+import org.italiangrid.voms.ac.VOMSACValidator;
 
+import eu.emi.security.authn.x509.ValidationError;
+import eu.emi.security.authn.x509.ValidationResult;
 import eu.emi.security.authn.x509.impl.CertificateUtils;
 import eu.emi.security.authn.x509.proxy.ProxyUtils;
 
@@ -85,29 +89,42 @@ public class DlgProxyChecker
                 ByteArrayInputStream strStream = new ByteArrayInputStream(proxyBase64.getBytes());
                 delegProxyChain = CertificateUtils.loadCertificateChain(strStream, CertificateUtils.Encoding.PEM);
 
-                /*
-                 * TODO proxy chain verification
-                 */
-                ACValidator acValidator = AuthorizationModule.getACValidator();
-                VOMSValidator mainValidator = new VOMSValidator(delegProxyChain, acValidator);
-                mainValidator.validate();
+                ValidationResult vRes = AuthorizationModule.validator.validate(delegProxyChain);
+                if (!vRes.isValid()) {
 
-                X509Certificate userCert = ProxyUtils.getEndUserCertificate(delegProxyChain);
-                String tmpDN = userCert.getSubjectDN().getName();
+                    StringBuffer buff = new StringBuffer("Proxy certificate is not valid\n");
+                    for (ValidationError vErr : vRes.getErrors()) {
+                        buff.append(vErr.getMessage()).append("\n");
+                    }
 
-                if (clientDN.equals(tmpDN)) {
-                    logger.info("Delegated proxy verified: " + tmpDN);
-                } else {
-                    throw new RuntimeException("Delegated proxy not verified: " + tmpDN);
+                    String tmps = buff.toString();
+                    logger.warn(tmps);
+                    throw getDelegationFault(tmps, msgContext);
                 }
 
-                List<VOMSAttribute> vomsList = (List<VOMSAttribute>) mainValidator.getVOMSAttributes();
+                X500Principal userPrincipal = ProxyUtils.getOriginalUserDN(delegProxyChain);
+                if (userPrincipal == null || !clientDN.equals(userPrincipal.getName())) {
+                    throw getDelegationFault("Proxy DN doesn't match user DN", msgContext);
+                }
+
+                VOMSResultCollector collector = new VOMSResultCollector();
+                VOMSACValidator validator = VOMSValidators.newValidator(AuthorizationModule.vomsStore,
+                        AuthorizationModule.validator, collector);
+                List<VOMSAttribute> vomsList = validator.validate(delegProxyChain);
+
+                if (collector.size() > 0) {
+                    String tmps = "Cannot validate VOMS attributes in proxy\n" + collector.toString();
+                    throw getDelegationFault(tmps, msgContext);
+                }
+
+                logger.info("Verified delegated proxy for " + userPrincipal.getName());
+
                 msgContext.setProperty(AuthZConstants.DLG_PROXY_ATTRIBUTES, vomsList);
                 msgContext.setProperty(AuthZConstants.DLG_PROXY_CERT_LIST, delegProxyChain);
 
             } catch (Throwable th) {
                 logger.error(th.getMessage(), th);
-                throw this.getDelegationFault("Error checking delegated proxy: " + th.getMessage(), msgContext);
+                throw getDelegationFault("Error checking delegated proxy: " + th.getMessage(), msgContext);
             }
 
         }

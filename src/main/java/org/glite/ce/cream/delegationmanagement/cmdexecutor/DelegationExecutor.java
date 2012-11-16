@@ -57,6 +57,8 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.openssl.PEMReader;
 import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.util.encoders.Hex;
+import org.glite.ce.commonj.authz.VOMSResultCollector;
+import org.glite.ce.commonj.authz.axis2.AuthorizationModule;
 import org.glite.ce.commonj.db.DatasourceManager;
 import org.glite.ce.cream.configuration.ServiceConfig;
 import org.glite.ce.cream.delegationmanagement.DelegationManager;
@@ -70,11 +72,9 @@ import org.glite.ce.creamapi.delegationmanagement.DelegationCommand;
 import org.glite.ce.creamapi.delegationmanagement.DelegationManagerInterface;
 import org.glite.ce.creamapi.delegationmanagement.DelegationRequest;
 import org.glite.ce.creamapi.jobmanagement.db.DBInfoManager;
-import org.glite.voms.PKIStore;
-import org.glite.voms.VOMSAttribute;
-import org.glite.voms.VOMSValidator;
-import org.glite.voms.ac.ACValidator;
-import org.glite.voms.ac.VOMSTrustStore;
+import org.italiangrid.voms.VOMSAttribute;
+import org.italiangrid.voms.VOMSValidators;
+import org.italiangrid.voms.ac.VOMSACValidator;
 
 import eu.emi.security.authn.x509.impl.CertificateUtils;
 import eu.emi.security.authn.x509.proxy.ProxyCSR;
@@ -91,8 +91,6 @@ public class DelegationExecutor extends AbstractCommandExecutor {
 
     /** Key size being used. */
     private int keySize = 2048;
-    private ACValidator acValidator;
-    private VOMSTrustStore vomsStore = null;
 
     public static final String DELEGATION_PURGE_RATE = "DELEGATION_PURGE_RATE";
     public static final String CREAM_SANDBOX_DIR = "CREAM_SANDBOX_DIR";
@@ -171,7 +169,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
         ArrayList<String> vomsAttributeList = new ArrayList<String>(0);
 
         for (VOMSAttribute vomsAttr : vomsAttributes) {
-            vomsAttributeList.addAll(vomsAttr.getFullyQualifiedAttributes());
+            vomsAttributeList.addAll(vomsAttr.getFQANs());
         }
 
         DelegationRequest delegationRequest = null;
@@ -216,10 +214,6 @@ public class DelegationExecutor extends AbstractCommandExecutor {
             logger.error("cannot get instance of DelegationManager: " + t.getMessage());
         }
 
-        if (vomsStore != null) {
-            vomsStore.stopRefresh();
-        }
-
         logger.info("destroyed!");
     }
 
@@ -237,11 +231,11 @@ public class DelegationExecutor extends AbstractCommandExecutor {
                     "; localUser=" + getParameterValueAsString(command, DelegationCommand.LOCAL_USER) + "] not found!");
         }
         
-        String delegationId = delegation.getId();
-        String dn = delegation.getDN();
-        String userId = delegation.getUserId();
+        //String delegationId = delegation.getId();
+        //String dn = delegation.getDN();
+        //String userId = delegation.getUserId();
         String localUser = delegation.getLocalUser();
-        String localUserGroup = delegation.getLocalUserGroup();
+        //String localUserGroup = delegation.getLocalUserGroup();
 
         logger.debug("removing the delegation from sandbox " + delegation.toString());
         
@@ -439,11 +433,12 @@ public class DelegationExecutor extends AbstractCommandExecutor {
 
         String userDN = getParameterValueAsString(command, DelegationCommand.USER_DN);
         String originalString = userDN;
+        @SuppressWarnings("unchecked")
         List<VOMSAttribute> vomsAttributes = (List<VOMSAttribute>) getParameterValue(command, DelegationCommand.VOMS_ATTRIBUTES);
 
         // Generate a delegation id from the client DN and VOMS attributes
         for (VOMSAttribute vomsAttr : vomsAttributes) {
-            for (String attr : (List<String>) vomsAttr.getFullyQualifiedAttributes()) {
+            for (String attr : vomsAttr.getFQANs()) {
                 originalString += attr;
             }
         }
@@ -538,6 +533,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
         String userDN = getParameterValueAsString(command, DelegationCommand.USER_DN);
         String localUser = getParameterValueAsString(command, DelegationCommand.LOCAL_USER);
         X509Certificate userCertificate = (X509Certificate) getParameterValue(command, DelegationCommand.USER_CERTIFICATE);
+        @SuppressWarnings("unchecked")
         List<VOMSAttribute> vomsAttributes = (List<VOMSAttribute>) getParameterValue(command, DelegationCommand.VOMS_ATTRIBUTES);
         String certificateRequest = createAndStoreCertificateRequest(userCertificate, delegationId, userDN, localUser, vomsAttributes);
 
@@ -595,16 +591,6 @@ public class DelegationExecutor extends AbstractCommandExecutor {
                 }
             } else {
                 throw new CommandExecutorException("Datasource \"" + dataSourceName + "\" not found!");
-            }
-
-            try {
-                vomsStore = new PKIStore(PKIStore.DEFAULT_VOMSDIR, PKIStore.TYPE_VOMSDIR, true);
-                VOMSValidator.setTrustStore(vomsStore);
-
-                acValidator = ACValidator.getInstance(vomsStore);
-                logger.info("VOMS store initialized");
-            } catch(Exception ex) {
-                throw new CommandExecutorException("Cannot configure VOMS support");
             }
 
             try {
@@ -884,22 +870,30 @@ public class DelegationExecutor extends AbstractCommandExecutor {
         HashMap<String, List<String>> proxyVOAttrs = new HashMap<String, List<String>>(0);
         List<String> vomsAttrituteList = new ArrayList<String>(0);
 
-        VOMSValidator mainValidator = new VOMSValidator(certChain, acValidator);
-        mainValidator.validate();
-
-        for (VOMSAttribute vomsAttr : (List<VOMSAttribute>) mainValidator.getVOMSAttributes()) {
+        VOMSResultCollector collector = new VOMSResultCollector();
+        VOMSACValidator validator = VOMSValidators.newValidator(AuthorizationModule.vomsStore,
+                AuthorizationModule.validator, collector);
+        List<VOMSAttribute> vomsList = validator.validate(certChain);
+        
+        if (collector.size() > 0) {
+            StringBuffer eBuff = new StringBuffer("Cannot validate proxy ");
+            eBuff.append(delegationId).append("\n").append(collector.toString());
+            throw new CommandException(eBuff.toString());
+        }
+        
+        for (VOMSAttribute vomsAttr : vomsList) {
             buff.append("\"; VO=\"").append(vomsAttr.getVO());
             buff.append("\"; AC issuer=\"").append(vomsAttr.getIssuer());
             buff.append("\"; VOMS attributes={ ");
 
-            for (String attr : (List<String>) vomsAttr.getFullyQualifiedAttributes()) {
+            for (String attr : vomsAttr.getFQANs()) {
                 buff.append(attr).append(", ");
                 vomsAttrituteList.add(attr);
             }
 
             buff.replace(buff.length()-2, buff.length()-1, " }");
 
-            proxyVOAttrs.put(vomsAttr.getVO(), vomsAttr.getFullyQualifiedAttributes());
+            proxyVOAttrs.put(vomsAttr.getVO(), vomsAttr.getFQANs());
         }
 
         buff.append("]");
@@ -992,6 +986,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
         }
 
         X509Certificate userCertificate = (X509Certificate) getParameterValue(command, DelegationCommand.USER_CERTIFICATE);
+        @SuppressWarnings("unchecked")
         List<VOMSAttribute> vomsAttributes = (List<VOMSAttribute>) getParameterValue(command, DelegationCommand.VOMS_ATTRIBUTES);
 
         String certificateRequest = createAndStoreCertificateRequest(userCertificate, delegation.getId(), delegation.getDN(), delegation.getLocalUser(), vomsAttributes);

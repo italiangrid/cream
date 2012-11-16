@@ -202,9 +202,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.glite.voms</groupId>
+      <groupId>org.italiangrid</groupId>
       <artifactId>voms-api-java</artifactId>
-      <version>${voms.version}</version>
+      <version>${vomsapij.version}</version>
       <scope>compile</scope>
     </dependency>
 

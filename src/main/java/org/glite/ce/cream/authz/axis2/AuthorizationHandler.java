@@ -32,11 +32,12 @@ import org.apache.axis2.context.MessageContext;
 import org.apache.axis2.context.OperationContext;
 import org.apache.axis2.description.AxisOperation;
 import org.apache.log4j.Logger;
-import org.glite.ce.commonj.configuration.CommonServiceConfig;
-import org.glite.ce.cream.configuration.ServiceConfig;
 import org.glite.ce.creamapi.ws.cream2.types.AuthorizationFault;
 import org.glite.ce.security.delegation.DelegationException;
 
+/*
+ * TODO update to ES 1.16
+ */
 public class AuthorizationHandler
     extends org.glite.ce.commonj.authz.axis2.AuthorizationHandler {
 
@@ -163,12 +164,6 @@ public class AuthorizationHandler
         }
 
         return new AxisFault(faultReason);
-    }
-
-    protected CommonServiceConfig getCommonConfiguration() {
-
-        return ServiceConfig.getConfiguration();
-
     }
 
     protected QName getOperation(MessageContext context) {
