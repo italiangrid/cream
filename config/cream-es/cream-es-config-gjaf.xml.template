@@ -31,6 +31,8 @@
       <parameter name="COPY_RETRY_COUNT_OSB" value="6" />
       <parameter name="COPY_RETRY_FIRST_WAIT_OSB" value="300" /> <!-- sec. -->
       <parameter name="LIMIT_FOR_LIST_ACTIVITIES" value="1000" />
+      <parameter name="BDII_URI" value="changeme"/> <!-- example: value="ldap://cream-xx.pd.infn.it:2170" -->
+      <parameter name="BDII_RATE" value="60" /> <!-- numites -->
   </commandexecutor>
 
   <commandexecutor id="DelegationExecutor"
@@ -91,7 +93,7 @@
       <parameter name="glexec_probe_cmd"
                  value="/usr/bin/id" />
       <parameter name="methods"
-                 value="GetDelegationInfo, InitDelegation, PutDelegation, CreateActivity" /> 
+                 value="CreateActivity, putProxy, getProxyReq, getNewProxyRequest, renewProxyReq, getTerminationTime, getNewProxyReq" /> 
     </plugin>
     
     <plugin name="bannerpdp"
