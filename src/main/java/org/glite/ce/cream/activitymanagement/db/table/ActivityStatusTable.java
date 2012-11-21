@@ -125,8 +125,9 @@ public class ActivityStatusTable implements ActivityStatusTableInterface {
     public ListActivitiesResult executeListActivities(XMLGregorianCalendar fromDate, XMLGregorianCalendar toDate, List<ActivityStatus> statusList, int limit, String userId, Connection connection)
             throws SQLException {
         logger.debug("Begin executeListActivities");
-        ListActivitiesResult listActivitiesResult = null;
+        ListActivitiesResult listActivitiesResult = new ListActivitiesResult();
         CallableStatement selectListActivitiesCS = null;
+        
         try {
             selectListActivitiesCS = connection.prepareCall(selectListActivitiesSP);
             if (fromDate != null) {
@@ -152,21 +153,9 @@ public class ActivityStatusTable implements ActivityStatusTableInterface {
             ResultSet resultSet = null;
             List<String> activityIdList = new ArrayList<String>(0);
             int activityToBeFound = limit+1;
-            while ((index<statusList.size()) && (activityToBeFound>0)) {
-                activityStatus = statusList.get(index);
-                //Status
-                statusString = activityStatus.getStatusName().getName();    
+            
+            if (statusList == null || statusList.size() == 0) {
                 selectListActivitiesCS.setString(3, statusString);
-                
-                //StatusAttributes
-                statusAttributeNameList = activityStatus.getStatusAttributes();
-                if (statusAttributeNameList != null) {
-                    statusAttributeNameListStringBuffer = new StringBuffer();
-                    for (StatusAttributeName statusAttributeName : statusAttributeNameList) {
-                        statusAttributeNameListStringBuffer.append(statusAttributeName.getName() + ", ");
-                    }
-                    statusAttributeNameListString = statusAttributeNameListStringBuffer.substring(1);
-                }
                 selectListActivitiesCS.setString(4, statusAttributeNameListString);
                 selectListActivitiesCS.setInt(6, activityToBeFound); //trick
                 
@@ -177,9 +166,38 @@ public class ActivityStatusTable implements ActivityStatusTableInterface {
                         activityToBeFound--;
                     }
                 }
+            } else {
+                while ((index<statusList.size()) && (activityToBeFound>0)) {
+                    activityStatus = statusList.get(index++);
+                    statusAttributeNameListString = null;
+                    //Status
+                    statusString = activityStatus.getStatusName().getName();    
+                    selectListActivitiesCS.setString(3, statusString);
+
+                    //StatusAttributes
+                    statusAttributeNameList = activityStatus.getStatusAttributes();
+                    if (statusAttributeNameList != null && statusAttributeNameList.size() > 0) {
+                        statusAttributeNameListStringBuffer = new StringBuffer();
+                        for (StatusAttributeName statusAttributeName : statusAttributeNameList) {
+                            statusAttributeNameListStringBuffer.append(", '").append(statusAttributeName.getName()).append("'");
+                        }
+                        statusAttributeNameListString = statusAttributeNameListStringBuffer.substring(2);
+                    } 
+
+                    selectListActivitiesCS.setString(4, statusAttributeNameListString);
+                    selectListActivitiesCS.setInt(6, activityToBeFound); //trick
+
+                    if (selectListActivitiesCS.execute()) {
+                        resultSet = selectListActivitiesCS.getResultSet();
+                        while ((resultSet.next()) && (activityToBeFound>0)) {
+                            activityIdList.add(resultSet.getString(ActivityStatusTableInterface.ACTIVITY_ID_LABEL));
+                            activityToBeFound--;
+                        }
+                    }
+                }
             }
+            
             if (activityIdList.size()>0) {
-                listActivitiesResult = new ListActivitiesResult();
                 if (activityIdList.size() > limit) { 
                     activityIdList.remove(limit); //see trick
                     listActivitiesResult.setIsTruncated(true);

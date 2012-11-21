@@ -26,7 +26,6 @@ package org.glite.ce.cream.blahmanagement;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -354,24 +353,24 @@ public class BLAHClient {
     }
 
     public void setPrefix(String prefix) {
-        String defaulprefix = "cream_";
+        String defaultPrefix = "crxxx_";
 
         if (prefix != null) {
             if (prefix.length() != 6) {
-                logger.warn("the prefix must be 6 chars long, usign the default value: " + defaulprefix);
-                prefix = defaulprefix;
+                logger.warn("the prefix must be 6 chars long, usign the default value: " + defaultPrefix);
+                prefix = defaultPrefix;
             } else if (!prefix.startsWith("cr")) {
-                logger.warn("the prefix must start with \"cr\", using the default value: " + defaulprefix + ")");
-                prefix = defaulprefix;
+                logger.warn("the prefix must start with \"cr\", using the default value: " + defaultPrefix + ")");
+                prefix = defaultPrefix;
             } else if (!prefix.endsWith("_")) {
-                logger.warn("the prefix must end with \'_\', using the default value: " + defaulprefix + ")");
-                prefix = defaulprefix;
+                logger.warn("the prefix must end with \'_\', using the default value: " + defaultPrefix + ")");
+                prefix = defaultPrefix;
             } else {
                 this.prefix = prefix;
             }
         } else {
-            logger.warn("prefix not specified, using the default value: " + defaulprefix + ")");
-            prefix = defaulprefix;
+            logger.warn("prefix not specified, using the default value: " + defaultPrefix + ")");
+            prefix = defaultPrefix;
         }
     }
 
