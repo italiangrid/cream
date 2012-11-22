@@ -35,9 +35,6 @@ import org.apache.log4j.Logger;
 import org.glite.ce.creamapi.ws.cream2.types.AuthorizationFault;
 import org.glite.ce.security.delegation.DelegationException;
 
-/*
- * TODO update to ES 1.16
- */
 public class AuthorizationHandler
     extends org.glite.ce.commonj.authz.axis2.AuthorizationHandler {
 
@@ -52,8 +49,6 @@ public class AuthorizationHandler
     private static final String ES_ACTIVITY_MANAGE_NS = "http://www.eu-emi.eu/es/2010/12/activitymanagement";
 
     private static final String ES_CREATE_NS = "http://www.eu-emi.eu/es/2010/12/creation";
-
-    private static final String ES_DELEGATION_NS = "http://www.eu-emi.eu/es/2010/12/delegation";
 
     private static final String ES_RESOURCES_NS = "http://www.eu-emi.eu/es/2010/12/resourceinfo";
 
@@ -126,16 +121,6 @@ public class AuthorizationHandler
             } else if (operation.getNamespaceURI().startsWith(ES_ACTIVITY_MANAGE_NS)) {
 
                 org.glite.ce.creamapi.ws.es.activitymanagement.types.AccessControlFault accessFault = new org.glite.ce.creamapi.ws.es.activitymanagement.types.AccessControlFault();
-                accessFault.setDescription(message);
-                accessFault.setFailureCode(0);
-                accessFault.setMessage(faultReason);
-                accessFault.setTimestamp(Calendar.getInstance());
-
-                faultDetail = accessFault.getOMElement(null, soapFactory);
-
-            } else if (operation.getNamespaceURI().startsWith(ES_DELEGATION_NS)) {
-
-                org.glite.ce.creamapi.ws.es.delegation.types.AccessControlFault accessFault = new org.glite.ce.creamapi.ws.es.delegation.types.AccessControlFault();
                 accessFault.setDescription(message);
                 accessFault.setFailureCode(0);
                 accessFault.setMessage(faultReason);

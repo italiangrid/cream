@@ -18,8 +18,18 @@
 
 package org.glite.ce.cream.client.es;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringReader;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,17 +41,20 @@ import java.util.StringTokenizer;
 
 import org.apache.axis2.AxisFault;
 import org.apache.commons.httpclient.protocol.Protocol;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.openssl.PEMReader;
 import org.glite.ce.cream.client.CmdLineParser;
 import org.glite.ce.creamapi.ws.es.activityinfo.ActivityInfoServiceStub;
 import org.glite.ce.creamapi.ws.es.activitymanagement.ActivityManagementServiceStub;
 import org.glite.ce.creamapi.ws.es.creation.ActivityCreationServiceStub;
 import org.glite.ce.creamapi.ws.es.delegation.DelegationServiceStub;
 import org.glite.ce.creamapi.ws.es.resourceinfo.ResourceInfoServiceStub;
-import org.glite.security.delegation.GrDPX509Util;
-import org.glite.security.delegation.GrDProxyDlgorOptions;
-import org.glite.security.delegation.GrDProxyGenerator;
-import org.glite.security.trustmanager.ContextWrapper;
-import org.glite.security.trustmanager.axis2.AXIS2SocketFactory;
+
+import eu.emi.security.authn.x509.impl.CertificateUtils;
+import eu.emi.security.authn.x509.impl.PEMCredential;
+import eu.emi.security.authn.x509.proxy.ProxyGenerator;
+import eu.emi.security.authn.x509.proxy.ProxyRequestOptions;
+import eu.emi.security.canl.axis2.CANLAXIS2SocketFactory;
 
 public abstract class ActivityCommand {
     public static final String ADL = "ADL";
@@ -49,7 +62,6 @@ public abstract class ActivityCommand {
     public static final String DELEGATION_ID = "DELEGATION_ID";
     public static final String DESTROY = "DESTROY";
     public static final String EPR = "EPR";
-//    public static final String FROM_DATE = "FROM_DATE";
     public static final String GET_ACTIVITY_INFO = "GET_ACTIVITY_INFO";
     public static final String GET_ACTIVITY_STATUS = "GET_ACTIVITY_STATUS";
     public static final String GET_INTERFACE_VERSION = "GET_INTERFACE_VERSION";
@@ -58,9 +70,7 @@ public abstract class ActivityCommand {
     public static final String GET_RESOURCE_INFO = "GET_RESOURCE_INFO";
     public static final String GET_TERMINATION_TIME = "GET_TERMINATION_TIME";
     public static final String GET_VERSION = "GET_VERSION";
-//    public static final String LIMIT = "LIMIT";
     public static final String LIST_ACTIVITIES = "LIST_ACTIVITIES";
-    // public static final String NOTIFY_MESSAGE_TYPE = "NOTIFY_MESSAGE_TYPE";
     public static final String NOTIFY_SERVICE = "NOTIFY_SERVICE";
     public static final String PAUSE_ACTIVITY = "PAUSE_ACTIVITY";
     public static final String PROXY = "PROXY";
@@ -68,7 +78,6 @@ public abstract class ActivityCommand {
     public static final String RENEW_PROXY_REQUEST = "RENEW_PROXY_REQUEST";
     public static final String RESUME_ACTIVITY = "RESUME_ACTIVITY";
     public static final String STATUS = "STATUS";
-//    public static final String TO_DATE = "TO_DATE";
     public static final String WIPE_ACTIVITY = "WIPE_ACTIVITY";
 
     private List<String> activityDescFileList = null;
@@ -88,7 +97,6 @@ public abstract class ActivityCommand {
     private boolean isGetTerminationTime = false;
     private boolean isGetVersion = false;
     private boolean isListActivities = false;
-//    private boolean isNotifyService = false;
     private boolean isPauseActivity = false;
     private boolean isQueryResourceInfo = false;
     private boolean isRenew = false;
@@ -340,7 +348,6 @@ public abstract class ActivityCommand {
         CmdLineParser.Option wipeOpt = null;
         CmdLineParser.Option getStatusOpt = null;
         CmdLineParser.Option notifyServiceOpt = null;
-        // CmdLineParser.Option notifyMessageTypeOpt = null;
         CmdLineParser.Option listActivitiesOpt = null;
         CmdLineParser.Option getResourceInfoOpt = null;
         CmdLineParser.Option queryResourceInfoOpt = null;
@@ -358,18 +365,6 @@ public abstract class ActivityCommand {
         if (options.contains(STATUS)) {
             statusOpt = parser.addStringOption('s', "status");
         }
-
-//        if (options.contains(FROM_DATE)) {
-//            fromOpt = parser.addStringOption('f', "fromDate");
-//        }
-//
-//        if (options.contains(TO_DATE)) {
-//            toOpt = parser.addStringOption('t', "toDate");
-//        }
-//
-//        if (options.contains(LIMIT)) {
-//            limitOpt = parser.addIntegerOption("limit");
-//        }
 
         if (options.contains(GET_ACTIVITY_INFO)) {
             activityInfoOpt = parser.addBooleanOption('i', "info");
@@ -443,10 +438,6 @@ public abstract class ActivityCommand {
             getStatusOpt = parser.addBooleanOption('s', "getStatus");
         }
 
-        // if (options.contains(NOTIFY_MESSAGE_TYPE)) {
-        // notifyMessageTypeOpt = parser.addStringOption('m', "message");
-        // }
-
         try {
             parser.parse(args);
         } catch (CmdLineParser.OptionException e) {
@@ -492,40 +483,6 @@ public abstract class ActivityCommand {
                 }
             }
         }
-
-//        if (fromOpt != null) {
-//            String fromDateStr = (String) parser.getOptionValue(fromOpt, null);
-//            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
-//
-//            if (fromDateStr != null) {
-//                try {
-//                    fromDate = new GregorianCalendar();
-//                    fromDate.setTime(df.parse(fromDateStr));
-//                } catch (ParseException e) {
-//                    fromDate = null;
-//                    System.err.println("Invalid --from date " + fromDateStr + "; ignored");
-//                }
-//            }
-//        }
-//
-//        if (toOpt != null) {
-//            String toDateStr = (String) parser.getOptionValue(toOpt, null);
-//            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
-//
-//            if (toDateStr != null) {
-//                try {
-//                    toDate = new GregorianCalendar();
-//                    toDate.setTime(df.parse(toDateStr));
-//                } catch (ParseException e) {
-//                    toDate = null;
-//                    System.err.println("Invalid --end date " + toDateStr + "; ignored");
-//                }
-//            }
-//        }
-
-//        if (limitOpt != null) {
-//            limit = ((Integer) parser.getOptionValue(limitOpt, -1)).intValue();
-//        }
 
         if (renewOpt != null) {
             isRenew = ((Boolean) parser.getOptionValue(renewOpt, Boolean.FALSE)).booleanValue();
@@ -602,11 +559,6 @@ public abstract class ActivityCommand {
         if (getResourceInfoOpt != null) {
             isGetResourceInfo = ((Boolean) parser.getOptionValue(getResourceInfoOpt, Boolean.FALSE)).booleanValue();
         }
-
-        // if (notifyMessageTypeOpt != null) {
-        // notifyMessageType = (String)
-        // parser.getOptionValue(notifyMessageTypeOpt);
-        // }
 
         if (getVersionOpt != null) {
             isGetVersion = (((Boolean) parser.getOptionValue(getVersionOpt, Boolean.FALSE)).booleanValue());
@@ -731,10 +683,6 @@ public abstract class ActivityCommand {
         this.isGetDelegationInfo = isGetDelegationInfo;
     }
 
-//    public void setIsNotifyService(boolean isNotifyService) {
-//        this.isNotifyService = isNotifyService;
-//    }
-
     public void setIsPauseActivity(boolean isPauseActivity) {
         this.isPauseActivity = isPauseActivity;
     }
@@ -747,60 +695,54 @@ public abstract class ActivityCommand {
         this.isResumeActivity = isResumeActivity;
     }
 
-    // public void setNotifyMessageType(String notifyMessageType) {
-    // this.notifyMessageType = notifyMessageType;
-    // }
-
     public void setQuery(String query) {
         this.query = query;
     }
 
     private void setSSLProperties() throws AxisFault {
-        Protocol.registerProtocol("https", new Protocol("https", new AXIS2SocketFactory(), 8443));
+        Protocol.registerProtocol("https", new Protocol("https", new CANLAXIS2SocketFactory(), 8443));
 
         Properties sslConfig = new Properties();
-        sslConfig.put(ContextWrapper.SSL_PROTOCOL, "SSLv3");
-        sslConfig.put(ContextWrapper.CA_FILES, "/etc/grid-security/certificates/*.0");
-        sslConfig.put(ContextWrapper.CRL_ENABLED, "true");
-        sslConfig.put(ContextWrapper.CRL_FILES, "/etc/grid-security/certificates/*.r0");
-        sslConfig.put(ContextWrapper.CRL_UPDATE_INTERVAL, "0s");
+        sslConfig.put("truststore", "/etc/grid-security/certificates");
+        sslConfig.put("crlcheckingmode", "ifvalid");
 
         if (proxy != null) {
-            sslConfig.put(ContextWrapper.CREDENTIALS_PROXY_FILE, proxy);
+            sslConfig.put("proxy", proxy);
         } else {
+            
             String confFileName = System.getProperty("user.home") + "/.glite/dlgor.properties";
-            GrDProxyDlgorOptions dlgorOpt;
+            Properties dlgorOpt = null;
             try {
-                dlgorOpt = new GrDProxyDlgorOptions(confFileName);
+                dlgorOpt = this.loadProperties(confFileName);
             } catch (IOException e) {
                 throw new AxisFault(e.getMessage());
             }
 
-            String proxyFilename = dlgorOpt.getDlgorProxyFile();
+            String proxyFilename = dlgorOpt.getProperty("issuerProxyFile");
 
             if (proxyFilename != null) {
-                sslConfig.put(ContextWrapper.CREDENTIALS_PROXY_FILE, proxyFilename);
+                sslConfig.put("proxy", proxyFilename);
             } else {
-                String certFilename = dlgorOpt.getDlgorCertFile();
+                String certFilename = dlgorOpt.getProperty("issuerCertFile");
                 if (certFilename == null || "".equals(certFilename)) {
                     throw new AxisFault("Missing user credentials: issuerCertFile not found in " + confFileName);
                 }
 
-                String keyFilename = dlgorOpt.getDlgorKeyFile();
-                if (certFilename == null || "".equals(certFilename)) {
+                String keyFilename = dlgorOpt.getProperty("issuerKeyFile");
+                if (keyFilename == null || "".equals(keyFilename)) {
                     throw new AxisFault("Missing user credentials: issuerKeyFile not found in " + confFileName);
                 }
 
-                String passwd = dlgorOpt.getDlgorPass();
+                String passwd = dlgorOpt.getProperty("issuerPass");
                 passwd = passwd == null ? "" : passwd;
 
-                sslConfig.put(ContextWrapper.CREDENTIALS_CERT_FILE, certFilename);
-                sslConfig.put(ContextWrapper.CREDENTIALS_KEY_FILE, keyFilename);
-                sslConfig.put(ContextWrapper.CREDENTIALS_KEY_PASSWD, passwd);
+                sslConfig.put("cert", certFilename);
+                sslConfig.put("key", keyFilename);
+                sslConfig.put("password", passwd);
             }
         }
 
-        AXIS2SocketFactory.setCurrentProperties(sslConfig);
+        CANLAXIS2SocketFactory.setCurrentProperties(sslConfig);
     }
 
     public void setStatus(List<String> statusList) {
@@ -815,26 +757,103 @@ public abstract class ActivityCommand {
         this.isWipeActivity = isWipeActivity;
     }
 
-    protected String signRequest(String certReq) throws IOException {
-        String strX509CertChain = null;
-        String proxyFile = proxy;
-
-        if (proxyFile == null) {
-            String confFileName = System.getProperty("user.home") + "/.glite/dlgor.properties";
-            GrDProxyDlgorOptions dlgorOpt = new GrDProxyDlgorOptions(confFileName);
-            proxyFile = dlgorOpt.getDlgorCertFile();
+    protected String signRequest(String certReq, String delegationID) 
+            throws IOException, KeyStoreException, CertificateException,
+            InvalidKeyException, SignatureException, 
+            NoSuchAlgorithmException, NoSuchProviderException {
+        
+        String confFileName = System.getProperty("user.home") + "/.glite/dlgor.properties";
+        Properties dlgorOpt = this.loadProperties(confFileName);
+        
+        X509Certificate[] parentChain = null;
+        PrivateKey pKey = null;
+        
+        String proxyFilename = dlgorOpt.getProperty("issuerProxyFile", "");
+        String certFilename = dlgorOpt.getProperty("issuerCertFile", "");
+        String keyFilename = dlgorOpt.getProperty("issuerKeyFile", "");
+        String passwd = dlgorOpt.getProperty("issuerPass", "");
+        
+        if (proxyFilename.length() == 0) {
+            
+            if (certFilename.length() == 0) {
+                throw new AxisFault("Missing user credentials: issuerCertFile not found in " + confFileName);
+            }
+            
+            if (keyFilename.length() == 0) {
+                throw new AxisFault("Missing user credentials: issuerKeyFile not found in " + confFileName);
+            }
+            
+            char[] tmppwd = null;
+            if (passwd.length() != 0) {
+                tmppwd = passwd.toCharArray();
+            }
+            
+            FileInputStream inStream = null;
+            try {
+                inStream = new FileInputStream(keyFilename);
+                pKey = CertificateUtils.loadPrivateKey(inStream, CertificateUtils.Encoding.PEM, tmppwd);
+            } finally {
+                if (inStream != null) {
+                    inStream.close();
+                }
+            }
+                        
+            inStream = null;
+            try {
+                inStream = new FileInputStream(certFilename);
+                parentChain = CertificateUtils.loadCertificateChain(inStream, CertificateUtils.Encoding.PEM);
+            } finally {
+                if (inStream != null) {
+                    inStream.close();
+                }
+            }
+            
+        }else{
+            
+            FileInputStream inStream = null;
+            try {
+                
+                inStream = new FileInputStream(proxyFilename);
+                PEMCredential credentials = new PEMCredential(inStream, null);
+                pKey = credentials.getKey();
+                parentChain = credentials.getCertificateChain();
+                
+            } finally {
+                if (inStream != null) {
+                    inStream.close();
+                }
+            }
+            
         }
-
+            
+        
+        PEMReader pemReader = new PEMReader(new StringReader(certReq));
+        PKCS10CertificationRequest proxytReq = (PKCS10CertificationRequest) pemReader.readObject();
+        ProxyRequestOptions csrOpt = new ProxyRequestOptions(parentChain, proxytReq);
+        
+        X509Certificate[] certChain = ProxyGenerator.generate(csrOpt, pKey);
+        
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        for (X509Certificate tmpcert : certChain) {
+            CertificateUtils.saveCertificate(outStream, tmpcert, CertificateUtils.Encoding.PEM);
+        }
+        
+        return outStream.toString();
+    }
+     
+    private Properties loadProperties(String filename)  throws  IOException {
+        Properties dlgorOpt = new Properties();
+        
+        FileInputStream inStream = null;
         try {
-            GrDProxyGenerator proxyGenerator = new GrDProxyGenerator();
-
-            byte[] x509Cert = proxyGenerator.x509MakeProxyCert(certReq.getBytes(), GrDPX509Util.getFilesBytes(new File(proxyFile)), "null");
-
-            strX509CertChain = new String(x509Cert);
-        } catch (Exception e) {
-            e.printStackTrace();
+            inStream = new FileInputStream(filename);
+            dlgorOpt.load(inStream);
+        } finally {
+            if (inStream != null) {
+                    inStream.close();
+            }
         }
-
-        return strX509CertChain;
+        
+        return dlgorOpt;
     }
 }

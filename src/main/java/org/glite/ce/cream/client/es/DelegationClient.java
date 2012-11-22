@@ -23,6 +23,8 @@
  */
 
 package org.glite.ce.cream.client.es;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.FactoryConfigurationError;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -30,15 +32,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.axis2.AxisFault;
-import org.glite.ce.creamapi.ws.es.delegation.AccessControlFault;
-import org.glite.ce.creamapi.ws.es.delegation.InternalBaseFault;
-import org.glite.ce.creamapi.ws.es.delegation.InternalServiceDelegationFault;
-import org.glite.ce.creamapi.ws.es.delegation.UnknownDelegationIDFault;
-import org.glite.ce.creamapi.ws.es.delegation.types.GetDelegationInfo;
-import org.glite.ce.creamapi.ws.es.delegation.types.GetDelegationInfoResponse;
-import org.glite.ce.creamapi.ws.es.delegation.types.InitDelegation;
-import org.glite.ce.creamapi.ws.es.delegation.types.InitDelegationResponse;
-import org.glite.ce.creamapi.ws.es.delegation.types.PutDelegation;
+import org.glite.ce.creamapi.ws.es.delegation.DelegationExceptionException;
+import org.glite.ce.creamapi.ws.es.delegation.Destroy;
+import org.glite.ce.creamapi.ws.es.delegation.GetInterfaceVersion;
+import org.glite.ce.creamapi.ws.es.delegation.GetInterfaceVersionResponse;
+import org.glite.ce.creamapi.ws.es.delegation.GetNewProxyReq;
+import org.glite.ce.creamapi.ws.es.delegation.GetNewProxyReqResponse;
+import org.glite.ce.creamapi.ws.es.delegation.GetProxyReq;
+import org.glite.ce.creamapi.ws.es.delegation.GetProxyReqResponse;
+import org.glite.ce.creamapi.ws.es.delegation.GetTerminationTime;
+import org.glite.ce.creamapi.ws.es.delegation.GetTerminationTimeResponse;
+import org.glite.ce.creamapi.ws.es.delegation.GetVersion;
+import org.glite.ce.creamapi.ws.es.delegation.GetVersionResponse;
+import org.glite.ce.creamapi.ws.es.delegation.PutProxy;
+import org.glite.ce.creamapi.ws.es.delegation.RenewProxyReq;
+import org.glite.ce.creamapi.ws.es.delegation.RenewProxyReqResponse;
 
 public class DelegationClient extends ActivityCommand {
 
@@ -47,146 +55,148 @@ public class DelegationClient extends ActivityCommand {
     }
 
     public void execute() {
-        if (isGetDelegationInfo()) {
-            if (getIdList().size() == 0) {
+        if (isGetVersion()) {
+            try {
+                GetVersionResponse response = getDelegationServiceStub().getVersion(new GetVersion());
+                System.out.println("version: " + response.getGetVersionReturn());
+            } catch (AxisFault e) {
+                System.out.println("AxisFault: " + e.getMessage());
+            } catch (RemoteException e) {
+                System.out.println("RemoteException: " + e.getMessage());
+            } catch (DelegationExceptionException e) {
+                System.out.println("(DelegationException: " + e.getMessage());
+            } 
+        } else if (isGetInterfaceVersion()) {
+            try {
+                GetInterfaceVersionResponse response = getDelegationServiceStub().getInterfaceVersion(new GetInterfaceVersion());
+                System.out.println("version: " + response.getGetInterfaceVersionReturn());
+            } catch (AxisFault e) {
+                System.out.println("AxisFault: " + e.getMessage());
+            } catch (RemoteException e) {
+                System.out.println("RemoteException: " + e.getMessage());
+            } catch (DelegationExceptionException e) {
+                System.out.println("(DelegationException: " + e.getMessage());
+            }
+        } else if (isGetTerminationTime()) {
+            try {
+                GetTerminationTimeResponse response = getDelegationServiceStub().getTerminationTime(new GetTerminationTime());
+                System.out.println("time: " + response.getGetTerminationTimeReturn());
+            } catch (AxisFault e) {
+                System.out.println("AxisFault: " + e.getMessage());
+            } catch (RemoteException e) {
+                System.out.println("RemoteException: " + e.getMessage());
+            } catch (DelegationExceptionException e) {
+                System.out.println("(DelegationException: " + e.getMessage());
+            }           
+        } else if (isGetProxyRequest()) {
+            List<String> idList = getIdList();
+            if (idList.size() == 0) {
                 printUsage();
                 return;
             }
+            
+            try {
+                GetProxyReq req = new GetProxyReq();
+                req.setDelegationID(idList.get(0));
 
-            for (String delegationId : getIdList()) {
-                System.out.println("getting info about the delegation " + delegationId);
+                GetProxyReqResponse response = getDelegationServiceStub().getProxyReq(req);
+                System.out.println("request: " + response.getGetProxyReqReturn());
 
-                try {
-                    GetDelegationInfo getDelegationInfo = new GetDelegationInfo();
-                    getDelegationInfo.setDelegationID(delegationId);
+                PutProxy putProxyReq = new PutProxy();
+                putProxyReq.setDelegationID(idList.get(0));
+                putProxyReq.setProxy(signRequest(response.getGetProxyReqReturn()));
 
-                    GetDelegationInfoResponse response = getDelegationServiceStub().getDelegationInfo(getDelegationInfo);
-
-                    System.out.println("issuer = " + response.getIssuer());
-                    System.out.println("subject = " + response.getSubject());
-                    System.out.println("lifetime = " + response.getLifetime().getTime());
-                } catch (AxisFault e) {
-                    System.out.println(e.getMessage());
-                } catch (RemoteException e) {
-                    System.out.println(e.getMessage());
-                } catch (InternalBaseFault e) {
-                    System.out.println(e.getFaultMessage().getInternalBaseFault().getMessage());
-                } catch (AccessControlFault e) {
-                    System.out.println(e.getFaultMessage().getMessage());
-                } catch (UnknownDelegationIDFault e) {
-                    System.out.println(e.getFaultMessage().getMessage());
-                }
-            }
-        } else {
-            InitDelegation initDelegation = new InitDelegation();
-            initDelegation.setCredentialType("RFC3820");
-
-            if (isRenew()) {
-                if (getIdList().size() == 0) {
-                    printUsage();
-                    return;
-                }
-
-                for (String delegationId : getIdList()) {
-                    System.out.println("renewing the delegation " + delegationId);
-
-                    initDelegation.setRenewalID(delegationId);
-
-                    try {
-                        InitDelegationResponse response = getDelegationServiceStub().initDelegation(initDelegation);
-
-                        String csr = response.getCSR();
-                        String delegId = response.getDelegationID();
-
-                        if (delegId == null) {
-                            System.out.println("cannot get the delegationId!");
-                            System.exit(0);
-                        }
-
-                        if (csr == null) {
-                            System.out.println("cannot get the certificate request!");
-                            continue;
-                        }
-
-                        String credential = signRequest(csr, delegationId);
-
-                        PutDelegation putDelegation = new PutDelegation();
-                        putDelegation.setDelegationID(delegationId);
-                        putDelegation.setCredential(credential);
-
-                        System.out.println(getDelegationServiceStub().putDelegation(putDelegation).getPutDelegationResponse());
-                    } catch (AxisFault e) {
-                        System.out.println(e.getMessage());
-                    } catch (RemoteException e) {
-                        System.out.println(e.getMessage());
-                    } catch (InternalBaseFault e) {
-                        System.out.println(e.getFaultMessage().getInternalBaseFault().getMessage());
-                    } catch (AccessControlFault e) {
-                        System.out.println(e.getFaultMessage().getMessage());
-                    } catch (UnknownDelegationIDFault e) {
-                        System.out.println(e.getFaultMessage().getMessage());
-                    } catch (InternalServiceDelegationFault e) {
-                        System.out.println(e.getFaultMessage().getMessage());
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                    }
-                }
-            } else {
-                if (getIdList().size() > 0) {
-                    printUsage();
-                    return;
-                }
+                getDelegationServiceStub().putProxy(putProxyReq);
+            } catch (AxisFault e) {
+                System.out.println("AxisFault: " + e.getMessage());
+            } catch (RemoteException e) {
+                System.out.println("RemoteException: " + e.getMessage());
+            } catch (DelegationExceptionException e) {
+                System.out.println("(DelegationException: " + e.getMessage());
+            } catch (Exception e) {
+                System.out.println("(IOException: " + e.getMessage());
+            }            
+        } else if (isGetNewProxyRequest()) {
+            try {
+                GetNewProxyReqResponse response = getDelegationServiceStub().getNewProxyReq(new GetNewProxyReq());
+                System.out.println("id: " + response.getDelegationID());
+                //System.out.println("request: " + response.getProxyRequest());
                 
-                System.out.println("creating a new delegation...");
+                PutProxy putProxyReq = new PutProxy();
+                putProxyReq.setDelegationID(response.getDelegationID());
+                putProxyReq.setProxy(signRequest(response.getProxyRequest()));
 
-                try {
-                    InitDelegationResponse response = getDelegationServiceStub().initDelegation(initDelegation);
-                    String csr = response.getCSR();
-                    String delegationId = response.getDelegationID();
-
-                    if (delegationId == null) {
-                        System.out.println("cannot get the delegationId!");
-                        System.exit(0);
-                    }
-
-                    if (csr == null) {
-                        System.out.println("cannot get the certificate request!");
-                        System.exit(0);
-                    }
-
-                    System.out.println("delegationId = " + response.getDelegationID());
-                    String credential = signRequest(csr, delegationId);
-
-                    PutDelegation putDelegation = new PutDelegation();
-                    putDelegation.setDelegationID(delegationId);
-                    putDelegation.setCredential(credential);
-
-                    System.out.println(getDelegationServiceStub().putDelegation(putDelegation).getPutDelegationResponse());
-                } catch (AxisFault e) {
-                    System.out.println(e.getMessage());
-                } catch (RemoteException e) {
-                    System.out.println(e.getMessage());
-                } catch (InternalBaseFault e) {
-                    System.out.println(e.getFaultMessage().getInternalBaseFault().getMessage());
-                } catch (AccessControlFault e) {
-                    System.out.println(e.getFaultMessage().getMessage());
-                } catch (UnknownDelegationIDFault e) {
-                    System.out.println(e.getFaultMessage().getMessage());
-                } catch (InternalServiceDelegationFault e) {
-                    System.out.println(e.getFaultMessage().getMessage());
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                }
+                getDelegationServiceStub().putProxy(putProxyReq);
+            } catch (AxisFault e) {
+                System.out.println("AxisFault: " + e.getMessage());
+            } catch (RemoteException e) {
+                System.out.println("RemoteException: " + e.getMessage());
+            } catch (DelegationExceptionException e) {
+                System.out.println("(DelegationException: " + e.getMessage());
+            } catch (Exception e) {
+                System.out.println("(IOException: " + e.getMessage());
+            } 
+        } else if (isRenewProxyRequest()) {
+            List<String> idList = getIdList();
+            if (idList.size() == 0) {
+                printUsage();
+                return;
             }
+            
+            try {                
+                RenewProxyReq req = new RenewProxyReq();
+                req.setDelegationID(idList.get(0));
+                
+                RenewProxyReqResponse response = getDelegationServiceStub().renewProxyReq(req);
+                
+                PutProxy putProxyReq = new PutProxy();
+                putProxyReq.setDelegationID(idList.get(0));
+                putProxyReq.setProxy(signRequest(response.getRenewProxyReqReturn()));
+                getDelegationServiceStub().putProxy(putProxyReq);
+            } catch (AxisFault e) {
+                System.out.println("AxisFault: " + e.getMessage());
+            } catch (RemoteException e) {
+                System.out.println("RemoteException: " + e.getMessage());
+            } catch (DelegationExceptionException e) {
+                System.out.println("(DelegationException: " + e.getMessage());
+            }  catch (Exception e) {
+                System.out.println("(IOException: " + e.getMessage());
+            }      
+        } else if (isDestroy()) {
+            List<String> idList = getIdList();
+            if (idList.size() == 0) {
+                printUsage();
+                return;
+            }
+            
+            try {
+                Destroy req = new Destroy();
+                req.setDelegationID(idList.get(0));
+
+                getDelegationServiceStub().destroy(req);
+            } catch (AxisFault e) {
+                System.out.println("AxisFault: " + e.getMessage());
+            } catch (RemoteException e) {
+                System.out.println("RemoteException: " + e.getMessage());
+            } catch (DelegationExceptionException e) {
+                System.out.println("(DelegationException: " + e.getMessage());
+            }  
+        } else {
+            printUsage();
         }
     }
 
     public static void main(String[] args) {
-        List<String> options = new ArrayList<String>(8);
+        List<String> options = new ArrayList<String>(9);
         options.add(EPR);
         options.add(PROXY);
-        options.add(RENEW_DELEGATION);
-        options.add(GET_DELEGATION_INFO);
+        options.add(GET_INTERFACE_VERSION);
+        options.add(GET_NEW_PROXY_REQUEST);
+        options.add(GET_PROXY_REQUEST);
+        options.add(GET_TERMINATION_TIME);
+        options.add(GET_VERSION);
+        options.add(RENEW_PROXY_REQUEST);
+        options.add(DESTROY);
 
         new DelegationClient(args, options);
     }
