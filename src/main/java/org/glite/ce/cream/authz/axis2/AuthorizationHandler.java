@@ -34,6 +34,10 @@ import org.apache.axis2.description.AxisOperation;
 import org.apache.log4j.Logger;
 import org.glite.ce.creamapi.ws.cream2.types.AuthorizationFault;
 import org.glite.ce.security.delegation.DelegationException;
+ 	
+-/*
+- * TODO update to ES 1.16	  	
+- */
 
 public class AuthorizationHandler
     extends org.glite.ce.commonj.authz.axis2.AuthorizationHandler {
