@@ -128,7 +128,7 @@ public class ActivityCreationClient extends ActivityCommand {
             CreateActivity createActivity = CreateActivity.Factory.parse(xmlif.createXMLStreamReader(new FileReader(getIdArray()[0])));
 
             ActivityCreationResponseSequence_type1 sequence = null;
-            CreateActivityResponse response = getActivityCreationServiceStub().createActivity(createActivity);
+            CreateActivityResponse response = getCreationServiceStub().createActivity(createActivity);
             ActivityCreationResponse_type0[] activityResponse = response.getActivityCreationResponse();
 
             for (int i = 0; i < activityResponse.length; i++) {

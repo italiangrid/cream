@@ -46,7 +46,7 @@ import org.bouncycastle.openssl.PEMReader;
 import org.glite.ce.cream.client.CmdLineParser;
 import org.glite.ce.creamapi.ws.es.activityinfo.ActivityInfoServiceStub;
 import org.glite.ce.creamapi.ws.es.activitymanagement.ActivityManagementServiceStub;
-import org.glite.ce.creamapi.ws.es.creation.CreationServiceStub;
+import org.glite.ce.creamapi.ws.es.creation.ActivityCreationServiceStub;
 import org.glite.ce.creamapi.ws.es.delegation.DelegationServiceStub;
 
 import eu.emi.security.authn.x509.impl.CertificateUtils;
@@ -147,7 +147,7 @@ public abstract class ActivityCommand {
         return new ActivityManagementServiceStub(epr + "/ce-cream-es/services/ActivityManagementService");
     }
 
-    public CreationServiceStub getCreationServiceStub() throws AxisFault {
+    public ActivityCreationServiceStub getCreationServiceStub() throws AxisFault {
         if (epr == null) {
             throw new AxisFault("epr not specified!");
         }
@@ -156,7 +156,7 @@ public abstract class ActivityCommand {
             setSSLProperties();
         }
 
-        return new CreationServiceStub(epr + "/ce-cream-es/services/CreationService");
+        return new ActivityCreationServiceStub(epr + "/ce-cream-es/services/CreationService");
     }
 
     public DelegationServiceStub getDelegationServiceStub() throws AxisFault {
