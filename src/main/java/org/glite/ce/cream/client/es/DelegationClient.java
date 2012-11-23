@@ -23,30 +23,16 @@
  */
 
 package org.glite.ce.cream.client.es;
-import javax.xml.namespace.QName;
-import javax.xml.parsers.FactoryConfigurationError;
-
-import java.io.IOException;
 import java.rmi.RemoteException;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.axis2.AxisFault;
 import org.glite.ce.creamapi.ws.es.delegation.DelegationExceptionException;
-import org.glite.ce.creamapi.ws.es.delegation.Destroy;
-import org.glite.ce.creamapi.ws.es.delegation.GetInterfaceVersion;
-import org.glite.ce.creamapi.ws.es.delegation.GetInterfaceVersionResponse;
-import org.glite.ce.creamapi.ws.es.delegation.GetNewProxyReq;
 import org.glite.ce.creamapi.ws.es.delegation.GetNewProxyReqResponse;
-import org.glite.ce.creamapi.ws.es.delegation.GetProxyReq;
-import org.glite.ce.creamapi.ws.es.delegation.GetProxyReqResponse;
-import org.glite.ce.creamapi.ws.es.delegation.GetTerminationTime;
-import org.glite.ce.creamapi.ws.es.delegation.GetTerminationTimeResponse;
-import org.glite.ce.creamapi.ws.es.delegation.GetVersion;
-import org.glite.ce.creamapi.ws.es.delegation.GetVersionResponse;
-import org.glite.ce.creamapi.ws.es.delegation.PutProxy;
 import org.glite.ce.creamapi.ws.es.delegation.RenewProxyReq;
-import org.glite.ce.creamapi.ws.es.delegation.RenewProxyReqResponse;
 
 public class DelegationClient extends ActivityCommand {
 
@@ -57,8 +43,8 @@ public class DelegationClient extends ActivityCommand {
     public void execute() {
         if (isGetVersion()) {
             try {
-                GetVersionResponse response = getDelegationServiceStub().getVersion(new GetVersion());
-                System.out.println("version: " + response.getGetVersionReturn());
+                String version = getDelegationServiceStub().getVersion();
+                System.out.println("version: " + version);
             } catch (AxisFault e) {
                 System.out.println("AxisFault: " + e.getMessage());
             } catch (RemoteException e) {
@@ -68,8 +54,8 @@ public class DelegationClient extends ActivityCommand {
             } 
         } else if (isGetInterfaceVersion()) {
             try {
-                GetInterfaceVersionResponse response = getDelegationServiceStub().getInterfaceVersion(new GetInterfaceVersion());
-                System.out.println("version: " + response.getGetInterfaceVersionReturn());
+                String ifaceVersion = getDelegationServiceStub().getInterfaceVersion();
+                System.out.println("version: " + ifaceVersion);
             } catch (AxisFault e) {
                 System.out.println("AxisFault: " + e.getMessage());
             } catch (RemoteException e) {
@@ -78,9 +64,16 @@ public class DelegationClient extends ActivityCommand {
                 System.out.println("(DelegationException: " + e.getMessage());
             }
         } else if (isGetTerminationTime()) {
+            List<String> idList = getIdList();
+            if (idList.size() == 0) {
+                printUsage();
+                return;
+            }
+
             try {
-                GetTerminationTimeResponse response = getDelegationServiceStub().getTerminationTime(new GetTerminationTime());
-                System.out.println("time: " + response.getGetTerminationTimeReturn());
+                DateFormat dFormat = DateFormat.getInstance();
+                Date tmpDate = getDelegationServiceStub().getTerminationTime(idList.get(0)).getTime();
+                System.out.println("time: " + dFormat.format(tmpDate));
             } catch (AxisFault e) {
                 System.out.println("AxisFault: " + e.getMessage());
             } catch (RemoteException e) {
@@ -96,17 +89,12 @@ public class DelegationClient extends ActivityCommand {
             }
             
             try {
-                GetProxyReq req = new GetProxyReq();
-                req.setDelegationID(idList.get(0));
 
-                GetProxyReqResponse response = getDelegationServiceStub().getProxyReq(req);
-                System.out.println("request: " + response.getGetProxyReqReturn());
+                String certReq = getDelegationServiceStub().getProxyReq(idList.get(0));
+                System.out.println("request: " + certReq);
 
-                PutProxy putProxyReq = new PutProxy();
-                putProxyReq.setDelegationID(idList.get(0));
-                putProxyReq.setProxy(signRequest(response.getGetProxyReqReturn()));
-
-                getDelegationServiceStub().putProxy(putProxyReq);
+                getDelegationServiceStub().putProxy(idList.get(0), signRequest(certReq, idList.get(0)));
+                
             } catch (AxisFault e) {
                 System.out.println("AxisFault: " + e.getMessage());
             } catch (RemoteException e) {
@@ -118,15 +106,13 @@ public class DelegationClient extends ActivityCommand {
             }            
         } else if (isGetNewProxyRequest()) {
             try {
-                GetNewProxyReqResponse response = getDelegationServiceStub().getNewProxyReq(new GetNewProxyReq());
+                GetNewProxyReqResponse response = getDelegationServiceStub().getNewProxyReq();
                 System.out.println("id: " + response.getDelegationID());
-                //System.out.println("request: " + response.getProxyRequest());
                 
-                PutProxy putProxyReq = new PutProxy();
-                putProxyReq.setDelegationID(response.getDelegationID());
-                putProxyReq.setProxy(signRequest(response.getProxyRequest()));
+                String signedReq = signRequest(response.getDelegationID(), response.getProxyRequest());
 
-                getDelegationServiceStub().putProxy(putProxyReq);
+                getDelegationServiceStub().putProxy(response.getDelegationID(), signedReq);
+                
             } catch (AxisFault e) {
                 System.out.println("AxisFault: " + e.getMessage());
             } catch (RemoteException e) {
@@ -143,16 +129,16 @@ public class DelegationClient extends ActivityCommand {
                 return;
             }
             
-            try {                
+            try {
+                
                 RenewProxyReq req = new RenewProxyReq();
                 req.setDelegationID(idList.get(0));
                 
-                RenewProxyReqResponse response = getDelegationServiceStub().renewProxyReq(req);
+                String certReq = getDelegationServiceStub().renewProxyReq(idList.get(0));
                 
-                PutProxy putProxyReq = new PutProxy();
-                putProxyReq.setDelegationID(idList.get(0));
-                putProxyReq.setProxy(signRequest(response.getRenewProxyReqReturn()));
-                getDelegationServiceStub().putProxy(putProxyReq);
+                String signedReq = signRequest(certReq, idList.get(0));
+                getDelegationServiceStub().putProxy(idList.get(0), signedReq);
+                
             } catch (AxisFault e) {
                 System.out.println("AxisFault: " + e.getMessage());
             } catch (RemoteException e) {
@@ -170,10 +156,7 @@ public class DelegationClient extends ActivityCommand {
             }
             
             try {
-                Destroy req = new Destroy();
-                req.setDelegationID(idList.get(0));
-
-                getDelegationServiceStub().destroy(req);
+                getDelegationServiceStub().destroy(idList.get(0));
             } catch (AxisFault e) {
                 System.out.println("AxisFault: " + e.getMessage());
             } catch (RemoteException e) {
