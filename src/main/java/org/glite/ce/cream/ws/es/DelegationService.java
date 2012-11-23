@@ -18,27 +18,11 @@ import org.glite.ce.commonj.utils.CEUtils;
 import org.glite.ce.cream.cmdmanagement.CommandManager;
 import org.glite.ce.cream.configuration.ServiceConfig;
 import org.glite.ce.creamapi.cmdmanagement.CommandManagerInterface;
-import org.glite.ce.creamapi.delegationmanagement.Delegation;
 import org.glite.ce.creamapi.delegationmanagement.DelegationCommand;
-import org.glite.ce.creamapi.jobmanagement.cmdexecutor.JobCommandConstant;
 import org.glite.ce.creamapi.ws.es.delegation.DelegationExceptionException;
 import org.glite.ce.creamapi.ws.es.delegation.DelegationServiceSkeletonInterface;
-import org.glite.ce.creamapi.ws.es.delegation.Destroy;
-import org.glite.ce.creamapi.ws.es.delegation.GetInterfaceVersion;
-import org.glite.ce.creamapi.ws.es.delegation.GetInterfaceVersionResponse;
-import org.glite.ce.creamapi.ws.es.delegation.GetNewProxyReq;
 import org.glite.ce.creamapi.ws.es.delegation.GetNewProxyReqResponse;
-import org.glite.ce.creamapi.ws.es.delegation.GetProxyReq;
-import org.glite.ce.creamapi.ws.es.delegation.GetProxyReqResponse;
-import org.glite.ce.creamapi.ws.es.delegation.GetServiceMetadata;
-import org.glite.ce.creamapi.ws.es.delegation.GetServiceMetadataResponse;
-import org.glite.ce.creamapi.ws.es.delegation.GetTerminationTime;
 import org.glite.ce.creamapi.ws.es.delegation.GetTerminationTimeResponse;
-import org.glite.ce.creamapi.ws.es.delegation.GetVersion;
-import org.glite.ce.creamapi.ws.es.delegation.GetVersionResponse;
-import org.glite.ce.creamapi.ws.es.delegation.PutProxy;
-import org.glite.ce.creamapi.ws.es.delegation.RenewProxyReq;
-import org.glite.ce.creamapi.ws.es.delegation.RenewProxyReqResponse;
 
 public class DelegationService implements DelegationServiceSkeletonInterface, Lifecycle {
     private static final Logger logger = Logger.getLogger(DelegationService.class.getName());
@@ -337,17 +321,17 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
     // return response;
     // }
 
-    public void destroy(Destroy req) throws DelegationExceptionException {
+    public void destroy(String delegId) throws DelegationExceptionException {
         checkInitialization();
 
-        if (req == null || req.getDelegationID() == null) {
+        if (delegId == null) {
             throw new DelegationExceptionException("delegationId not specified!");
         }
 
         logger.info("BEGIN destroy");
 
         DelegationCommand command = new DelegationCommand(DelegationCommand.DESTROY_DELEGATION);
-        command.addParameter(DelegationCommand.DELEGATION_ID, req.getDelegationID());
+        command.addParameter(DelegationCommand.DELEGATION_ID, delegId);
         command.addParameter(DelegationCommand.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
         command.addParameter(DelegationCommand.LOCAL_USER, CEUtils.getLocalUser());
 
@@ -362,19 +346,13 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
 
     }
 
-    public GetInterfaceVersionResponse getInterfaceVersion(GetInterfaceVersion req) throws DelegationExceptionException {
+    public String getInterfaceVersion() throws DelegationExceptionException {
         checkInitialization();
 
-        logger.debug("BEGIN getInterfaceVersion");
-
-        GetInterfaceVersionResponse response = new GetInterfaceVersionResponse();
-        response.setGetInterfaceVersionReturn(serviceInterfaceVersion);
-
-        logger.debug("END getInterfaceVersion");
-        return response;
+        return serviceInterfaceVersion;
     }
 
-    public GetNewProxyReqResponse getNewProxyReq(GetNewProxyReq req) throws DelegationExceptionException {
+    public GetNewProxyReqResponse getNewProxyReq() throws DelegationExceptionException {
         checkInitialization();
 
         logger.info("BEGIN getNewProxyRequest");
@@ -402,17 +380,17 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
         return newProxyReq;
     }
 
-    public GetProxyReqResponse getProxyReq(GetProxyReq req) throws DelegationExceptionException {
+    public String getProxyReq(String delegId) throws DelegationExceptionException {
         checkInitialization();
 
-        if (req == null || req.getDelegationID() == null) {
+        if (delegId == null) {
             throw new DelegationExceptionException("delegationId not specified!");
         }
 
         logger.debug("BEGIN getProxyReq");
 
         DelegationCommand command = new DelegationCommand(DelegationCommand.GET_DELEGATION_REQUEST);
-        command.addParameter(DelegationCommand.DELEGATION_ID, req.getDelegationID());
+        command.addParameter(DelegationCommand.DELEGATION_ID, delegId);
         command.addParameter(DelegationCommand.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
         command.addParameter(DelegationCommand.LOCAL_USER, CEUtils.getLocalUser());
         command.addParameter(DelegationCommand.VOMS_ATTRIBUTES, CEUtils.getVOMSAttributes());
@@ -429,29 +407,26 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
 
         logger.debug("END getProxyReq");
 
-        GetProxyReqResponse response = new GetProxyReqResponse();
-        response.setGetProxyReqReturn(certificateRequest);
-
-        return response;
+        return certificateRequest;
     }
 
-    public GetServiceMetadataResponse getServiceMetadata(GetServiceMetadata req) throws DelegationExceptionException {
+    public String getServiceMetadata(String req) throws DelegationExceptionException {
         checkInitialization();
 
         throw new DelegationExceptionException("operation not implemented!");
     }
 
-    public GetTerminationTimeResponse getTerminationTime(GetTerminationTime req) throws DelegationExceptionException {
+    public Calendar getTerminationTime(String delegId) throws DelegationExceptionException {
         checkInitialization();
 
-        if (req == null || req.getDelegationID() == null) {
+        if (delegId == null) {
             throw new DelegationExceptionException("delegationId not specified!");
         }
 
         logger.debug("BEGIN getTerminationTime");
 
         DelegationCommand command = new DelegationCommand(DelegationCommand.GET_TERMINATION_TIME);
-        command.addParameter(DelegationCommand.DELEGATION_ID, req.getDelegationID());
+        command.addParameter(DelegationCommand.DELEGATION_ID, delegId);
         command.addParameter(DelegationCommand.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
         command.addParameter(DelegationCommand.LOCAL_USER, CEUtils.getLocalUser());
 
@@ -468,32 +443,27 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
         GetTerminationTimeResponse response = new GetTerminationTimeResponse();
         response.setGetTerminationTimeReturn(time);
 
-        return response;
+        return time;
     }
 
-    public GetVersionResponse getVersion(GetVersion req) throws DelegationExceptionException {
+    public String getVersion() throws DelegationExceptionException {
         checkInitialization();
 
-        logger.debug("BEGIN getVersion");
-        GetVersionResponse response = new GetVersionResponse();
-        response.setGetVersionReturn(serviceVersion);
-
-        logger.debug("END getVersion");
-        return response;
+        return serviceVersion;
     }
 
-    public void putProxy(PutProxy req) throws DelegationExceptionException {
+    public void putProxy(String delegId, String proxy) throws DelegationExceptionException {
         checkInitialization();
 
-        if (req == null || req.getDelegationID() == null) {
+        if (delegId == null || proxy == null) {
             throw new DelegationExceptionException("delegationId not specified!");
         }
 
         logger.info("BEGIN putProxy");
 
         DelegationCommand command = new DelegationCommand(DelegationCommand.PUT_DELEGATION);
-        command.addParameter(DelegationCommand.DELEGATION_ID, req.getDelegationID());
-        command.addParameter(DelegationCommand.DELEGATION, req.getProxy());
+        command.addParameter(DelegationCommand.DELEGATION_ID, delegId);
+        command.addParameter(DelegationCommand.DELEGATION, proxy);
         command.addParameter(DelegationCommand.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
         command.addParameter(DelegationCommand.USER_CERTIFICATE, CEUtils.getUserCert());
         command.addParameter(DelegationCommand.LOCAL_USER, CEUtils.getLocalUser());
@@ -526,17 +496,17 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
         logger.info("END putProxy");
     }
 
-    public RenewProxyReqResponse renewProxyReq(RenewProxyReq req) throws DelegationExceptionException {
+    public String renewProxyReq(String delegId) throws DelegationExceptionException {
         checkInitialization();
 
-        if (req == null || req.getDelegationID() == null) {
+        if (delegId == null) {
             throw new DelegationExceptionException("delegationId not specified!");
         }
 
         logger.debug("BEGIN renewProxyReq");
 
         DelegationCommand command = new DelegationCommand(DelegationCommand.RENEW_DELEGATION_REQUEST);
-        command.addParameter(DelegationCommand.DELEGATION_ID, req.getDelegationID());
+        command.addParameter(DelegationCommand.DELEGATION_ID, delegId);
         command.addParameter(DelegationCommand.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
         command.addParameter(DelegationCommand.USER_CERTIFICATE, CEUtils.getUserCert());
         command.addParameter(DelegationCommand.VOMS_ATTRIBUTES, CEUtils.getVOMSAttributes());
@@ -549,12 +519,6 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
             throw new DelegationExceptionException(t.getMessage());
         }
 
-        String request = command.getResult().getParameterAsString(DelegationCommand.CERTIFICATE_REQUEST);
-
-        logger.debug("END renewProxyReq");
-        RenewProxyReqResponse response = new RenewProxyReqResponse();
-        response.setRenewProxyReqReturn(request);
-
-        return response;
+        return command.getResult().getParameterAsString(DelegationCommand.CERTIFICATE_REQUEST);
     }
 }
