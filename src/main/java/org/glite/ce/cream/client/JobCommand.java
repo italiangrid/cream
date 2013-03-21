@@ -804,7 +804,7 @@ public abstract class JobCommand {
             try {
                 
                 inStream = new FileInputStream(proxyFilename);
-                PEMCredential credentials = new PEMCredential(inStream, null);
+                PEMCredential credentials = new PEMCredential(inStream, (char[]) null);
                 pKey = credentials.getKey();
                 parentChain = credentials.getCertificateChain();
                 
