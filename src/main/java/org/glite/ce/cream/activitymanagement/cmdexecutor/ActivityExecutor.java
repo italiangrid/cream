@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.SortedSet;
 
@@ -69,7 +70,12 @@ import org.glite.ce.creamapi.activitymanagement.wrapper.activitymanagement.types
 import org.glite.ce.creamapi.activitymanagement.wrapper.adl.ActivityDescription;
 import org.glite.ce.creamapi.activitymanagement.wrapper.adl.InputFile;
 import org.glite.ce.creamapi.activitymanagement.wrapper.adl.OutputFile;
+import org.glite.ce.creamapi.activitymanagement.wrapper.adl.ParallelEnvironment;
+import org.glite.ce.creamapi.activitymanagement.wrapper.adl.ProcessesPerHost;
 import org.glite.ce.creamapi.activitymanagement.wrapper.adl.Resources;
+import org.glite.ce.creamapi.activitymanagement.wrapper.adl.SlotRequirement;
+import org.glite.ce.creamapi.activitymanagement.wrapper.adl.SlotsPerHost;
+import org.glite.ce.creamapi.activitymanagement.wrapper.adl.ThreadsPerProcess;
 import org.glite.ce.creamapi.cmdmanagement.AbstractCommandExecutor;
 import org.glite.ce.creamapi.cmdmanagement.Command;
 import org.glite.ce.creamapi.cmdmanagement.CommandException;
@@ -219,7 +225,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         String userFQAN = getParameterValueAsString(command, ActivityCommandField.USER_FQAN, true);
         String localUser = getParameterValueAsString(command, ActivityCommandField.LOCAL_USER, true);
         String localUserGroup = getParameterValueAsString(command, ActivityCommandField.LOCAL_USER_GROUP, true);
-        String virtualOrganisation = getParameterValueAsString(command, ActivityCommandField.VIRTUAL_ORGANISATION, true);
+        String virtualOrganisation = getParameterValueAsString(command, ActivityCommandField.VIRTUAL_ORGANISATION, false);
         String activitySandboxDir = NOT_AVAILABLE_VALUE;
         String sandboxDir = getParameterValueAsString(SANDBOX_DIR);
         String createSandboxBinPath = getParameterValueAsString(CREATE_SANDBOX_BIN_PATH);
@@ -246,7 +252,10 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         activity.getProperties().put(Activity.LOCAL_USER, localUser);
         activity.getProperties().put(Activity.LOCAL_USER_GROUP, localUserGroup);
         activity.getProperties().put(Activity.SERVICE_URL, serviceURL);
-        activity.getProperties().put(Activity.VIRTUAL_ORGANISATION, virtualOrganisation);
+
+        if (virtualOrganisation != null) {
+            activity.getProperties().put(Activity.VIRTUAL_ORGANISATION, virtualOrganisation);
+        }
         
         if (delegationSandboxPath != null) {
             activity.getProperties().put(Activity.DELEGATION_SANDBOX_PATH, delegationSandboxPath);
@@ -254,21 +263,58 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         }
         
         String queueName = null;
-        if (activity.getResources() == null) {
+        Resources resources = activity.getResources();
+        
+        if (resources == null) {
             queueName = getParameterValueAsString(DEFAULT_QUEUE_NAME);
 
-            Resources resources = new Resources();
+            resources = new Resources();
             resources.setQueueName(queueName);
 
             activity.setResources(resources);
-        } else if (activity.getResources().getQueueName() == null) {
-            queueName = getParameterValueAsString(DEFAULT_QUEUE_NAME);
+        } else {            
+            if (resources.getQueueName() == null) {        
+                queueName = getParameterValueAsString(DEFAULT_QUEUE_NAME);
+                resources.setQueueName(queueName);
+            } else {
+                queueName = resources.getQueueName();
+            }
 
-            activity.getResources().setQueueName(queueName);
-        } else {
-            queueName = activity.getResources().getQueueName();
-        }
+            SlotRequirement slotRequirement = resources.getSlotRequirement();
+            if (slotRequirement != null) {
+                SlotsPerHost slotsPerHost = slotRequirement.getSlotsPerHost();
+                
+                if (slotsPerHost != null) {                    
+                    if (slotsPerHost.isUseNumberOfSlots()) {
+                        activity.getProperties().put(Activity.NUMBER_OF_SLOTS, ""+slotRequirement.getNumberOfSlots());
+                    } else {
+                        activity.getProperties().put(Activity.SLOTS_PER_HOST, ""+slotsPerHost.getNumberOfSlotsPerHost());
+                    }
+                    
+                    activity.getProperties().put(Activity.EXCLUSIVE_EXECUTION, ""+slotRequirement.isExclusiveExecution());
+                } else {
+                    activity.getProperties().put(Activity.NUMBER_OF_SLOTS, ""+slotRequirement.getNumberOfSlots());
+                }
+            }
 
+            ParallelEnvironment parallelEnvironment = resources.getParallelEnvironment();
+            if (parallelEnvironment != null) {                
+                if (parallelEnvironment.getType() != null) {
+                    activity.getProperties().put(Activity.PARALLEL_ENVIRONMENT_TYPE, parallelEnvironment.getType());
+                }
+
+                ProcessesPerHost processesPerHost = parallelEnvironment.getProcessesPerHost();
+                if (processesPerHost != null && !processesPerHost.isUseSlotsPerHost()) {
+                    activity.getProperties().put(Activity.PARALLEL_ENVIRONMENT_PROCESSES_PER_HOST, ""+processesPerHost.getProcessesPerHost());
+                }
+
+                ThreadsPerProcess threadsPerProcess = parallelEnvironment.getThreadsPerProcess();
+                if (threadsPerProcess != null && !threadsPerProcess.isUseSlotsPerHost()) {
+                    activity.getProperties().put(Activity.PARALLEL_ENVIRONMENT_THREADS_PER_PROCESSES, ""+threadsPerProcess.getThreadsPerProcess());
+                }                
+            }
+        }            
+ 
         try {
             activityId = activityDB.insertActivity(activity);
             logger.info("new activity " + activityId + " created! " + activity.getStates().last());
@@ -375,6 +421,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
 
         blahClient.terminate();
         stdHandler.terminate();
+        glue2Handler.terminate();
         activityStatusMonitor.terminate();
 
         super.destroy();
@@ -1332,12 +1379,24 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         blahJob.setStandardOuputFile(activitySandboxDir + File.separator + "StandardOutput");
         blahJob.setLRMS(lrmsName);
         blahJob.setQueue(queueName);
-        blahJob.setHostNumber(1); //TBD
-        blahJob.setNodeNumber(1); //TBD
         blahJob.setVirtualOrganisation(virtualOrganisation);
         blahJob.setTransferInput(activity.getProperties().get(Activity.TRANSFER_INPUT));
         blahJob.setTransferOutput(activity.getProperties().get(Activity.TRANSFER_OUTPUT));
         blahJob.setTransferOutputRemaps(activity.getProperties().get(Activity.TRANSFER_OUTPUT_REMAPS));
+        
+        Hashtable<String, String> properties = activity.getProperties();
+        
+        if (properties.containsKey(Activity.NUMBER_OF_SLOTS)) {
+            blahJob.setNodeNumber(Integer.parseInt(properties.get(Activity.NUMBER_OF_SLOTS)));
+        }
+        
+        if (properties.containsKey(Activity.SLOTS_PER_HOST)) {
+            blahJob.setSmpGranularity(Integer.parseInt(properties.get(Activity.SLOTS_PER_HOST)));
+        }
+
+        if (properties.containsKey(Activity.EXCLUSIVE_EXECUTION)) {
+            blahJob.setWholeNodes(Boolean.parseBoolean(properties.get(Activity.EXCLUSIVE_EXECUTION)));
+        }
 
         activity.getProperties().remove(Activity.TRANSFER_INPUT);
         activity.getProperties().remove(Activity.TRANSFER_OUTPUT);

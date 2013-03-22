@@ -115,7 +115,29 @@ public class ActivityWrapper {
         if (!executablePath.startsWith("/") && !executablePath.startsWith("./")) {
             executablePath = "./" + executablePath;
         }
+        
+        Hashtable<String, String> properties = activity.getProperties();
+        
+        if (properties.containsKey(Activity.PARALLEL_ENVIRONMENT_PROCESSES_PER_HOST) || properties.containsKey(Activity.PARALLEL_ENVIRONMENT_THREADS_PER_PROCESSES)) {
+            if (properties.containsKey(Activity.PARALLEL_ENVIRONMENT_THREADS_PER_PROCESSES)) {
+                executable.getArgument().add(0, executablePath);
+            }
+            
+            if (properties.containsKey(Activity.PARALLEL_ENVIRONMENT_THREADS_PER_PROCESSES)) {
+                executable.getArgument().add(0, "-d THREADS_PER_PROCESS=" + properties.get(Activity.PARALLEL_ENVIRONMENT_THREADS_PER_PROCESSES));
+            }
 
+            if (properties.containsKey(Activity.PARALLEL_ENVIRONMENT_PROCESSES_PER_HOST)) {
+                executable.getArgument().add(0, "-npnode " + properties.get(Activity.PARALLEL_ENVIRONMENT_PROCESSES_PER_HOST));
+            }
+            
+            if (properties.containsKey(Activity.PARALLEL_ENVIRONMENT_TYPE)) {
+                executable.getArgument().add(0, "-t " + properties.get(Activity.PARALLEL_ENVIRONMENT_TYPE).toLowerCase());
+            }        
+
+            executablePath = "/usr/bin/mpi-start";
+        }
+        
         String serviceURL = activity.getProperties().get(Activity.SERVICE_URL);
         if (serviceURL == null) {
             throw new ActivityException("Missing the service url");
@@ -209,10 +231,10 @@ public class ActivityWrapper {
         wrapper.append("__working_directory=").append(activityId);
         wrapper.append("\n__ce_hostname=").append(ceHostName).append("\n");
 
-        StringBuffer cmdLine = new StringBuffer("\"");
+        StringBuffer cmdLine = new StringBuffer("\"");        
         cmdLine.append(executablePath).append("\" ");
 
-        if (executable.getArgument() != null) {
+        if (executable.getArgument() != null) {            
             for (String argument : executable.getArgument()) {
                 cmdLine.append(argument).append(" ");
             }

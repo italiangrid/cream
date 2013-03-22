@@ -99,7 +99,7 @@ public class DelegationPurger extends Thread {
                         DelegationCommand command = new DelegationCommand(DelegationCommand.DESTROY_DELEGATION);
                         command.setUserId(delegation.getUserId());
                         command.addParameter(DelegationCommand.DELEGATION_ID, delegation.getId());
-                        command.addParameter(DelegationCommand.USER_DN, delegation.getDN());
+                        command.addParameter(DelegationCommand.USER_DN_RFC2253, delegation.getDN());
                         command.addParameter(DelegationCommand.LOCAL_USER, delegation.getLocalUser());
                         command.addParameter(DelegationCommand.LOCAL_USER_GROUP, delegation.getLocalUserGroup());
 

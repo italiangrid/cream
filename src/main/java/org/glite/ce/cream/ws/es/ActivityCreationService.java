@@ -60,6 +60,7 @@ import org.glite.ce.creamapi.activitymanagement.wrapper.adl.InputFile;
 import org.glite.ce.creamapi.activitymanagement.wrapper.adl.Notification;
 import org.glite.ce.creamapi.activitymanagement.wrapper.adl.OutputFile;
 import org.glite.ce.creamapi.activitymanagement.wrapper.adl.RemoteLogging;
+import org.glite.ce.creamapi.activitymanagement.wrapper.adl.Resources;
 import org.glite.ce.creamapi.activitymanagement.wrapper.adl.Source;
 import org.glite.ce.creamapi.activitymanagement.wrapper.adl.Target;
 import org.glite.ce.creamapi.cmdmanagement.CommandManagerInterface;
@@ -208,9 +209,8 @@ public class ActivityCreationService implements ActivityCreationServiceSkeletonI
                     source.setURI(checkValue("source URI related to the inputFile " + inputFile.getName(), source.getURI()));
 
                     uri = source.getURI();
-
                     if (!uri.startsWith("https://") && !uri.startsWith("gsiftp://") && !uri.startsWith("file://")) {
-                        throw new IllegalArgumentException("protocol " + uri.substring(0, uri.indexOf("://")) + " not supported for the inputFile " + inputFile.getName());
+                        throw new IllegalArgumentException("protocol not supported for the inputFile " + inputFile.getName());
                     }
 
                     source.setDelegationID(checkValue("delegationId related to the inputFile " + inputFile.getName(), source.getDelegationID()));
@@ -246,80 +246,81 @@ public class ActivityCreationService implements ActivityCreationServiceSkeletonI
             }
         }
 
-        //        if (activity.getResources() != null) {
-        //        	Resources_type0 resources = seq.getResources();
-        //        	
-        //        	if (resources.isBenchmarkSpecified() && !resources.getBenchmark().getOptional()) {
-        //        		throw new IllegalArgumentException("benchmark requirement not supported!");
-        //        	}
-        //
-        //        	if (resources.isCoprocessorSpecified() && !resources.getCoprocessor().getOptional()) {
-        //        		throw new IllegalArgumentException("coprocessor requirement not supported!");
-        //        	}
-        //
-        //        	if (resources.isDiskSpaceRequirementSpecified()) {
-        //        		throw new IllegalArgumentException("diskSpace requirement not supported!");
-        //        	}
-        //
-        //        	if (resources.isIndividualCPUTimeSpecified()) {
-        //        		throw new IllegalArgumentException("individualCPUTime requirement not supported!");
-        //        	}
-        //
-        //        	if (resources.isIndividualPhysicalMemorySpecified()) {
-        //        		throw new IllegalArgumentException("individualPhysicalMemory requirement not supported!");
-        //        	}
-        //        	
-        //        	if (resources.isIndividualVirtualMemorySpecified()) {
-        //        		throw new IllegalArgumentException("individualVirtualMemory requirement not supported!");
-        //        	}
-        //
-        //        	if (resources.isNetworkInfoSpecified() && !resources.getNetworkInfo().getOptional()) {
-        //        		throw new IllegalArgumentException("networkInfo requirement not supported!");
-        //        	}
-        //
-        //        	if (resources.isNodeAccessSpecified()) {
-        //        		throw new IllegalArgumentException("nodeAccess requirement not supported!");
-        //        	}
-        //
-        //        	if (resources.isOperatingSystemSpecified()) {
-        //        		throw new IllegalArgumentException("operatingSystem requirement not supported!");
-        //        	}
-        //
-        //        	if (resources.isParallelEnvironmentSpecified()) {
-        //        		throw new IllegalArgumentException("parallelEnvironment requirement not supported!");
-        //        	}
-        //
-        //        	if (resources.isPlatformSpecified()) {
-        //        		throw new IllegalArgumentException("platform requirement not supported!");
-        //        	}
-        //
-        //        	if (resources.isRemoteSessionAccessSpecified()) {
-        //        		throw new IllegalArgumentException("remoteSessionAccess requirement not supported!");
-        //        	}
-        //
-        //        	if (resources.isRuntimeEnvironmentSpecified()) {
-        //        		RuntimeEnvironment_type0[] runtimeEnvironment = resources.getRuntimeEnvironment();
-        //
-        //            	for (int i=0; i<runtimeEnvironment.length; i++) {
-        //            		if (!runtimeEnvironment[i].getOptional()) {
-        //            			throw new IllegalArgumentException("runtimeEnvironment requirement not supported!");
-        //            		}
-        //            	}
-        //        	}
-        //
-        //        	if (resources.isSlotRequirementSpecified()) {
-        //        		throw new IllegalArgumentException("slot requirement not supported!");
-        //        	}
-        //
-        //        	if (resources.isTotalCPUTimeSpecified()) {
-        //        		throw new IllegalArgumentException("totalCPUTime requirement not supported!");
-        //        	}
-        //
-        //        	if (resources.isWallTimeSpecified()) {
-        //        		throw new IllegalArgumentException("wallTime requirement not supported!");
-        //        	}
-        //        }
+/*
+        if (activity.getResources() != null) {
+            Resources resources = activity.getResources();
 
+            if (resources.isBenchmarkSpecified() && !resources.getBenchmark().getOptional()) {
+                throw new IllegalArgumentException("benchmark requirement not supported!");
+            }
+
+            if (resources.isCoprocessorSpecified() && !resources.getCoprocessor().getOptional()) {
+                throw new IllegalArgumentException("coprocessor requirement not supported!");
+            }
+
+            if (resources.isDiskSpaceRequirementSpecified()) {
+                throw new IllegalArgumentException("diskSpace requirement not supported!");
+            }
+
+            if (resources.isIndividualCPUTimeSpecified()) {
+                throw new IllegalArgumentException("individualCPUTime requirement not supported!");
+            }
+
+            if (resources.isIndividualPhysicalMemorySpecified()) {
+                throw new IllegalArgumentException("individualPhysicalMemory requirement not supported!");
+            }
+
+            if (resources.isIndividualVirtualMemorySpecified()) {
+                throw new IllegalArgumentException("individualVirtualMemory requirement not supported!");
+            }
+
+            if (resources.isNetworkInfoSpecified() && !resources.getNetworkInfo().getOptional()) {
+                throw new IllegalArgumentException("networkInfo requirement not supported!");
+            }
+
+            if (resources.isNodeAccessSpecified()) {
+                throw new IllegalArgumentException("nodeAccess requirement not supported!");
+            }
+
+            if (resources.isOperatingSystemSpecified()) {
+                throw new IllegalArgumentException("operatingSystem requirement not supported!");
+            }
+
+            if (resources.getParallelEnvironment() != null) {
+                throw new IllegalArgumentException("parallelEnvironment requirement not supported!");
+            }
+
+            if (resources.isPlatformSpecified()) {
+                throw new IllegalArgumentException("platform requirement not supported!");
+            }
+
+            if (resources.isRemoteSessionAccessSpecified()) {
+                throw new IllegalArgumentException("remoteSessionAccess requirement not supported!");
+            }
+
+            if (resources.isRuntimeEnvironmentSpecified()) {
+                RuntimeEnvironment_type0[] runtimeEnvironment = resources.getRuntimeEnvironment();
+
+                for (int i=0; i<runtimeEnvironment.length; i++) {
+                    if (!runtimeEnvironment[i].getOptional()) {
+                        throw new IllegalArgumentException("runtimeEnvironment requirement not supported!");
+                    }
+                }
+            }
+
+            if (resources.isSlotRequirementSpecified()) {
+                throw new IllegalArgumentException("slot requirement not supported!");
+            }
+
+            if (resources.isTotalCPUTimeSpecified()) {
+                throw new IllegalArgumentException("totalCPUTime requirement not supported!");
+            }
+
+            if (resources.isWallTimeSpecified()) {
+                throw new IllegalArgumentException("wallTime requirement not supported!");
+            }
+        }
+*/
         String delegationSandboxPath = null;
 
         if (delegationIdtable.size() > 0) {
@@ -327,10 +328,10 @@ public class ActivityCreationService implements ActivityCreationServiceSkeletonI
             delegationSandboxPath = delegation.getPath();
         }
 
-
         return delegationSandboxPath;
 
     }
+
 
     public CreateActivityResponse createActivity(CreateActivity createActivity) throws AccessControlFault, InternalBaseFault, VectorLimitExceededFault {
         checkInitialization();

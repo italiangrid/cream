@@ -669,7 +669,7 @@ public class BLAHExecutor extends AbstractJobExecutor {
         blahpAD.append("/StandardError\";x509userproxy=\"").append(job.getDelegationProxyCertPath()).append("\"");
         blahpAD.append(";VirtualOrganisation=\"").append(job.getVirtualOrganization()).append("\"");
 
-        String userDN = job.getExtraAttribute("USER_DN");
+        String userDN = job.getExtraAttribute("USER_DN_X500");
         if (userDN != null) {
             blahpAD.append(";x509UserProxySubject=\"").append(userDN).append("\"");
         }

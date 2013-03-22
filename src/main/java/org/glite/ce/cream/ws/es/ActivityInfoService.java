@@ -233,6 +233,7 @@ public class ActivityInfoService implements ActivityInfoServiceSkeletonInterface
                 jobDescription.setJobDescription_t("emi:adl");
 
                 activityInfoDocument = new ActivityInfoDocument_t();
+                activityInfoDocument.setBaseType("Activity");
                 activityInfoDocument.setID(new URI(activityManagerURL + "?" + activity.getId()));
                 activityInfoDocument.setIDFromEndpoint(new URI(activityManagerURL + "?" + activity.getId()));
                 activityInfoDocument.setLocalIDFromManager(activity.getProperties().get(Activity.LRMS_ABS_LAYER_ID));

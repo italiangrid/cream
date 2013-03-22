@@ -265,10 +265,10 @@ public final class StdHandler extends Thread {
                 }
             }
 
-            synchronized(activityIdQueue) {
+            synchronized(this) {
                 try {
                     logger.debug("waiting " + delay + "...");
-                    activityIdQueue.wait(delay);
+                    wait(delay);
                     logger.debug("waiting " + delay + "... done!" );
 
                     works = true;
@@ -286,9 +286,10 @@ public final class StdHandler extends Thread {
         logger.info("teminate invoked!");
         terminate = true;
         
-        synchronized(activityIdQueue) {
-            activityIdQueue.notifyAll();
+        synchronized(this) {
+            notifyAll();
         }
         logger.info("teminated!");
     }
 }
+

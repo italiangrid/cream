@@ -31,9 +31,7 @@ public class ServiceConfig
 
     private static Logger logger = Logger.getLogger(ServiceConfig.class.getName());
 
-    static {
-        CommonServiceConfig.configuratorClass = ServiceConfig.class;
-    }
+    protected static ServiceConfig serviceConfiguration = null;
 
     protected ServiceConfig() throws CommonConfigException {
         super();
@@ -91,16 +89,22 @@ public class ServiceConfig
     }
 
     public static ServiceConfig getConfiguration() {
-        CommonServiceConfig serviceConfiguration = CommonServiceConfig.getConfiguration();
+        if (serviceConfiguration == null) {
 
-        if (serviceConfiguration != null) {
-            try {
-                return (ServiceConfig) serviceConfiguration;
-            } catch (Throwable th) {
-                logger.error(th.getMessage(), th);
+            synchronized (ServiceConfig.class) {
+
+                if (serviceConfiguration == null) {
+                    try {
+                        serviceConfiguration = new ServiceConfig();
+                    } catch (CommonConfigException cEx) {
+                        logger.error(cEx.getMessage(), cEx);
+                    }
+
+                }
             }
         }
-        return null;
+
+        return serviceConfiguration;
     }
 
 }

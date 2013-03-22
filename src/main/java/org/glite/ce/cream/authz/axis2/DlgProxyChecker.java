@@ -18,11 +18,12 @@
 
 package org.glite.ce.cream.authz.axis2;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.Vector;
 
-import javax.security.auth.x500.X500Principal;
 import javax.xml.namespace.QName;
 
 import org.apache.axiom.om.OMAbstractFactory;
@@ -38,17 +39,13 @@ import org.apache.axis2.engine.Handler;
 import org.apache.axis2.handlers.AbstractHandler;
 import org.apache.log4j.Logger;
 import org.glite.ce.commonj.authz.AuthZConstants;
-import org.glite.ce.commonj.authz.VOMSResultCollector;
 import org.glite.ce.commonj.authz.axis2.AuthorizationModule;
 import org.glite.ce.security.delegation.DelegationException;
-import org.italiangrid.voms.VOMSAttribute;
-import org.italiangrid.voms.VOMSValidators;
-import org.italiangrid.voms.ac.VOMSACValidator;
-
-import eu.emi.security.authn.x509.ValidationError;
-import eu.emi.security.authn.x509.ValidationResult;
-import eu.emi.security.authn.x509.impl.CertificateUtils;
-import eu.emi.security.authn.x509.proxy.ProxyUtils;
+import org.glite.security.util.DNHandler;
+import org.glite.security.util.FileCertReader;
+import org.glite.voms.VOMSAttribute;
+import org.glite.voms.VOMSValidator;
+import org.glite.voms.ac.ACValidator;
 
 public class DlgProxyChecker
     extends AbstractHandler {
@@ -82,50 +79,40 @@ public class DlgProxyChecker
             }
 
             String proxyBase64 = proxyElem.getText();
-            X509Certificate[] delegProxyChain = null;
+            Vector<X509Certificate> certList = null;
 
             try {
+                FileCertReader certParser = new FileCertReader();
 
                 ByteArrayInputStream strStream = new ByteArrayInputStream(proxyBase64.getBytes());
-                delegProxyChain = CertificateUtils.loadCertificateChain(strStream, CertificateUtils.Encoding.PEM);
-
-                ValidationResult vRes = AuthorizationModule.validator.validate(delegProxyChain);
-                if (!vRes.isValid()) {
-
-                    StringBuffer buff = new StringBuffer("Proxy certificate is not valid\n");
-                    for (ValidationError vErr : vRes.getErrors()) {
-                        buff.append(vErr.getMessage()).append("\n");
-                    }
-
-                    String tmps = buff.toString();
-                    logger.warn(tmps);
-                    throw getDelegationFault(tmps, msgContext);
-                }
-
-                X500Principal userPrincipal = ProxyUtils.getOriginalUserDN(delegProxyChain);
-                if (userPrincipal == null || !clientDN.equals(userPrincipal.getName())) {
-                    throw getDelegationFault("Proxy DN doesn't match user DN", msgContext);
-                }
-
-                VOMSResultCollector collector = new VOMSResultCollector();
-                VOMSACValidator validator = VOMSValidators.newValidator(AuthorizationModule.vomsStore,
-                        AuthorizationModule.validator, collector);
-                List<VOMSAttribute> vomsList = validator.validate(delegProxyChain);
-
-                if (collector.size() > 0) {
-                    String tmps = "Cannot validate VOMS attributes in proxy\n" + collector.toString();
-                    throw getDelegationFault(tmps, msgContext);
-                }
-
-                logger.info("Verified delegated proxy for " + userPrincipal.getName());
-
-                msgContext.setProperty(AuthZConstants.DLG_PROXY_ATTRIBUTES, vomsList);
-                msgContext.setProperty(AuthZConstants.DLG_PROXY_CERT_LIST, delegProxyChain);
+                certList = certParser.readCertChain(new BufferedInputStream(strStream));
 
             } catch (Throwable th) {
                 logger.error(th.getMessage(), th);
-                throw getDelegationFault("Error checking delegated proxy: " + th.getMessage(), msgContext);
+                return Handler.InvocationResponse.CONTINUE;
             }
+
+            X509Certificate[] userCertChain = new X509Certificate[certList.size()];
+            certList.toArray(userCertChain);
+            /*
+             * TODO chain verification
+             */
+            ACValidator acValidator = AuthorizationModule.getACValidator();
+            VOMSValidator mainValidator = new VOMSValidator(userCertChain, acValidator);
+            mainValidator.validate();
+
+            String proxySubjectDN = DNHandler.getSubject(userCertChain[0]).getRFCDNv2();
+
+            if (proxySubjectDN.endsWith(clientDN)) {
+                logger.info("Delegated proxy verified: " + proxySubjectDN);
+            } else {
+                logger.error("Delegated proxy not verified: " + proxySubjectDN);
+                throw this.getDelegationFault("Delegated proxy not verified", msgContext);
+            }
+
+            List<VOMSAttribute> vomsList = (List<VOMSAttribute>) mainValidator.getVOMSAttributes();
+            msgContext.setProperty(AuthZConstants.DLG_PROXY_ATTRIBUTES, vomsList);
+            msgContext.setProperty(AuthZConstants.DLG_PROXY_CERT_LIST, certList);
 
         }
 

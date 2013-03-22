@@ -71,7 +71,7 @@ public final class ActivityStatusMonitor extends Thread {
 
         while (!terminate) {
             try {
-                activityIdList = activityDB.listActivitiesForStatus(statusList , null, statusAge*60);
+                activityIdList = activityDB.listActivitiesForStatus(statusList, null, statusAge*60);
             } catch (Throwable t) {
                 logger.warn(t.getMessage());
             }
@@ -88,7 +88,7 @@ public final class ActivityStatusMonitor extends Thread {
             synchronized(this) {
                 try {
                     logger.debug("waiting " + rate + " hour(s)...");
-                    Thread.sleep(rate*3600000);
+                    wait(rate*3600000);
                     logger.debug("waiting " + rate + " hour(s)... done");
                 } catch (InterruptedException e) {
                     terminate = true;
@@ -101,7 +101,12 @@ public final class ActivityStatusMonitor extends Thread {
 
     public void terminate() {
         logger.info("teminate invoked!");
-        terminate = true;        
+        terminate = true;
+
+        synchronized(this) {
+            notifyAll();
+        }
         logger.info("teminated!");
     }
 }
+

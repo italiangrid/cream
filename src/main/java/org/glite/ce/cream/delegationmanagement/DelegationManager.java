@@ -611,8 +611,8 @@ public class DelegationManager implements DelegationManagerInterface {
                 delegation = makeDelegation(rs);
             }
         } catch (SQLException sqle) {
-            logger.error("Failure on db interaction", sqle);
-            throw new DelegationException("Failure on db interaction: " + sqle.getMessage());
+            logger.error("Failure on storage interaction", sqle);
+            throw new DelegationException("Failure on storage interaction: " + sqle.getMessage());
         } finally {
             if (getProxyStatement != null) {
                 try {
@@ -693,8 +693,8 @@ public class DelegationManager implements DelegationManagerInterface {
             // "] not found!");
             // }
         } catch (SQLException sqle) {
-            logger.error("Failure on db interaction", sqle);
-            throw new DelegationException("Failure on db interaction: " + sqle.getMessage());
+            logger.error("Failure on storage interaction", sqle);
+            throw new DelegationException("Failure on storage interaction: " + sqle.getMessage());
         } finally {
             if (getProxyStatement != null) {
                 try {
@@ -766,8 +766,8 @@ public class DelegationManager implements DelegationManagerInterface {
                 result.add(makeDelegationRequest(rs));
             }
         } catch (SQLException sqle) {
-            logger.error("Failure on db interaction", sqle);
-            throw new DelegationException("Failure on db interaction: " + sqle.getMessage());
+            logger.error("Failure on storage interaction", sqle);
+            throw new DelegationException("Failure on storage interaction: " + sqle.getMessage());
         } finally {
             if (selectPreparedStatement != null) {
                 try {
@@ -837,8 +837,8 @@ public class DelegationManager implements DelegationManagerInterface {
                 result.add(makeDelegation(rs));
             }
         } catch (SQLException sqle) {
-            logger.error("Failure on db interaction", sqle);
-            throw new DelegationException("Failure on db interaction: " + sqle.getMessage());
+            logger.error("Failure on storage interaction", sqle);
+            throw new DelegationException("Failure on storage interaction: " + sqle.getMessage());
         } finally {
             if (selectPreparedStatement != null) {
                 try {
@@ -913,8 +913,8 @@ public class DelegationManager implements DelegationManagerInterface {
                 result.add(makeDelegation(rs));
             }
         } catch (SQLException sqle) {
-            logger.error("Failure on db interaction", sqle);
-            throw new DelegationException("Failure on db interaction: " + sqle.getMessage());
+            logger.error("Failure on storage interaction", sqle);
+            throw new DelegationException("Failure on storage interaction: " + sqle.getMessage());
         } finally {
             if (selectPreparedStatement != null) {
                 try {
@@ -1029,11 +1029,6 @@ public class DelegationManager implements DelegationManagerInterface {
         Connection connection = getConnection();
 
         try {
-            String vomsAttrsStr = "";
-            for (String vomsAttribute : delegation.getVOMSAttributes()) {
-                vomsAttrsStr += "\t" + vomsAttribute;
-            }
-
             insertStatement = connection.prepareStatement(query.toString());
             insertStatement.setString(1, delegation.getId());
             insertStatement.setString(2, delegation.getDN());
@@ -1043,7 +1038,18 @@ public class DelegationManager implements DelegationManagerInterface {
             insertStatement.setString(6, delegation.getLocalUserGroup());
             insertStatement.setString(7, delegation.getCertificate());
             insertStatement.setString(8, delegation.getInfo());
-            insertStatement.setString(9, vomsAttrsStr);
+
+            if (!delegation.getVOMSAttributes().isEmpty()) {
+                String vomsAttrsStr = "";
+
+                for (String vomsAttribute : delegation.getVOMSAttributes()) {
+                    vomsAttrsStr += "\t" + vomsAttribute;
+                }
+
+                insertStatement.setString(9, vomsAttrsStr);
+            } else {
+                insertStatement.setString(9, null);
+            }
 
             if (delegation.getStartTime() != null) {
                 insertStatement.setTimestamp(10, new java.sql.Timestamp(delegation.getStartTime().getTime()));
@@ -1114,19 +1120,25 @@ public class DelegationManager implements DelegationManagerInterface {
         Connection connection = getConnection();
 
         try {
-            String vomsAttrsStr = "";
-            for (String vomsAttribute : delegationRequest.getVOMSAttributes()) {
-                vomsAttrsStr += vomsAttribute + "\t";
-            }
-
             insertStatement = connection.prepareStatement(query.toString());
             insertStatement.setString(1, delegationRequest.getId());
             insertStatement.setString(2, delegationRequest.getDN());
-            insertStatement.setString(3, vomsAttrsStr);
             insertStatement.setString(4, delegationRequest.getPublicKey());
             insertStatement.setString(5, delegationRequest.getPrivateKey());
             insertStatement.setString(6, delegationRequest.getCertificateRequest());
             insertStatement.setString(7, delegationRequest.getLocalUser());
+
+            if (!delegationRequest.getVOMSAttributes().isEmpty()) {
+                String vomsAttrsStr = "";
+
+                for (String vomsAttribute : delegationRequest.getVOMSAttributes()) {
+                    vomsAttrsStr += "\t" + vomsAttribute;
+                }
+
+                insertStatement.setString(3, vomsAttrsStr);
+            } else {
+                insertStatement.setString(3, null);
+            }
 
             if (delegationRequest.getTimestamp() != null) {
                 insertStatement.setTimestamp(8, new java.sql.Timestamp(delegationRequest.getTimestamp().getTime()));
@@ -1173,13 +1185,6 @@ public class DelegationManager implements DelegationManagerInterface {
         }
 
         try {
-            StringTokenizer st = new StringTokenizer(rs.getString(VOMS_ATTRIBUTE_FIELD), "\t");
-            List<String> vomsAttributes = new ArrayList<String>(0);
-
-            while (st.hasMoreTokens()) {
-                vomsAttributes.add(st.nextToken());
-            }
-
             Delegation delegation = new Delegation(rs.getString(ID_FIELD));
             delegation.setDN(rs.getString(DN_FIELD));
             delegation.setFQAN(rs.getString(FQAN_FIELD));
@@ -1191,7 +1196,20 @@ public class DelegationManager implements DelegationManagerInterface {
             delegation.setStartTime(rs.getTimestamp(START_TIME_FIELD));
             delegation.setExpirationTime(rs.getTimestamp(EXPIRATION_TIME_FIELD));
             delegation.setLastUpdateTime(rs.getTimestamp(LAST_UPDATE_TIME_FIELD));
-            delegation.setVOMSAttributes(vomsAttributes);
+
+            String vomsAttr = rs.getString(VOMS_ATTRIBUTE_FIELD);
+
+            if (vomsAttr != null) {
+                StringTokenizer st = new StringTokenizer(vomsAttr, "\t");
+                List<String> vomsAttributes = new ArrayList<String>(0);
+
+                while (st.hasMoreTokens()) {
+                   vomsAttributes.add(st.nextToken());
+                }
+
+                delegation.setVOMSAttributes(vomsAttributes);
+            }
+
 
             return delegation;
         } catch (SQLException sqle) {
@@ -1206,21 +1224,25 @@ public class DelegationManager implements DelegationManagerInterface {
         }
 
         try {
-            StringTokenizer st = new StringTokenizer(rs.getString(VOMS_ATTRIBUTE_FIELD), "\t");
-            List<String> vomsAttributes = new ArrayList<String>(0);
-
-            while (st.hasMoreTokens()) {
-                vomsAttributes.add(st.nextToken());
-            }
-
             DelegationRequest delegationRequest = new DelegationRequest(rs.getString(ID_FIELD));
             delegationRequest.setDN(rs.getString(DN_FIELD));
-            delegationRequest.setVOMSAttributes(vomsAttributes);
             delegationRequest.setLocalUser(rs.getString(LOCAL_USER_FIELD));
             delegationRequest.setPublicKey(rs.getString(PUBLIC_KEY_FIELD));
             delegationRequest.setPrivateKey(rs.getString(PRIVATE_KEY_FIELD));
             delegationRequest.setCertificateRequest(rs.getString(CERTIFICATE_REQUEST_FIELD));
             delegationRequest.setTimestamp(rs.getTimestamp(TIMESTAMP_FIELD));
+
+            String vomsAttr = rs.getString(VOMS_ATTRIBUTE_FIELD);
+            if (vomsAttr != null) {
+                StringTokenizer st = new StringTokenizer(rs.getString(VOMS_ATTRIBUTE_FIELD), "\t");
+                List<String> vomsAttributes = new ArrayList<String>(0);
+
+                while (st.hasMoreTokens()) {
+                    vomsAttributes.add(st.nextToken());
+                }
+
+                delegationRequest.setVOMSAttributes(vomsAttributes);
+            }
 
             return delegationRequest;
         } catch (SQLException sqle) {
@@ -1262,20 +1284,26 @@ public class DelegationManager implements DelegationManagerInterface {
         PreparedStatement updateStatement = null;
 
         try {
-            String vomsAttrsStr = "";
-            for (String vomsAttribute : delegation.getVOMSAttributes()) {
-                vomsAttrsStr += "\t" + vomsAttribute;
-            }
-
             updateStatement = connection.prepareStatement(query.toString());
             updateStatement.setString(1, delegation.getCertificate());
             updateStatement.setString(2, delegation.getInfo());
-            updateStatement.setString(3, vomsAttrsStr);
             updateStatement.setTimestamp(4, new java.sql.Timestamp(delegation.getStartTime().getTime()));
             updateStatement.setTimestamp(5, new java.sql.Timestamp(delegation.getExpirationTime().getTime()));
             updateStatement.setTimestamp(6, new java.sql.Timestamp(delegation.getLastUpdateTime().getTime()));
             updateStatement.setString(7, delegation.getId());
             updateStatement.setString(8, delegation.getDN());
+
+            if (!delegation.getVOMSAttributes().isEmpty()) {
+                String vomsAttrsStr = "";
+
+                for (String vomsAttribute : delegation.getVOMSAttributes()) {
+                    vomsAttrsStr += "\t" + vomsAttribute;
+                }
+
+                updateStatement.setString(3, vomsAttrsStr);
+            } else {
+                updateStatement.setString(3, null);
+            }
 
             updateStatement.executeUpdate();
 
@@ -1329,19 +1357,25 @@ public class DelegationManager implements DelegationManagerInterface {
         PreparedStatement updateStatement = null;
 
         try {
-            String vomsAttrsStr = "";
-            for (String vomsAttribute : delegationRequest.getVOMSAttributes()) {
-                vomsAttrsStr += "\t" + vomsAttribute;
-            }
-
             updateStatement = connection.prepareStatement(query.toString());
             updateStatement.setString(1, delegationRequest.getCertificateRequest());
             updateStatement.setString(2, delegationRequest.getPublicKey());
             updateStatement.setString(3, delegationRequest.getPrivateKey());
-            updateStatement.setString(4, vomsAttrsStr);
             updateStatement.setString(5, delegationRequest.getId());
             updateStatement.setString(6, delegationRequest.getDN());
             updateStatement.setTimestamp(7, new java.sql.Timestamp(delegationRequest.getTimestamp().getTime()));
+
+            if (!delegationRequest.getVOMSAttributes().isEmpty()) {
+                String vomsAttrsStr = "";
+
+                for (String vomsAttribute : delegationRequest.getVOMSAttributes()) {
+                    vomsAttrsStr += "\t" + vomsAttribute;
+                }
+
+                updateStatement.setString(4, vomsAttrsStr);
+            } else {
+                updateStatement.setString(4, null);
+            }
 
             updateStatement.executeUpdate();
 

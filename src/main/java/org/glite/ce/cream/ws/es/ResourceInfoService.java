@@ -32,8 +32,14 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import java.io.ByteArrayInputStream;
+
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
+
+
+import org.apache.axiom.om.impl.builder.StAXBuilder;
+import org.apache.axiom.om.impl.builder.StAXOMBuilder;
 
 import org.apache.axiom.om.OMAttribute;
 import org.apache.axiom.om.OMElement;
@@ -321,13 +327,37 @@ public class ResourceInfoService implements ResourceInfoServiceSkeletonInterface
         checkInitialization();
         logger.debug("BEGIN queryResourceInfo");
 
-        if (req == null || req.getQueryExpression() == null) {
-            throw new NotValidQueryStatementFault("query not defined!");
+        if (req == null || req.getQueryExpression() == null || req.getQueryExpression().getExtraElement() == null || req.getQueryExpression().getExtraElement().getText() == null) {
+logger.info(">>>>>>>>>>>>>>>>>>>>>> query not defined!!!");    
+            String message = "query not defined!";
+            org.glite.ce.creamapi.ws.es.resourceinfo.types.NotValidQueryStatementFault msg = new org.glite.ce.creamapi.ws.es.resourceinfo.types.NotValidQueryStatementFault();
+            msg.setMessage(message);
+            msg.setDescription(message);
+            msg.setTimestamp(GregorianCalendar.getInstance());
+
+            NotValidQueryStatementFault fault = new NotValidQueryStatementFault();
+            fault.setFaultMessage(msg);
+
+            throw fault;
         }
         
-        if (!req.getQueryDialect().toString().equals(DefaultQueryDialectsEnumType.value1.toString())) {
-            throw new NotSupportedQueryDialectFault("dialect not supported; please define " + DefaultQueryDialectsEnumType.value1);
+//logger.info(">>>>>>>>>>>>>>>>>>>>>> query '"+req.getQueryExpression().getExtraElement().getText()+"'");
+
+        if (req.getQueryDialect() == null || !req.getQueryDialect().toString().equals(DefaultQueryDialectsEnumType.value1.toString())) {
+logger.info(">>>>>>>>>>>>>>>>>>>>>> dialect not supported; " + req.getQueryDialect().toString());
+            String message = "dialect not supported; please define " + DefaultQueryDialectsEnumType.value1;
+            org.glite.ce.creamapi.ws.es.resourceinfo.types.NotSupportedQueryDialectFault msg = new org.glite.ce.creamapi.ws.es.resourceinfo.types.NotSupportedQueryDialectFault();
+            msg.setMessage(message);
+            msg.setDescription(message);
+            msg.setTimestamp(GregorianCalendar.getInstance());
+
+            NotSupportedQueryDialectFault fault = new NotSupportedQueryDialectFault();
+            fault.setFaultMessage(msg);
+
+            throw fault;
         }
+
+logger.info(">>>>>>>>>>>>>>>>>>>>>> dialect " + req.getQueryDialect().toString());
 
         ActivityCmd command = null;
         try {
@@ -336,6 +366,7 @@ public class ResourceInfoService implements ResourceInfoServiceSkeletonInterface
 
             CommandManager.getInstance().execute(command);
         } catch (Throwable t) {
+logger.error(t.getMessage(), t);
             org.glite.ce.creamapi.ws.es.resourceinfo.types.InternalResourceInfoFault msg = new org.glite.ce.creamapi.ws.es.resourceinfo.types.InternalResourceInfoFault();
             msg.setDescription("internal error");
             msg.setMessage(t.getMessage());
@@ -365,12 +396,38 @@ public class ResourceInfoService implements ResourceInfoServiceSkeletonInterface
                     
                     response.addQueryResourceInfoItem(item);     
                 } else if (omObj instanceof OMElement) {      
-                //    ((OMElement) omObj).declareDefaultNamespace("http://schemas.ogf.org/glue/2009/03/spec_2.0_r1");
-              
+try {              
+                    //((OMElement) omObj).declareDefaultNamespace("http://schemas.ogf.org/glue/2009/03/spec_2.0_r1");
+                    //((OMElement) omObj).addAttribute("xmlns1", "http://schemas.ogf.org/glue/2009/03/spec_2.0_r1", null);
+               try {
+                        String xmlns = " xmlns=\"http://schemas.ogf.org/glue/2009/03/spec_2.0_r1\" ";
+                        String xmlStream = ((OMElement) omObj).toString();//computingServicei.getOMElement(ComputingService.MY_QNAME, OMAbstractFactory.getOMFactory()).toString();
+
+                        int index = xmlStream.indexOf(" ");
+                        if (index > 0) {
+                            xmlStream = xmlStream.substring(0, index) + xmlns + xmlStream.substring(index + 1);
+                        }
+
+logger.info(xmlStream);
+                        StAXBuilder builder = new StAXOMBuilder(new ByteArrayInputStream(xmlStream.getBytes()));
+                        //computingServiceElement = builder.getDocumentElement();
+                    QueryResourceInfoItem_type0 item = new QueryResourceInfoItem_type0();
+                    item.setExtraElement(builder.getDocumentElement());
+
+                    response.addQueryResourceInfoItem(item);
+
+                    } catch (Throwable t) {
+                        logger.error(t.getMessage());
+                    }
+/*
                     QueryResourceInfoItem_type0 item = new QueryResourceInfoItem_type0();
                     item.setExtraElement((OMElement) omObj);
                     
                     response.addQueryResourceInfoItem(item); 
+*/
+} catch(Throwable t) {
+logger.error(t.getMessage(), t);
+}
                 }
             }
         }
