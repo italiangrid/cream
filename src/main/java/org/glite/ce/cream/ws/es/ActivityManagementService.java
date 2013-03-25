@@ -28,31 +28,21 @@ package org.glite.ce.cream.ws.es;
  *  CreateActivitySkeleton java skeleton for the axisService
  */
 import java.io.ByteArrayInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.net.InetAddress;
-import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.xml.namespace.QName;
-import javax.xml.stream.FactoryConfigurationError;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.axiom.om.OMAbstractFactory;
 import org.apache.axiom.om.OMElement;
 import org.apache.axiom.om.impl.builder.StAXBuilder;
 import org.apache.axiom.om.impl.builder.StAXOMBuilder;
 import org.apache.axiom.om.impl.llom.OMElementImpl;
-import org.apache.axiom.om.xpath.AXIOMXPath;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.axis2.context.ServiceContext;
-import org.apache.axis2.databinding.ADBException;
 import org.apache.axis2.databinding.types.NCName;
 import org.apache.axis2.databinding.types.URI;
 import org.apache.axis2.description.AxisService;
@@ -62,7 +52,6 @@ import org.apache.axis2.service.Lifecycle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.apache.xmlbeans.impl.values.NamespaceContext;
 import org.glite.ce.commonj.utils.CEUtils;
 import org.glite.ce.cream.activitymanagement.ActivityCmd;
 import org.glite.ce.cream.activitymanagement.ActivityCmd.ActivityCommandField;
@@ -128,7 +117,6 @@ import org.glite.ce.creamapi.ws.es.activitymanagement.types.WipeActivityResponse
 import org.glite.ce.creamapi.ws.es.adl.ActivityTypeEnumeration;
 import org.glite.ce.creamapi.ws.es.glue.ComputingActivityState_t;
 import org.glite.ce.creamapi.ws.es.glue.ComputingActivityType_t;
-import org.glite.ce.creamapi.ws.es.glue.ComputingService;
 import org.glite.ce.creamapi.ws.es.glue.JobDescription_t;
 
 public class ActivityManagementService implements ActivityManagementServiceSkeletonInterface, Lifecycle {
@@ -400,6 +388,7 @@ public class ActivityManagementService implements ActivityManagementServiceSkele
                     OMElement activityInfoDocumentElement = builder.getDocumentElement();
 
                         for (int i = 0; i < req.getAttributeName().length; i++) {
+                            @SuppressWarnings("unchecked")
                             Iterator<OMElementImpl> children = (Iterator<OMElementImpl>) activityInfoDocumentElement.getChildrenWithName(req.getAttributeName()[i]);
 
                             if (children != null) {
@@ -470,22 +459,6 @@ public class ActivityManagementService implements ActivityManagementServiceSkele
                 }
             }
         }
-//        XMLStreamWriter writer;
-//        try {
-//            writer = XMLOutputFactory.newInstance().createXMLStreamWriter(new FileWriter("/tmp/pippo3.xml"));
-//            response.serialize(GetActivityInfoResponse.MY_QNAME, writer);
-//            writer.flush();
-//            writer.close();
-//        } catch (XMLStreamException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        } catch (FactoryConfigurationError e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
                
         logger.debug("END getActivityInfo");
         return response;
