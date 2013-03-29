@@ -312,6 +312,25 @@ taking care of the any job related operation</description>
                 <require>glite-ce-blahp</require>
                 <require>mysql-connector-java</require>
               </requires>
+              <defineStatements>
+                <defineStatement>_tomcat ${tomcat.pkg.name}</defineStatement>
+              </defineStatements>
+              <preinstallScriptlet>
+                <scriptFile>src/scripts/cream-preinstall</scriptFile>
+                <fileEncoding>utf-8</fileEncoding>
+              </preinstallScriptlet>
+              <postinstallScriptlet>
+                <scriptFile>src/scripts/cream-postinstall</scriptFile>
+                <fileEncoding>utf-8</fileEncoding>
+              </postinstallScriptlet>
+              <preremoveScriptlet>
+                <scriptFile>src/scripts/cream-preremove</scriptFile>
+                <fileEncoding>utf-8</fileEncoding>
+              </preremoveScriptlet>
+              <postremoveScriptlet>
+                <scriptFile>src/scripts/cream-postremove</scriptFile>
+                <fileEncoding>utf-8</fileEncoding>
+              </postremoveScriptlet>
             </configuration>
           </execution>
 
@@ -375,6 +394,25 @@ And Management service.</description>
                 <require>glite-ce-blahp</require>
                 <require>mysql-connector-java</require>
               </requires>
+              <defineStatements>
+                <defineStatement>_tomcat ${tomcat.pkg.name}</defineStatement>
+              </defineStatements>
+              <preinstallScriptlet>
+                <scriptFile>src/scripts/es-preinstall</scriptFile>
+                <fileEncoding>utf-8</fileEncoding>
+              </preinstallScriptlet>
+              <postinstallScriptlet>
+                <scriptFile>src/scripts/es-postinstall</scriptFile>
+                <fileEncoding>utf-8</fileEncoding>
+              </postinstallScriptlet>
+              <preremoveScriptlet>
+                <scriptFile>src/scripts/es-preremove</scriptFile>
+                <fileEncoding>utf-8</fileEncoding>
+              </preremoveScriptlet>
+              <postremoveScriptlet>
+                <scriptFile>src/scripts/es-postremove</scriptFile>
+                <fileEncoding>utf-8</fileEncoding>
+              </postremoveScriptlet>
             </configuration>
           </execution>
 

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ $1 -eq 0 ] ; then
+
+  for((idx=0; idx<5; idx++)) ; do
+    /sbin/service %{_tomcat} stop
+    if [ $? == 0 ] ; then idx=5; else sleep 5; fi
+  done
+
+  if [ -d /var/lib/%{_tomcat}/webapps/ce-cream ] ; then 
+    rm -rf /var/lib/%{_tomcat}/webapps/ce-cream
+  fi
+    
+  if [ -e /etc/%{_tomcat}/Catalina/localhost/ce-cream.xml ] ; then
+    rm -f /etc/%{_tomcat}/Catalina/localhost/ce-cream.xml
+  fi
+    
+  rm -f /etc/glite-ce-cream/creamdb_min_access.conf
+
+fi
+
