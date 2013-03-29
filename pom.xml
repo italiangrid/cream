@@ -2,17 +2,27 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
+  <groupId>org.glite.ce</groupId>
+  <artifactId>cream</artifactId>
+  <version>1.16.1</version>
+  <packaging>jar</packaging>
+
+  <properties>
+    <rpm.release>1</rpm.release>
+  </properties>
+  
   <parent>
     <groupId>org.glite</groupId>
     <artifactId>cream-parent</artifactId>
     <version>1.0.0</version>
   </parent>
 
-  <groupId>org.glite.ce</groupId>
-  <artifactId>cream</artifactId>
-  <version>1.16.1</version>
-  <packaging>jar</packaging>
-
+  <scm>
+    <connection>scm:git:git://github.com/italiangrid/cream.git</connection>
+    <url>https://github.com/italiangrid/cream</url>
+    <developerConnection>scm:git:ssh://git@github.com:italiangrid/cream.git</developerConnection>
+  </scm>
+  
   <build>
   
     <plugins>
@@ -174,6 +184,197 @@
                 <index>true</index>
                 <manifest><addDefaultSpecificationEntries/></manifest>
               </archive>
+            </configuration>
+          </execution>
+
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>rpm-maven-plugin</artifactId>
+        <version>2.1-alpha-2</version>
+        <executions>
+
+          <execution>
+            <id>cream-core</id>
+            <goals><goal>attached-rpm</goal></goals>
+            <configuration>
+              <name>glite-ce-cream-core</name>
+              <classifier>core</classifier>
+              <summary>Common classes for CREAM services</summary>
+              <description>This package contains the core libraries used by CREAM services</description>
+              <!-- changelogFile>CHANGELOG</changelogFile -->
+              <copyright>Apache Software License</copyright>
+              <release>${project.rpm.release}</release>
+              <group>Applications/Internet</group>
+              <mappings>
+                <mapping>
+                  <directory>/usr/share/java</directory>
+                  <directoryIncluded>false</directoryIncluded>
+                  <filemode>744</filemode>
+                  <sources>
+                    <source>
+                      <location>${project.build.directory}/${project.artifactId}-${project.version}.jar</location>
+                      <destination>glite-ce-cream-core.jar</destination>
+                    </source>
+                    <source>
+                      <location>${project.build.directory}/cream-client.jar</location>
+                      <destination>glite-ce-cream-clients.jar</destination>
+                    </source>
+                    <source>
+                      <location>${project.build.directory}/plugins/cream-activityExecutor.jar</location>
+                      <destination>glite-ce-cream-activityExecutor.jar</destination>
+                    </source>
+                    <source>
+                      <location>${project.build.directory}/plugins/cream-blahExecutor.jar</location>
+                      <destination>glite-ce-cream-blahExecutor.jar</destination>
+                    </source>
+                    <source>
+                      <location>${project.build.directory}/plugins/cream-delegationExecutor.jar</location>
+                      <destination>glite-ce-cream-delegationExecutor.jar</destination>
+                    </source>
+                  </sources>
+                </mapping>
+                <mapping>
+                  <directory>/usr/share/glite-ce-cream/modules</directory>
+                  <directoryIncluded>true</directoryIncluded>
+                  <filemode>744</filemode>
+                  <sources>
+                    <source>
+                      <location>${project.build.directory}/cream-authorization.jar</location>
+                      <destination>glite-ce-cream-authorization.mar</destination>
+                    </source>
+                  </sources>
+                </mapping>
+                <mapping>
+                  <directory>/usr/share/glite-ce-cream/services</directory>
+                  <directoryIncluded>true</directoryIncluded>
+                  <filemode>744</filemode>
+                </mapping>
+              </mappings>
+              <requires>
+                <require>glite-ce-cream-api-java</require>
+              </requires>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>cream-legacy</id>
+            <goals><goal>attached-rpm</goal></goals>
+            <configuration>
+              <name>glite-ce-cream</name>
+              <summary>Computing Resource Execution And Management service</summary>
+              <description>The Computing Resource Execution And Management service is a web application
+taking care of the any job related operation</description>
+              <!-- changelogFile>CHANGELOG</changelogFile -->
+              <copyright>Apache Software License</copyright>
+              <release>${project.rpm.release}</release>
+              <group>Applications/Internet</group>
+              <mappings>
+                <mapping>
+                  <directory>/usr/share/glite-ce-cream/services</directory>
+                  <directoryIncluded>false</directoryIncluded>
+                  <filemode>744</filemode>
+                  <sources>
+                    <source>
+                      <location>${project.build.directory}/cream-legacy-interface.jar</location>
+                      <destination>glite-ce-cream.aar</destination>
+                    </source>
+                  </sources>
+                </mapping>
+                <mapping>
+                  <directory>/etc/glite-ce-cream</directory>
+                  <directoryIncluded>true</directoryIncluded>
+                  <filemode>744</filemode>
+                  <configuration>noreplace</configuration>
+                  <sources>
+                    <source>
+                      <location>config/cream</location>
+                      <includes>
+                        <include>*.template</include>
+                        <include>*.tpl</include>
+                        <include>*.properties</include>
+                      </includes>
+                    </source>
+                    <source>
+                      <location>config/cream/db</location>
+                      <includes>
+                        <include>*.sql</include>
+                      </includes>
+                    </source>
+                  </sources>
+                </mapping>
+              </mappings>
+              <requires>
+                <require>glite-ce-cream-utils</require>
+                <require>glite-ce-cream-core</require>
+                <require>glite-ce-blahp</require>
+                <require>mysql-connector-java</require>
+              </requires>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>cream-es</id>
+            <goals><goal>attached-rpm</goal></goals>
+            <configuration>
+              <name>glite-ce-cream-es</name>
+              <summary>The gLite implementation of EMI Execution Service</summary>
+              <description>This package provides the gLite implementation of Execution Service interface.
+The interface is built on top of the core of the Computing Resource Execution 
+And Management service.</description>
+              <!-- changelogFile>CHANGELOG</changelogFile -->
+              <copyright>Apache Software License</copyright>
+              <release>${project.rpm.release}</release>
+              <group>Applications/Internet</group>
+              <mappings>
+                <mapping>
+                  <directory>/usr/share/glite-ce-cream/services</directory>
+                  <directoryIncluded>false</directoryIncluded>
+                  <filemode>744</filemode>
+                  <sources>
+                    <source>
+                      <location>${project.build.directory}/cream-es-interface.jar</location>
+                      <destination>glite-ce-cream-es.aar</destination>
+                    </source>
+                  </sources>
+                </mapping>
+                <mapping>
+                  <directory>/etc/glite-ce-cream-es</directory>
+                  <directoryIncluded>true</directoryIncluded>
+                  <filemode>744</filemode>
+                  <configuration>noreplace</configuration>
+                  <sources>
+                    <source>
+                      <location>config/cream-es</location>
+                      <includes>
+                        <include>*.template</include>
+                        <include>*.tpl</include>
+                        <include>*.properties</include>
+                      </includes>
+                    </source>
+                    <source>
+                      <location>config/cream-es/db</location>
+                      <includes>
+                        <include>*.sql</include>
+                      </includes>
+                    </source>
+                    <source>
+                      <location>config/cream-es/db/storedprocedures</location>
+                      <includes>
+                        <include>*.sql</include>
+                      </includes>
+                    </source>
+                  </sources>
+                </mapping>
+              </mappings>
+              <requires>
+                <require>glite-ce-cream-utils</require>
+                <require>glite-ce-cream-core</require>
+                <require>glite-ce-blahp</require>
+                <require>mysql-connector-java</require>
+              </requires>
             </configuration>
           </execution>
 
