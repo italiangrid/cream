@@ -7,10 +7,10 @@
         <module ref="cream-authorization"/>
         <parameter name="serviceDescription">CREAM 2</parameter>
         <parameter name="serviceLogConfigurationFile">/etc/glite-ce-cream/log4j.properties</parameter>
-        <parameter name="creamVersion">1.15</parameter>
-        <parameter name="creamInterfaceVersion">2.1</parameter>
-        <parameter name="creamdbDatabaseVersion">2.6</parameter>
-        <parameter name="delegationdbDatabaseVersion">2.6</parameter>
+        <parameter name="creamVersion">@creamVersion@</parameter>
+        <parameter name="creamInterfaceVersion">@creamInterfaceVersion@</parameter>
+        <parameter name="creamdbDatabaseVersion">@creamdbDatabaseVersion@</parameter>
+        <parameter name="delegationdbDatabaseVersion">@delegationdbDatabaseVersion@</parameter>
         <parameter name="ServiceClass">org.glite.ce.cream.ws.CREAM2Service</parameter>
         <parameter name="useOriginalwsdl">true</parameter>
         <parameter name="modifyUserWSDLPortAddress">true</parameter>

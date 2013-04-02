@@ -71,7 +71,10 @@
               </includes>
               <archive>
                 <index>true</index>
-                <manifest><addDefaultSpecificationEntries/></manifest>
+                <manifest>
+                  <addDefaultSpecificationEntries/>
+                  <mainClass>org.glite.ce.cream.jobmanagement.cmdexecutor.blah.BLAHExecutor</mainClass>
+                </manifest>
               </archive>
             </configuration>
           </execution>
@@ -88,7 +91,10 @@
               </includes>
               <archive>
                 <index>true</index>
-                <manifest><addDefaultSpecificationEntries/></manifest>
+                <manifest>
+                  <addDefaultSpecificationEntries/>
+                  <mainClass>org.glite.ce.cream.delegationmanagement.cmdexecutor.DelegationExecutor</mainClass>
+                </manifest>
               </archive>
             </configuration>
           </execution>
@@ -106,7 +112,10 @@
               </includes>
               <archive>
                 <index>true</index>
-                <manifest><addDefaultSpecificationEntries/></manifest>
+                <manifest>
+                  <addDefaultSpecificationEntries/>
+                  <mainClass>org.glite.ce.cream.activitymanagement.cmdexecutor.ActivityExecutor</mainClass>
+                </manifest>
               </archive>
             </configuration>
           </execution>
@@ -187,6 +196,55 @@
             </configuration>
           </execution>
 
+        </executions>
+      </plugin>
+      
+      <!-- with this workaround we can avoid any conflicts between CREAM
+           and ES service descriptor files -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+            <id>update-service-descriptors</id>
+            <phase>package</phase>
+            <goals><goal>run</goal></goals>
+            <configuration>
+              <target>
+                <mkdir dir="${project.build.directory}/cream-defs"/>
+                <copy file="${project.basedir}/config/cream/services.xml" todir="${project.build.directory}/cream-defs"/>"
+                <replace file="${project.build.directory}/cream-defs/services.xml"
+                         propertyFile="${project.basedir}/config/cream/services.properties">
+                  <replacefilter token="@creamdbDatabaseVersion@" property="creamdb_version"/>
+                  <replacefilter token="@delegationdbDatabaseVersion@" property="delegationdb_version"/>
+                  <replacefilter token="@creamInterfaceVersion@" property="interface_version"/>
+                  <replacefilter token="@creamVersion@" property="implementation_version"/>
+                </replace>
+                <jar destfile="${project.build.directory}/cream-legacy-interface.jar"
+                     update="true">
+                  <metainf dir="${project.build.directory}/cream-defs">
+                    <include name="services.xml"/>
+                  </metainf>
+                </jar>
+
+                <mkdir dir="${project.build.directory}/cream-es-defs"/>
+                <copy file="${project.basedir}/config/cream-es/services.xml" todir="${project.build.directory}/cream-es-defs"/>"
+                <replace file="${project.build.directory}/cream-es-defs/services.xml"
+                         propertyFile="${project.basedir}/config/cream-es/services.properties">
+                  <replacefilter token="@esdbDatabaseVersion@" property="creamesdb_version"/>
+                  <replacefilter token="@delegationesdbDatabaseVersion@" property="delegationesdb_version"/>
+                  <replacefilter token="@esdbStoredProcedureVersion@" property="esstoredprocdb_version"/>
+                </replace>
+                <jar destfile="${project.build.directory}/cream-es-interface.jar"
+                     update="true">
+                  <metainf dir="${project.build.directory}/cream-es-defs">
+                    <include name="services.xml"/>
+                  </metainf>
+                </jar>
+              </target>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
 

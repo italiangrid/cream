@@ -53,9 +53,9 @@
         <parameter name="ServiceClass">org.glite.ce.cream.ws.es.ActivityCreationService</parameter>
         <parameter name="useOriginalwsdl">true</parameter>
         <parameter name="modifyUserWSDLPortAddress">true</parameter>
-        <parameter name="esdbDatabaseVersion">1.1</parameter>
-        <parameter name="esdbStoredProcedureVersion">1.1</parameter>
-        <parameter name="delegationesdbDatabaseVersion">1.1</parameter>
+        <parameter name="esdbDatabaseVersion">@esdbDatabaseVersion@</parameter>
+        <parameter name="esdbStoredProcedureVersion">@esdbStoredProcedureVersion@</parameter>
+        <parameter name="delegationesdbDatabaseVersion">@delegationesdbDatabaseVersion@</parameter>
         <parameter name="serviceLogConfigurationFile">/etc/glite-ce-cream-es/log4j.properties</parameter>
         <operation name="CreateActivity" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.eu-emi.eu/es/2010/12/creation">
             <actionMapping>http://www.eu-emi.eu/es/2010/12/creation/ActivityCreation/CreateActivityRequest</actionMapping>
