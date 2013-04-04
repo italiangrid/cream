@@ -1,4 +1,0 @@
-#!/bin/bash
-
-/sbin/service %{_tomcat} start
-

@@ -1,0 +1,330 @@
+Summary: Computing Resource Execution And Management service
+Name: @PKGNAME@
+Version: @PKGVERSION@
+Release: @PKGRELEASE@
+License: Apache Software License
+Vendor: EMI
+URL: http://glite.cern.ch/
+Group: Applications/Internet
+BuildArch: noarch
+BuildRequires: maven
+Requires: glite-ce-cream-utils, glite-ce-cream-core, glite-ce-blahp, mysql-connector-java
+Requires(post): openssl
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+AutoReqProv: yes
+Source: %{name}.tar.gz
+
+%global _tomcat @TOMCATPKG@
+
+%description
+The Computing Resource Execution And Management service is a web application
+taking care of the any job related operation
+
+%prep
+ 
+
+%setup -c -q
+
+%build
+mvn @MVNOPTS@ compile
+
+%install
+rm -rf %{buildroot}
+mkdir -p %{buildroot}
+mvn @MVNOPTS@ install
+mkdir -p %{buildroot}/usr/share/java
+cp %{_builddir}/%{name}-%{version}/target/cream-@PKGVERSION@.jar %{buildroot}/usr/share/java/glite-ce-cream-core.jar
+cp %{_builddir}/%{name}-%{version}/target/plugins/cream-activityExecutor.jar %{buildroot}/usr/share/java/glite-ce-cream-activityExecutor.jar
+cp %{_builddir}/%{name}-%{version}/target/plugins/cream-blahExecutor.jar %{buildroot}/usr/share/java/glite-ce-cream-blahExecutor.jar
+cp %{_builddir}/%{name}-%{version}/target/plugins/cream-delegationExecutor.jar %{buildroot}/usr/share/java/glite-ce-cream-delegationExecutor.jar
+mkdir -p %{buildroot}/usr/share/glite-ce-cream/services
+cp %{_builddir}/%{name}-%{version}/target/cream-es-interface.jar %{buildroot}/usr/share/glite-ce-cream/services/glite-ce-cream-es.aar
+cp %{_builddir}/%{name}-%{version}/target/cream-legacy-interface.jar %{buildroot}/usr/share/glite-ce-cream/services/glite-ce-cream.aar
+mkdir -p %{buildroot}/usr/share/glite-ce-cream/modules
+cp %{_builddir}/%{name}-%{version}/target/cream-authorization.jar %{buildroot}/usr/share/glite-ce-cream/modules/glite-ce-cream-authorization.mar
+mkdir -p %{buildroot}/etc/glite-ce-cream
+cp %{_builddir}/%{name}-%{version}/config/cream/db/*.sql %{buildroot}/etc/glite-ce-cream
+cp %{_builddir}/%{name}-%{version}/config/cream/*.properties %{buildroot}/etc/glite-ce-cream
+cp %{_builddir}/%{name}-%{version}/config/cream/*.template %{buildroot}/etc/glite-ce-cream
+cp %{_builddir}/%{name}-%{version}/config/cream/*.tpl %{buildroot}/etc/glite-ce-cream
+mkdir -p %{buildroot}/etc/glite-ce-cream-es
+cp %{_builddir}/%{name}-%{version}/config/cream-es/db/*.sql %{buildroot}/etc/glite-ce-cream-es
+cp %{_builddir}/%{name}-%{version}/config/cream-es/*.properties %{buildroot}/etc/glite-ce-cream-es
+cp %{_builddir}/%{name}-%{version}/config/cream-es/*.template %{buildroot}/etc/glite-ce-cream-es
+cp %{_builddir}/%{name}-%{version}/config/cream-es/*.tpl %{buildroot}/etc/glite-ce-cream-es
+mkdir -p %{buildroot}/etc/glite-ce-cream-es/storedprocedures
+cp %{_builddir}/%{name}-%{version}/config/cream-es/db/storedprocedures/*.sql %{buildroot}/etc/glite-ce-cream-es/storedprocedures
+
+%clean
+rm -rf %{buildroot}
+
+%pre
+for((idx=0; idx<5; idx++)) ; do
+  /sbin/service %{_tomcat} stop
+  if [ $? == 0 ] ; then idx=5; else sleep 5; fi
+done
+
+# Remove the axis1-based installation 
+if [ -f /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/server-config.wsdd ] ; then
+  rm -rf /var/lib/%{_tomcat}/webapps/ce-cream
+  rm -f /etc/%{_tomcat}/Catalina/localhost/ce-cream.xml
+  rm -rf /var/cache/%{_tomcat}/work/Catalina/localhost/ce-cream
+fi
+
+%post
+# Do not overwrite axis2-based installation
+if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services/glite-ce-cream.aar ] ; then
+
+  cp -R /usr/share/axis2/webapp /var/lib/%{_tomcat}/webapps/ce-cream || exit 1
+  
+  ln -s /usr/share/java/jclassads/cedar.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/jclassads/classad.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/argus-pep-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/argus-pep-common.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/canl.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/bcprov.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-common-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-cream-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-cream-blahExecutor.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-cream-core.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-cream-delegationExecutor.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-cream-skeleton.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-delegation-skeleton.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/glite-jdl-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/voms-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+
+%if 0%{?el6}
+  # set allowLinking option for tomcat6
+  mkdir /var/lib/%{_tomcat}/webapps/ce-cream/META-INF
+  echo '<Context override="true" allowLinking="true"></Context>' > /var/lib/%{_tomcat}/webapps/ce-cream/META-INF/context.xml
+%endif
+
+  ln -s /usr/share/glite-ce-cream/modules/glite-ce-cream-authorization.mar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/modules
+  find /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/modules -name *.mar -exec basename \\{\\} \\; > /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/modules/modules.list
+  
+  ln -s /usr/share/glite-ce-cream/services/glite-ce-cream.aar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services
+  find /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services -name *.aar -exec basename \\{\\} \\; >  /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services/services.list
+
+  cp /etc/glite-ce-dbtool/creamdb_min_access.conf.template /etc/glite-ce-cream/creamdb_min_access.conf
+  
+fi
+
+# Axis Servlet configuration
+# customization of axis2.xml
+REPLACE1='s|__CHANGE_SERVICE__|/etc/glite-ce-cream/cream-config.xml|g'
+REPLACE2='s|__CHANGE_LOG4J__|/etc/glite-ce-cream/log4j.properties|g'
+  
+sed "$REPLACE1 ; $REPLACE2 " /etc/glite-ce-common-java/axis2.xml > /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/conf/axis2.xml
+chmod 600 /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/conf/axis2.xml
+chown tomcat.tomcat /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/conf/axis2.xml
+# cannot use symlinks for the following files:
+cp -f /etc/glite-ce-common-java/web.xml /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/
+
+if [ $1 -eq 1 ] ; then
+# Creation of the back-end and log dir
+  if [ ! "x`grep tomcat /etc/passwd`" == "x" ] ; then
+    mkdir -p /var/cream
+    chown tomcat:tomcat /var/cream
+    chmod 700 /var/cream
+
+    mkdir -p /var/cream_sandbox
+    chown tomcat:tomcat /var/cream_sandbox
+    chmod 700 /var/cream_sandbox
+
+    mkdir -p /var/log/cream
+    chown tomcat:tomcat /var/log/cream
+    chmod 755 /var/log/cream
+
+  fi
+    
+  /sbin/service %{_tomcat} start
+  
+fi
+
+%preun
+if [ $1 -eq 0 ] ; then
+
+  for((idx=0; idx<5; idx++)) ; do
+    /sbin/service %{_tomcat} stop
+    if [ $? == 0 ] ; then idx=5; else sleep 5; fi
+  done
+
+  if [ -d /var/lib/%{_tomcat}/webapps/ce-cream ] ; then 
+    rm -rf /var/lib/%{_tomcat}/webapps/ce-cream
+  fi
+    
+  if [ -e /etc/%{_tomcat}/Catalina/localhost/ce-cream.xml ] ; then
+    rm -f /etc/%{_tomcat}/Catalina/localhost/ce-cream.xml
+  fi
+    
+  rm -f /etc/glite-ce-cream/creamdb_min_access.conf
+
+fi
+
+%postun
+/sbin/service %{_tomcat} start
+
+
+%files
+%defattr(-,root,root)
+%dir /etc/glite-ce-cream/
+%config(noreplace) /etc/glite-ce-cream/*.sql
+%config(noreplace) /etc/glite-ce-cream/*.template
+%config(noreplace) /etc/glite-ce-cream/*.tpl
+%config(noreplace) /etc/glite-ce-cream/*.properties
+/usr/share/glite-ce-cream/services/glite-ce-cream.aar
+
+
+
+
+
+
+
+%package core
+Summary: Common classes for CREAM services
+Group: Applications/Internet
+Requires: glite-ce-cream-api-java
+
+%description core
+This package contains the core libraries used by CREAM services
+
+%files core
+%defattr(-,root,root)
+/usr/share/java/glite-ce-cream*.jar
+%dir /usr/share/glite-ce-cream/modules
+/usr/share/glite-ce-cream/modules/*.mar
+%dir /usr/share/glite-ce-cream/services
+
+
+
+
+
+
+
+
+%package es
+Summary: The gLite implementation of EMI Execution Service
+Group: Applications/Internet
+Requires: glite-ce-cream-utils, glite-ce-cream-core, glite-ce-blahp, mysql-connector-java
+
+%description es
+This package provides the gLite implementation of Execution Service interface.
+The interface is built on top of the core of the Computing Resource Execution 
+And Management service.
+
+%files es
+%defattr(-,root,root)
+%dir /etc/glite-ce-cream-es/
+%config(noreplace) /etc/glite-ce-cream-es/*.sql
+%config(noreplace) /etc/glite-ce-cream-es/*.template
+%config(noreplace) /etc/glite-ce-cream-es/*.tpl
+%config(noreplace) /etc/glite-ce-cream-es/*.properties
+%config(noreplace) /etc/glite-ce-cream-es/storedprocedures/*.sql
+/usr/share/glite-ce-cream/services/glite-ce-cream-es.aar
+
+%pre es
+for((idx=0; idx<5; idx++)) ; do
+  /sbin/service %{_tomcat} stop
+  if [ $? == 0 ] ; then idx=5; else sleep 5; fi
+done
+
+%post es
+# Do not overwrite axis2-based installation
+if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services/glite-ce-cream-es.aar ] ; then
+
+  cp -R /usr/share/axis2/webapp /var/lib/%{_tomcat}/webapps/ce-cream-es || exit 1
+  
+  ln -s /usr/share/java/jclassads/cedar.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/jclassads/classad.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/argus-pep-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/argus-pep-common.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/trustmanager.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/bcprov.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/delegation-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-common-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-cream-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-cream-blahExecutor.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-cream-core.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-cream-delegationExecutor.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-cream-es-skeleton.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/glite-ce-delegation-skeleton.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/glite-jdl-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/voms-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+
+%if 0%{?el6}
+  # set allowLinking option for tomcat6
+  mkdir /var/lib/%{_tomcat}/webapps/ce-cream-es/META-INF
+  echo '<Context override="true" allowLinking="true"></Context>' > /var/lib/%{_tomcat}/webapps/ce-cream-es/META-INF/context.xml
+%endif
+
+  ln -s /usr/share/glite-ce-cream/modules/glite-ce-cream-authorization.mar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/modules
+  find /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/modules -name *.mar -exec basename \\{\\} \\; > /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/modules/modules.list
+  
+  ln -s /usr/share/glite-ce-cream/services/glite-ce-cream-es.aar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services
+  find /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services -name *.aar -exec basename \\{\\} \\; > /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services/services.list
+
+  cp /etc/glite-ce-dbtool/creamdb_min_access.conf.template /etc/glite-ce-cream-es/creamdb_min_access.conf
+  
+fi
+
+# Axis Servlet configuration
+# customization of axis2.xml
+REPLACE1='s|__CHANGE_SERVICE__|/etc/glite-ce-cream-es/cream-config.xml|g'
+REPLACE2='s|__CHANGE_LOG4J__|/etc/glite-ce-cream-es/log4j.properties|g'
+  
+sed "$REPLACE1 ; $REPLACE2 " /etc/glite-ce-common-java/axis2.xml > /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/conf/axis2.xml
+chmod 600 /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/conf/axis2.xml
+chown tomcat.tomcat /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/conf/axis2.xml
+# cannot use symlinks for the following files:
+cp -f /etc/glite-ce-common-java/web.xml /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/
+
+if [ $1 -eq 1 ] ; then
+# Creation of the back-end and log dir
+  if [ ! "x`grep tomcat /etc/passwd`" == "x" ] ; then
+    mkdir -p /var/cream-es
+    chown tomcat:tomcat /var/cream-es
+    chmod 700 /var/cream-es
+
+    mkdir -p /var/cream_es_sandbox 
+    chown tomcat:tomcat /var/cream_es_sandbox 
+    chmod 700 /var/cream_es_sandbox 
+    
+    mkdir -p /var/log/cream-es
+    chown tomcat:tomcat /var/log/cream-es
+    chmod 755 /var/log/cream-es
+
+  fi
+    
+  /sbin/service %{_tomcat} start
+  
+fi
+
+%preun es
+if [ $1 -eq 0 ] ; then
+
+  for((idx=0; idx<5; idx++)) ; do
+    /sbin/service %{_tomcat} stop
+    if [ $? == 0 ] ; then idx=5; else sleep 5; fi
+  done
+
+  if [ -d /var/lib/%{_tomcat}/webapps/ce-cream-es ] ; then 
+    rm -rf /var/lib/%{_tomcat}/webapps/ce-cream-es
+  fi
+    
+  if [ -e /etc/%{_tomcat}/Catalina/localhost/ce-cream-es.xml ] ; then
+    rm -f /etc/%{_tomcat}/Catalina/localhost/ce-cream-es.xml
+  fi
+    
+  rm -f /etc/glite-ce-cream-es/creamdb_min_access.conf
+  
+fi
+
+%postun es
+/sbin/service %{_tomcat} start
+
+
+%changelog
+* Fri Aug 31 2012 CREAM group <cream-support@lists.infn.it> - @PKGVERSION@-@PKGRELEASE@
+- New major release
+
+
