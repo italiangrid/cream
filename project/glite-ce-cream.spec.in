@@ -78,12 +78,17 @@ if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services/glite-ce-cream.a
 
   cp -R /usr/share/axis2/webapp /var/lib/%{_tomcat}/webapps/ce-cream || exit 1
   
+  ln -s /usr/share/java/bcprov.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/jclassads/cedar.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/jclassads/classad.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+
   ln -s /usr/share/java/argus-pep-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/argus-pep-common.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/canl.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
-  ln -s /usr/share/java/bcprov.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/voms-api-java3.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/glite-jobid-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/lb-client-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+
   ln -s /usr/share/java/glite-ce-common-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/glite-ce-cream-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/glite-ce-cream-blahExecutor.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
@@ -92,7 +97,6 @@ if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services/glite-ce-cream.a
   ln -s /usr/share/java/glite-ce-cream-skeleton.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/glite-ce-delegation-skeleton.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/glite-jdl-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
-  ln -s /usr/share/java/voms-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
 
 %if 0%{?el6}
   # set allowLinking option for tomcat6
@@ -101,10 +105,10 @@ if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services/glite-ce-cream.a
 %endif
 
   ln -s /usr/share/glite-ce-cream/modules/glite-ce-cream-authorization.mar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/modules
-  find /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/modules -name *.mar -exec basename \\{\\} \\; > /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/modules/modules.list
+  find /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/modules -name *.mar -exec basename \{\} \; > /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/modules/modules.list
   
   ln -s /usr/share/glite-ce-cream/services/glite-ce-cream.aar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services
-  find /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services -name *.aar -exec basename \\{\\} \\; >  /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services/services.list
+  find /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services -name *.aar -exec basename \{\} \; >  /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services/services.list
 
   cp /etc/glite-ce-dbtool/creamdb_min_access.conf.template /etc/glite-ce-cream/creamdb_min_access.conf
   
@@ -235,13 +239,17 @@ if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services/glite-ce-crea
 
   cp -R /usr/share/axis2/webapp /var/lib/%{_tomcat}/webapps/ce-cream-es || exit 1
   
+  ln -s /usr/share/java/bcprov.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/jclassads/cedar.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/jclassads/classad.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
-  ln -s /usr/share/java/argus-pep-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
-  ln -s /usr/share/java/argus-pep-common.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
-  ln -s /usr/share/java/trustmanager.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
-  ln -s /usr/share/java/bcprov.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
-  ln -s /usr/share/java/delegation-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+
+  ln -s /usr/share/java/argus-pep-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/argus-pep-common.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/canl.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/voms-api-java3.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/glite-jobid-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/lb-client-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+
   ln -s /usr/share/java/glite-ce-common-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/glite-ce-cream-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/glite-ce-cream-blahExecutor.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
@@ -250,7 +258,6 @@ if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services/glite-ce-crea
   ln -s /usr/share/java/glite-ce-cream-es-skeleton.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/glite-ce-delegation-skeleton.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/glite-jdl-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
-  ln -s /usr/share/java/voms-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
 
 %if 0%{?el6}
   # set allowLinking option for tomcat6
@@ -259,10 +266,10 @@ if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services/glite-ce-crea
 %endif
 
   ln -s /usr/share/glite-ce-cream/modules/glite-ce-cream-authorization.mar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/modules
-  find /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/modules -name *.mar -exec basename \\{\\} \\; > /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/modules/modules.list
+  find /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/modules -name *.mar -exec basename \{\} \; > /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/modules/modules.list
   
   ln -s /usr/share/glite-ce-cream/services/glite-ce-cream-es.aar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services
-  find /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services -name *.aar -exec basename \\{\\} \\; > /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services/services.list
+  find /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services -name *.aar -exec basename \{\} \; > /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services/services.list
 
   cp /etc/glite-ce-dbtool/creamdb_min_access.conf.template /etc/glite-ce-cream-es/creamdb_min_access.conf
   
