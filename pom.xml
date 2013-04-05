@@ -214,9 +214,13 @@
             <configuration>
               <target>
                 <mkdir dir="${project.build.directory}/cream-defs"/>
+                <copy file="${project.basedir}/config/cream/services.properties" todir="${project.build.directory}/cream-defs"/>
+                <replace file="${project.build.directory}/cream-defs/services.properties">
+                  <replacefilter token="@build.version@" value="${version}"/>
+                </replace>
                 <copy file="${project.basedir}/config/cream/services.xml" todir="${project.build.directory}/cream-defs"/>
                 <replace file="${project.build.directory}/cream-defs/services.xml"
-                         propertyFile="${project.basedir}/config/cream/services.properties">
+                         propertyFile="${project.build.directory}/cream-defs/services.properties">
                   <replacefilter token="@creamdbDatabaseVersion@" property="creamdb_version"/>
                   <replacefilter token="@delegationdbDatabaseVersion@" property="delegationdb_version"/>
                   <replacefilter token="@creamInterfaceVersion@" property="interface_version"/>
