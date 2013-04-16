@@ -216,7 +216,7 @@
                 <mkdir dir="${project.build.directory}/cream-defs"/>
                 <copy file="${project.basedir}/config/cream/services.properties" todir="${project.build.directory}/cream-defs"/>
                 <replace file="${project.build.directory}/cream-defs/services.properties">
-                  <replacefilter token="@build.version@" value="${version}"/>
+                  <replacefilter token="@build.version@" value="${project.version}"/>
                 </replace>
                 <copy file="${project.basedir}/config/cream/services.xml" todir="${project.build.directory}/cream-defs"/>
                 <replace file="${project.build.directory}/cream-defs/services.xml"
@@ -290,7 +290,7 @@
                     <copy file="${project.basedir}/project/${rpm.pkgname}.spec.in" toFile="${project.build.directory}/rpmbuild/SPECS/${rpm.pkgname}.spec"/>
                     <replace file="${project.build.directory}/rpmbuild/SPECS/${rpm.pkgname}.spec">
                       <replacefilter token="@PKGNAME@" value="${rpm.pkgname}"/>
-                      <replacefilter token="@PKGVERSION@" value="${version}"/>
+                      <replacefilter token="@PKGVERSION@" value="${project.version}"/>
                       <replacefilter token="@PKGRELEASE@" value="${rpm.release}"/>
                       <replacefilter token="@MVNOPTS@" value="-Drpm.repackaging=false -DskipTests"/>
                       <replacefilter token="@TOMCATPKG@" value="${tomcat.pkg.name}"/>
