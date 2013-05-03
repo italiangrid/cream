@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<serviceGroup>
+    <service name="CREAM2" scope="application">
+        <messageReceivers>
+            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="org.glite.ce.creamapi.ws.cream2.CREAMMessageReceiverInOut"/>
+        </messageReceivers>
+        <module ref="cream-authorization"/>
+        <parameter name="serviceDescription">CREAM 2</parameter>
+        <parameter name="serviceLogConfigurationFile">/etc/glite-ce-cream/log4j.properties</parameter>
+        <parameter name="creamVersion">1.14</parameter>
+        <parameter name="creamInterfaceVersion">2.1</parameter>
+        <parameter name="creamdbDatabaseVersion">2.6</parameter>
+        <parameter name="delegationdbDatabaseVersion">2.6</parameter>
+        <parameter name="ServiceClass">org.glite.ce.cream.ws.CREAM2Service</parameter>
+        <parameter name="useOriginalwsdl">true</parameter>
+        <parameter name="modifyUserWSDLPortAddress">true</parameter>
+        <operation name="deleteLease" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/deleteLease</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/deleteLeaseResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/deleteLease/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/deleteLease/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/deleteLease/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/deleteLease/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/deleteLease/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/deleteLease/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="invalidArgumentFault">http://glite.org/2007/11/ce/cream/CREAMPort/deleteLease/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/deleteLease/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/deleteLease/Fault/invalidArgumentFault</faultActionMapping>
+        </operation>
+        <operation name="JobResume" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/JobResume</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/JobResumeResponse</outputActionMapping>
+            <faultActionMapping faultName="operationNotSupportedFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobResume/Fault/operationNotSupportedFault</faultActionMapping>
+            <faultActionMapping faultName="OperationNotSupported_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobResume/Fault/operationNotSupportedFault</faultActionMapping>
+            <faultActionMapping faultName="OperationNotSupported_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobResume/Fault/operationNotSupportedFault</faultActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobResume/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobResume/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobResume/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobResume/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobResume/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobResume/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="invalidArgumentFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobResume/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobResume/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobResume/Fault/invalidArgumentFault</faultActionMapping>
+        </operation>
+        <operation name="JobSetLeaseId" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/JobSetLeaseId</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/JobSetLeaseIdResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSetLeaseId/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSetLeaseId/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobSetLeaseId/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSetLeaseId/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSetLeaseId/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobSetLeaseId/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="invalidArgumentFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSetLeaseId/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSetLeaseId/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobSetLeaseId/Fault/invalidArgumentFault</faultActionMapping>
+        </operation>
+        <operation name="setLease" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/setLease</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/setLeaseResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/setLease/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/setLease/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/setLease/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/setLease/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/setLease/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/setLease/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="invalidArgumentFault">http://glite.org/2007/11/ce/cream/CREAMPort/setLease/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/setLease/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/setLease/Fault/invalidArgumentFault</faultActionMapping>
+        </operation>
+        <operation name="acceptNewJobSubmissions" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/AcceptNewJobSubmissions</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/acceptNewJobSubmissionsResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/acceptNewJobSubmissions/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/acceptNewJobSubmissions/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/acceptNewJobSubmissions/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/acceptNewJobSubmissions/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/acceptNewJobSubmissions/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/acceptNewJobSubmissions/Fault/genericFault</faultActionMapping>
+        </operation>
+        <operation name="JobSuspend" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/JobSuspend</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/JobSuspendResponse</outputActionMapping>
+            <faultActionMapping faultName="operationNotSupportedFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSuspend/Fault/operationNotSupportedFault</faultActionMapping>
+            <faultActionMapping faultName="OperationNotSupported_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSuspend/Fault/operationNotSupportedFault</faultActionMapping>
+            <faultActionMapping faultName="OperationNotSupported_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobSuspend/Fault/operationNotSupportedFault</faultActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSuspend/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSuspend/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobSuspend/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSuspend/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSuspend/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobSuspend/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="invalidArgumentFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSuspend/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobSuspend/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobSuspend/Fault/invalidArgumentFault</faultActionMapping>
+        </operation>
+        <operation name="getLease" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/getLease</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/getLeaseResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/getLease/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/getLease/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/getLease/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/getLease/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/getLease/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/getLease/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="invalidArgumentFault">http://glite.org/2007/11/ce/cream/CREAMPort/getLease/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/getLease/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/getLease/Fault/invalidArgumentFault</faultActionMapping>
+        </operation>
+        <operation name="JobList" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/JobList</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/JobListResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobList/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobList/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobList/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobList/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobList/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobList/Fault/genericFault</faultActionMapping>
+        </operation>
+        <operation name="JobRegister" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/JobRegister</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/JobRegisterResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobRegister/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobRegister/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobRegister/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobRegister/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobRegister/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobRegister/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="invalidArgumentFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobRegister/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobRegister/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobRegister/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="jobSubmissionDisabledFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobRegister/Fault/jobSubmissionDisabledFault</faultActionMapping>
+            <faultActionMapping faultName="JobSubmissionDisabled_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobRegister/Fault/jobSubmissionDisabledFault</faultActionMapping>
+            <faultActionMapping faultName="JobSubmissionDisabled_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobRegister/Fault/jobSubmissionDisabledFault</faultActionMapping>
+        </operation>
+        <operation name="JobStart" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/JobStart</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/JobStartResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobStart/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobStart/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobStart/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobStart/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobStart/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobStart/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="invalidArgumentFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobStart/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobStart/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobStart/Fault/invalidArgumentFault</faultActionMapping>
+        </operation>
+        <operation name="JobStatus" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/JobStatus</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/JobStatusResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobStatus/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobStatus/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobStatus/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobStatus/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobStatus/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobStatus/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="invalidArgumentFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobStatus/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobStatus/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobStatus/Fault/invalidArgumentFault</faultActionMapping>
+        </operation>
+        <operation name="QueryEvent" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/QueryEvent</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/QueryEventResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/QueryEvent/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/QueryEvent/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/QueryEvent/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/QueryEvent/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/QueryEvent/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/QueryEvent/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="invalidArgumentFault">http://glite.org/2007/11/ce/cream/CREAMPort/QueryEvent/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/QueryEvent/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/QueryEvent/Fault/invalidArgumentFault</faultActionMapping>
+        </operation>
+        <operation name="JobCancel" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/JobCancel</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/JobCancelResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobCancel/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobCancel/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobCancel/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobCancel/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobCancel/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobCancel/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="invalidArgumentFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobCancel/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobCancel/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobCancel/Fault/invalidArgumentFault</faultActionMapping>
+        </operation>
+        <operation name="JobPurge" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/JobPurge</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/JobPurgeResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobPurge/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobPurge/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobPurge/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobPurge/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobPurge/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobPurge/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="invalidArgumentFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobPurge/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobPurge/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobPurge/Fault/invalidArgumentFault</faultActionMapping>
+        </operation>
+        <operation name="getLeaseList" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/getLeaseList</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/getLeaseListResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/getLeaseList/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/getLeaseList/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/getLeaseList/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/getLeaseList/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/getLeaseList/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/getLeaseList/Fault/genericFault</faultActionMapping>
+        </operation>
+        <operation name="getServiceInfo" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/ServiceInfo</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/getServiceInfoResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/getServiceInfo/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/getServiceInfo/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/getServiceInfo/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/getServiceInfo/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/getServiceInfo/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/getServiceInfo/Fault/genericFault</faultActionMapping>
+        </operation>
+        <operation name="JobInfo" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://glite.org/2007/11/ce/cream">
+            <actionMapping>http://glite.org/2007/11/ce/cream/JobInfo</actionMapping>
+            <outputActionMapping>http://glite.org/2007/11/ce/cream/CREAMPort/JobInfoResponse</outputActionMapping>
+            <faultActionMapping faultName="authorizationFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobInfo/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobInfo/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="Authorization_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobInfo/Fault/authorizationFault</faultActionMapping>
+            <faultActionMapping faultName="genericFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobInfo/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobInfo/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="Generic_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobInfo/Fault/genericFault</faultActionMapping>
+            <faultActionMapping faultName="invalidArgumentFault">http://glite.org/2007/11/ce/cream/CREAMPort/JobInfo/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault">http://glite.org/2007/11/ce/cream/CREAMPort/JobInfo/Fault/invalidArgumentFault</faultActionMapping>
+            <faultActionMapping faultName="InvalidArgument_Fault_Exception">http://glite.org/2007/11/ce/cream/CREAMPort/JobInfo/Fault/invalidArgumentFault</faultActionMapping>
+        </operation>
+    </service>
+    <service name="gridsite-delegation" scope="application">
+        <messageReceivers>
+            <messageReceiver mep="http://www.w3.org/ns/wsdl/in-out" class="org.glite.ce.security.delegation.DelegationServiceMessageReceiverInOut"/>
+        </messageReceivers>
+        <module ref="cream-authorization"/>
+        <parameter name="ServiceClass">org.glite.ce.cream.ws.delegation.CREAMDelegationService</parameter>
+        <parameter name="delegationVersion">1.14</parameter>
+        <parameter name="delegationInterfaceVersion">2.0</parameter>
+        <parameter name="useOriginalwsdl">true</parameter>
+        <parameter name="modifyUserWSDLPortAddress">true</parameter>
+        <operation name="getProxyReq" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.gridsite.org/namespaces/delegation-2">
+            <actionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/getProxyReqRequest</actionMapping>
+            <outputActionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/getProxyReqResponse</outputActionMapping>
+            <faultActionMapping faultName="DelegationException">http://www.gridsite.org/namespaces/delegation-2/Delegation/getProxyReq/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault">http://www.gridsite.org/namespaces/delegation-2/Delegation/getProxyReq/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault_Exception">http://www.gridsite.org/namespaces/delegation-2/Delegation/getProxyReq/Fault/DelegationException</faultActionMapping>
+        </operation>
+        <operation name="destroy" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.gridsite.org/namespaces/delegation-2">
+            <actionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/destroyRequest</actionMapping>
+            <outputActionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/destroyResponse</outputActionMapping>
+            <faultActionMapping faultName="DelegationException">http://www.gridsite.org/namespaces/delegation-2/Delegation/destroy/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault">http://www.gridsite.org/namespaces/delegation-2/Delegation/destroy/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault_Exception">http://www.gridsite.org/namespaces/delegation-2/Delegation/destroy/Fault/DelegationException</faultActionMapping>
+        </operation>
+        <operation name="renewProxyReq" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.gridsite.org/namespaces/delegation-2">
+            <actionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/renewProxyReqRequest</actionMapping>
+            <outputActionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/renewProxyReqResponse</outputActionMapping>
+            <faultActionMapping faultName="DelegationException">http://www.gridsite.org/namespaces/delegation-2/Delegation/renewProxyReq/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault">http://www.gridsite.org/namespaces/delegation-2/Delegation/renewProxyReq/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault_Exception">http://www.gridsite.org/namespaces/delegation-2/Delegation/renewProxyReq/Fault/DelegationException</faultActionMapping>
+        </operation>
+        <operation name="getNewProxyReq" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.gridsite.org/namespaces/delegation-2">
+            <actionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/getNewProxyReqRequest</actionMapping>
+            <outputActionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/getNewProxyReqResponse</outputActionMapping>
+            <faultActionMapping faultName="DelegationException">http://www.gridsite.org/namespaces/delegation-2/Delegation/getNewProxyReq/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault">http://www.gridsite.org/namespaces/delegation-2/Delegation/getNewProxyReq/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault_Exception">http://www.gridsite.org/namespaces/delegation-2/Delegation/getNewProxyReq/Fault/DelegationException</faultActionMapping>
+        </operation>
+        <operation name="getServiceMetadata" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.gridsite.org/namespaces/delegation-2">
+            <actionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/getServiceMetadataRequest</actionMapping>
+            <outputActionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/getServiceMetadataResponse</outputActionMapping>
+            <faultActionMapping faultName="DelegationException">http://www.gridsite.org/namespaces/delegation-2/Delegation/getServiceMetadata/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault">http://www.gridsite.org/namespaces/delegation-2/Delegation/getServiceMetadata/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault_Exception">http://www.gridsite.org/namespaces/delegation-2/Delegation/getServiceMetadata/Fault/DelegationException</faultActionMapping>
+        </operation>
+        <operation name="putProxy" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.gridsite.org/namespaces/delegation-2">
+            <actionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/putProxyRequest</actionMapping>
+            <outputActionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/putProxyResponse</outputActionMapping>
+            <faultActionMapping faultName="DelegationException">http://www.gridsite.org/namespaces/delegation-2/Delegation/putProxy/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault">http://www.gridsite.org/namespaces/delegation-2/Delegation/putProxy/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault_Exception">http://www.gridsite.org/namespaces/delegation-2/Delegation/putProxy/Fault/DelegationException</faultActionMapping>
+        </operation>
+        <operation name="getVersion" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.gridsite.org/namespaces/delegation-2">
+            <actionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/getVersionRequest</actionMapping>
+            <outputActionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/getVersionResponse</outputActionMapping>
+            <faultActionMapping faultName="DelegationException">http://www.gridsite.org/namespaces/delegation-2/Delegation/getVersion/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault">http://www.gridsite.org/namespaces/delegation-2/Delegation/getVersion/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault_Exception">http://www.gridsite.org/namespaces/delegation-2/Delegation/getVersion/Fault/DelegationException</faultActionMapping>
+        </operation>
+        <operation name="getTerminationTime" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.gridsite.org/namespaces/delegation-2">
+            <actionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/getTerminationTimeRequest</actionMapping>
+            <outputActionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/getTerminationTimeResponse</outputActionMapping>
+            <faultActionMapping faultName="DelegationException">http://www.gridsite.org/namespaces/delegation-2/Delegation/getTerminationTime/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault">http://www.gridsite.org/namespaces/delegation-2/Delegation/getTerminationTime/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault_Exception">http://www.gridsite.org/namespaces/delegation-2/Delegation/getTerminationTime/Fault/DelegationException</faultActionMapping>
+        </operation>
+        <operation name="getInterfaceVersion" mep="http://www.w3.org/ns/wsdl/in-out" namespace="http://www.gridsite.org/namespaces/delegation-2">
+            <actionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/getInterfaceVersionRequest</actionMapping>
+            <outputActionMapping>http://www.gridsite.org/namespaces/delegation-2/Delegation/getInterfaceVersionResponse</outputActionMapping>
+            <faultActionMapping faultName="DelegationException">http://www.gridsite.org/namespaces/delegation-2/Delegation/getInterfaceVersion/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault">http://www.gridsite.org/namespaces/delegation-2/Delegation/getInterfaceVersion/Fault/DelegationException</faultActionMapping>
+            <faultActionMapping faultName="DelegationException_Fault_Exception">http://www.gridsite.org/namespaces/delegation-2/Delegation/getInterfaceVersion/Fault/DelegationException</faultActionMapping>
+        </operation>
+    </service>
+</serviceGroup>
