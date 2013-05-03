@@ -358,12 +358,12 @@
     </dependency>
 
     <dependency>
-      <groupId>org.glite.security.trustmanager.axis2</groupId>
+      <groupId>org.glite.security</groupId>
       <artifactId>trustmanager-axis2</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>org.glite.security.delegation</groupId>
+      <groupId>org.glite.security</groupId>
       <artifactId>delegation-java</artifactId>
     </dependency>
 
