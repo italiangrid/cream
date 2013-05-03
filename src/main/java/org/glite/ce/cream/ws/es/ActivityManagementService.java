@@ -27,17 +27,34 @@ package org.glite.ce.cream.ws.es;
 /**
  *  CreateActivitySkeleton java skeleton for the axisService
  */
+import java.io.ByteArrayInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.FactoryConfigurationError;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.apache.axiom.om.OMAbstractFactory;
+import org.apache.axiom.om.OMElement;
+import org.apache.axiom.om.impl.builder.StAXBuilder;
+import org.apache.axiom.om.impl.builder.StAXOMBuilder;
+import org.apache.axiom.om.impl.llom.OMElementImpl;
+import org.apache.axiom.om.xpath.AXIOMXPath;
 import org.apache.axis2.AxisFault;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.axis2.context.ServiceContext;
+import org.apache.axis2.databinding.ADBException;
+import org.apache.axis2.databinding.types.NCName;
 import org.apache.axis2.databinding.types.URI;
-import org.apache.axis2.databinding.types.UnsignedLong;
 import org.apache.axis2.description.AxisService;
 import org.apache.axis2.description.Parameter;
 import org.apache.axis2.engine.AxisConfiguration;
@@ -45,6 +62,7 @@ import org.apache.axis2.service.Lifecycle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.xmlbeans.impl.values.NamespaceContext;
 import org.glite.ce.commonj.utils.CEUtils;
 import org.glite.ce.cream.activitymanagement.ActivityCmd;
 import org.glite.ce.cream.activitymanagement.ActivityCmd.ActivityCommandField;
@@ -55,53 +73,63 @@ import org.glite.ce.creamapi.activitymanagement.Activity;
 import org.glite.ce.creamapi.activitymanagement.ActivityCommand;
 import org.glite.ce.creamapi.activitymanagement.ActivityStatus;
 import org.glite.ce.creamapi.activitymanagement.ActivityStatus.StatusAttributeName;
-import org.glite.ce.creamapi.activitymanagement.wrapper.glue.DateTime_t;
 import org.glite.ce.creamapi.cmdmanagement.CommandManagerInterface;
 import org.glite.ce.creamapi.ws.es.activitymanagement.AccessControlFault;
 import org.glite.ce.creamapi.ws.es.activitymanagement.ActivityManagementServiceSkeletonInterface;
 import org.glite.ce.creamapi.ws.es.activitymanagement.InternalBaseFault;
-import org.glite.ce.creamapi.ws.es.activitymanagement.UnknownGlue2ActivityAttributeFault;
+import org.glite.ce.creamapi.ws.es.activitymanagement.InternalNotificationFault;
+import org.glite.ce.creamapi.ws.es.activitymanagement.OperationNotPossibleFault;
+import org.glite.ce.creamapi.ws.es.activitymanagement.UnknownAttributeFault;
 import org.glite.ce.creamapi.ws.es.activitymanagement.VectorLimitExceededFault;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.ActivityInfoDocument;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.ActivityInfoDocument_t;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.ActivityInfoItemChoice_type1;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.ActivityInfoItem_type0;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.ActivityNotFoundFault_type0;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.ActivityStatusAttribute;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.ActivityStatusItemChoice_type1;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.ActivityStatusItem_type0;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.ActivityStatusState;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.ActivityStatus_type0;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.AttributeInfoItem;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.AttributeInfoItem_type0;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.CancelActivity;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.CancelActivityResponse;
-import org.glite.ce.creamapi.ws.es.activitymanagement.types.ComputingActivityHistory;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.CancelActivityResponseItemChoice_type1;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.CancelActivityResponseItem_type0;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.ComputingActivityHistory_type0;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.GetActivityInfo;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.GetActivityInfoResponse;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.GetActivityStatus;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.GetActivityStatusResponse;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.InternalBaseFault_Type;
-import org.glite.ce.creamapi.ws.es.activitymanagement.types.InvalidActivityStateFault;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.NotifyRequestItem_type0;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.NotifyResponseItemChoice_type0;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.NotifyResponseItem_type0;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.NotifyService;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.NotifyServiceResponse;
-import org.glite.ce.creamapi.ws.es.activitymanagement.types.OperationalResult_type0;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.OperationNotAllowedFault_type0;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.Operation_type0;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.PauseActivity;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.PauseActivityResponse;
-import org.glite.ce.creamapi.ws.es.activitymanagement.types.PrimaryActivityStatus;
-import org.glite.ce.creamapi.ws.es.activitymanagement.types.ResponseItemChoice_type0;
-import org.glite.ce.creamapi.ws.es.activitymanagement.types.ResponseItem_type0;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.PauseActivityResponseItemChoice_type1;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.PauseActivityResponseItem_type0;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.RestartActivity;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.RestartActivityResponse;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.ResumeActivity;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.ResumeActivityResponse;
-import org.glite.ce.creamapi.ws.es.activitymanagement.types.UnknownActivityIDFault;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.ResumeActivityResponseItemChoice_type1;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.ResumeActivityResponseItem_type0;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.UnknownAttributeFault_type0;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.WipeActivity;
 import org.glite.ce.creamapi.ws.es.activitymanagement.types.WipeActivityResponse;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.WipeActivityResponseItemChoice_type1;
+import org.glite.ce.creamapi.ws.es.activitymanagement.types.WipeActivityResponseItem_type0;
 import org.glite.ce.creamapi.ws.es.adl.ActivityTypeEnumeration;
 import org.glite.ce.creamapi.ws.es.glue.ComputingActivityState_t;
 import org.glite.ce.creamapi.ws.es.glue.ComputingActivityType_t;
-import org.glite.ce.creamapi.ws.es.glue.ComputingActivity_t;
-import org.glite.ce.creamapi.ws.es.glue.Extension_t;
-import org.glite.ce.creamapi.ws.es.glue.Extensions_t;
+import org.glite.ce.creamapi.ws.es.glue.ComputingService;
 import org.glite.ce.creamapi.ws.es.glue.JobDescription_t;
-import org.glite.ce.creamapi.ws.es.glue.LocalID_t;
 
 public class ActivityManagementService implements ActivityManagementServiceSkeletonInterface, Lifecycle {
     private static final Logger logger = Logger.getLogger(ActivityManagementService.class.getName());
@@ -109,16 +137,76 @@ public class ActivityManagementService implements ActivityManagementServiceSkele
     private static final int INITIALIZATION_OK = 1;
     private static final int INITIALIZATION_ERROR = 2;
     private static int initialization = INITIALIZATION_TBD;
-    private static String activityManagerURL = null;
+    private static String prefexIdFromEndpoint = null;
 
-    public CancelActivityResponse cancelActivity(CancelActivity req) throws VectorLimitExceededFault, InternalBaseFault, AccessControlFault {
+    public CancelActivityResponse cancelActivity(CancelActivity req) throws AccessControlFault, InternalBaseFault, VectorLimitExceededFault {
         logger.debug("BEGIN cancelActivity");
 
         checkInitialization();
-        
+
+        if (req == null || req.getActivityID() == null || req.getActivityID().length == 0) {
+            throw new InternalBaseFault("none activityId found in the request");
+        }
+
+        String[] activityIds = req.getActivityID();
+
+        CancelActivityResponseItem_type0[] responseItems = new CancelActivityResponseItem_type0[activityIds.length];
+        CancelActivityResponseItemChoice_type1 responseItemChoice = null;
+        ActivityCmd command = new ActivityCmd(ActivityCommandName.CANCEL_ACTIVITY);
+        command.setUserId(CEUtils.getUserId());
+
+        for (int i = 0; i < activityIds.length; i++) {
+            command.setAsynchronous(false);
+            command.setCommandGroupId(activityIds[i]);
+            command.addParameter(ActivityCommandField.ACTIVITY_ID, activityIds[i]);
+            command.addParameter(ActivityCommandField.ACTIVITY_CHECK, ActivityCommandField.ACTIVITY_CHECK_ON);
+            responseItemChoice = new CancelActivityResponseItemChoice_type1();
+
+            try {
+                CommandManager.getInstance().execute(command);
+
+                command.getParameterKeySet().remove(ActivityCommandField.ACTIVITY_CHECK.name());
+                command.setAsynchronous(true);
+
+                CommandManager.getInstance().execute(command);
+            } catch (Throwable t) {
+                String message = t.getMessage();
+                
+                if (message == null) {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage("N/A");
+                    
+                    responseItemChoice.setInternalBaseFault(fault);
+                } else if (message.indexOf("not found") != -1) {
+                    ActivityNotFoundFault_type0 fault = new ActivityNotFoundFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    responseItemChoice.setActivityNotFoundFault(fault);
+                } else if (message.indexOf("invalid state") != -1) {
+                    OperationNotAllowedFault_type0 fault = new OperationNotAllowedFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    responseItemChoice.setOperationNotAllowedFault(fault);
+                } else {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    responseItemChoice.setInternalBaseFault(fault);
+                }
+            }
+
+            responseItems[i] = new CancelActivityResponseItem_type0();
+            responseItems[i].setActivityID(activityIds[i]);
+            responseItems[i].setCancelActivityResponseItemChoice_type1(responseItemChoice);
+        }
+
         CancelActivityResponse response = new CancelActivityResponse();
-        response.setResponseItem(execute(new ActivityCmd(ActivityCommandName.CANCEL_ACTIVITY), req.getActivityID()));
-        
+        response.setCancelActivityResponseItem(responseItems);
+
         logger.debug("END cancelActivity");
         return response;
     }
@@ -141,47 +229,9 @@ public class ActivityManagementService implements ActivityManagementServiceSkele
         logger.info("destroyed!");
     }
 
-    private ResponseItem_type0[] execute(ActivityCmd command, String[] activityIds) throws InternalBaseFault {
-        if (activityIds == null || activityIds.length == 0) {
-            throw new InternalBaseFault("ActivityId not specified!");
-        }
-
-        ResponseItem_type0[] responseItem = new ResponseItem_type0[activityIds.length];
-        ResponseItemChoice_type0 responseItemChoice = null;
-        
-        command.setUserId(CEUtils.getUserId());
-
-        for (int i=0; i<activityIds.length; i++) {
-            command.setAsynchronous(false);
-            command.setCommandGroupId(activityIds[i]);
-            command.addParameter(ActivityCommandField.ACTIVITY_ID, activityIds[i]);
-            command.addParameter(ActivityCommandField.ACTIVITY_CHECK, ActivityCommandField.ACTIVITY_CHECK_ON);
-            responseItemChoice = new ResponseItemChoice_type0();
-
-            try {
-                CommandManager.getInstance().execute(command);
-
-                command.getParameterKeySet().remove(ActivityCommandField.ACTIVITY_CHECK.name());
-                command.setAsynchronous(true);
-
-                CommandManager.getInstance().execute(command);
-                
-               // responseItemChoice.setEstimatedTime(new UnsignedLong(0L));
-            } catch (Throwable t) {
-                responseItemChoice.setInternalBaseFault(makeInternalBaseFaultType(t.getMessage()));
-            }
-
-            responseItem[i] = new ResponseItem_type0();
-            responseItem[i].setActivityID(activityIds[i]);
-            responseItem[i].setResponseItemChoice_type0(responseItemChoice);
-        }
-        
-        return responseItem;
-    }
-
-    public GetActivityInfoResponse getActivityInfo(GetActivityInfo req) throws VectorLimitExceededFault, InternalBaseFault, AccessControlFault, UnknownGlue2ActivityAttributeFault {
+    public GetActivityInfoResponse getActivityInfo(GetActivityInfo req) throws AccessControlFault, InternalBaseFault, UnknownAttributeFault, VectorLimitExceededFault {
         logger.debug("BEGIN getActivityInfo");
-        
+
         checkInitialization();
 
         if (req == null) {
@@ -189,77 +239,69 @@ public class ActivityManagementService implements ActivityManagementServiceSkele
         }
 
         Activity activity = null;
-        ActivityStatusAttribute[] activityStatusAttributeArray = null;
-        ActivityStatus_type0 activityStatus = null;
-        List<ActivityStatus_type0> activityStatusList = null;
-        ComputingActivityState_t computingActivityState = null;
-        ComputingActivityState_t[] computingActivityStateArray = null;
-        List<ComputingActivityState_t> computingActivityStateList = null;
-        ActivityInfoItem_type0[] activityInfoItemArray = null;
-        ActivityInfoItemChoice_type1 activityInfoItemChoice = null;
-        ComputingActivity_t computingActivity = null;
-        ComputingActivityHistory activityHistory = null;
-        OperationalResult_type0[] operationalResultArray = null;
-        Extension_t activityHistoryExtension = null;
-        Extension_t stageInURLExtension = null;
-        Extension_t stageOutURLExtension = null;
-        Extensions_t extensions = null;
+        ActivityInfoItemChoice_type1 choice = null;
+        ActivityInfoItem_type0 activityInfoItem = null;
+        ActivityInfoDocument_t activityInfoDocument = null;
 
         ActivityCmd command = new ActivityCmd(ActivityCommandName.GET_ACTIVITY_INFO);
         command.setUserId(CEUtils.getUserId());
-        
-        activityInfoItemArray = new ActivityInfoItem_type0[req.getActivityID().length];
-        int x = 0;
+
+        GetActivityInfoResponse response = new GetActivityInfoResponse();
 
         for (String activityId : req.getActivityID()) {
             command.addParameter(ActivityCommandField.ACTIVITY_ID, activityId);
-            activityInfoItemChoice = new ActivityInfoItemChoice_type1();
-            
-            activityInfoItemArray[x] = new ActivityInfoItem_type0();
-            activityInfoItemArray[x].setActivityID(activityId);
-            activityInfoItemArray[x].setActivityInfoItemChoice_type1(activityInfoItemChoice);
+            choice = new ActivityInfoItemChoice_type1();
 
+            activityInfoItem = new ActivityInfoItem_type0();
+            activityInfoItem.setActivityID(activityId);
+            activityInfoItem.setActivityInfoItemChoice_type1(choice);
+
+            response.addActivityInfoItem(activityInfoItem);
+            
             try {
                 CommandManager.getInstance().execute(command);
 
-                activity = (Activity)command.getResult().getParameter(ActivityCommandField.ACTIVITY_DESCRIPTION.name());
+                activity = (Activity) command.getResult().getParameter(ActivityCommandField.ACTIVITY_DESCRIPTION.name());
 
                 JobDescription_t jobDescription = new JobDescription_t();
                 jobDescription.setJobDescription_t("emi:adl");
-                
-                computingActivity = new ComputingActivity_t();
-                computingActivity.setID(new URI(activityManagerURL + "?" + activity.getId()));
-                computingActivity.setIDFromEndpoint(new URI(activityManagerURL + "?" + activity.getId()));
-                computingActivity.setLocalIDFromManager(activity.getProperties().get(Activity.LRMS_ABS_LAYER_ID));
-                computingActivity.setLocalOwner(activity.getProperties().get(Activity.LOCAL_USER));
-                computingActivity.setOwner(CEUtils.getUserId());
-                computingActivity.setJobDescription(jobDescription);
-                //computingActivity.setProxyExpirationTime(value);
 
-                if (activity.getActivityIdentification() != null) { 
-                    computingActivity.setName(activity.getActivityIdentification().getName());
+                activityInfoDocument = new ActivityInfoDocument_t();
+                activityInfoDocument.setCreationTime(GregorianCalendar.getInstance());
+                activityInfoDocument.setID(new URI(activity.getId()));
+                activityInfoDocument.setIDFromEndpoint(new URI(prefexIdFromEndpoint + activity.getId()));
+                activityInfoDocument.setLocalIDFromManager(activity.getProperties().get(Activity.LRMS_ABS_LAYER_ID));
+                activityInfoDocument.setLocalOwner(activity.getProperties().get(Activity.LOCAL_USER));
+                activityInfoDocument.setOwner(CEUtils.getUserId());
+                activityInfoDocument.setJobDescription(jobDescription);
+                activityInfoDocument.setStageInDirectory(new URI[] { new URI(activity.getProperties().get(Activity.STAGE_IN_URI)) });
+                activityInfoDocument.setStageOutDirectory(new URI[] { new URI(activity.getProperties().get(Activity.STAGE_OUT_URI)) });
+                // computingActivity.setProxyExpirationTime(value);
+
+                if (activity.getActivityIdentification() != null) {
+                    activityInfoDocument.setName(activity.getActivityIdentification().getName());
                 }
 
                 if (activity.getResources() != null) {
-                    computingActivity.setQueue(activity.getResources().getQueueName());
+                    activityInfoDocument.setQueue(activity.getResources().getQueueName());
                 }
 
                 if (activity.getApplication() != null) {
-                    computingActivity.setStdErr(activity.getApplication().getError());
-                    computingActivity.setStdIn(activity.getApplication().getInput());
-                    computingActivity.setStdIn(activity.getApplication().getOutput());
+                    activityInfoDocument.setStdErr(activity.getApplication().getError());
+                    activityInfoDocument.setStdIn(activity.getApplication().getInput());
+                    activityInfoDocument.setStdIn(activity.getApplication().getOutput());
                 }
 
-                //computingActivity.setSubmissionClientName(value);
-                //computingActivity.getSubmissionHost();
-                computingActivity.setUserDomain(activity.getProperties().get(Activity.LOCAL_USER_GROUP));
-                
+                // computingActivity.setSubmissionClientName(value);
+                // computingActivity.getSubmissionHost();
+                activityInfoDocument.setUserDomain(activity.getProperties().get(Activity.LOCAL_USER_GROUP));
+
                 if (activity.getProperties().containsKey(Activity.WORKER_NODE)) {
-                    computingActivity.setExecutionNode(new String[] { activity.getProperties().get(Activity.WORKER_NODE) });
+                    activityInfoDocument.setExecutionNode(new String[] { activity.getProperties().get(Activity.WORKER_NODE) });
                 }
 
                 ComputingActivityType_t type = ComputingActivityType_t.single;
-                
+
                 if (activity.getActivityIdentification().getType() != null) {
                     String activityType = activity.getActivityIdentification().getType().name();
 
@@ -273,137 +315,182 @@ public class ActivityManagementService implements ActivityManagementServiceSkele
                         type = ComputingActivityType_t.workflownode;
                     }
                 }
-                
-                computingActivity.setType(type);
-                
+
+                activityInfoDocument.setType(type);
+
                 if (activity.getProperties().containsKey(Activity.EXIT_CODE)) {
                     try {
-                        computingActivity.setExitCode(Integer.valueOf(activity.getProperties().get(Activity.EXIT_CODE)));
+                        activityInfoDocument.setExitCode(Integer.valueOf(activity.getProperties().get(Activity.EXIT_CODE)));
                     } catch (NumberFormatException e) {
                         logger.warn(e.getMessage());
                     }
                 }
 
-                int index = 0;
+                ComputingActivityHistory_type0 history = new ComputingActivityHistory_type0();
 
-                activityHistory = new ComputingActivityHistory();
-
-                activityStatusList = new ArrayList<ActivityStatus_type0>(0);
-                computingActivityStateList = new ArrayList<ComputingActivityState_t>(0);
+                activityInfoDocument.setComputingActivityHistory(history);
                 
-                for (org.glite.ce.creamapi.activitymanagement.ActivityStatus status : activity.getStates()) {
-                    if (!status.isTransient()) {
+                ActivityStatus_type0 activityStatus = null;
+                                
+                for (org.glite.ce.creamapi.activitymanagement.ActivityStatus status : activity.getStates()) {                 
+                    if (status.getStatusName() != activity.getStates().last().getStatusName() || activity.getStates().last().equals(status)) {
                         activityStatus = new ActivityStatus_type0();
-                        activityStatus.setStatus(PrimaryActivityStatus.Factory.fromValue(status.getStatusName().getName()));
+                        activityStatus.setStatus(ActivityStatusState.Factory.fromValue(status.getStatusName().getName()));
                         activityStatus.setDescription(status.getDescription());
                         activityStatus.setTimestamp(status.getTimestamp().toGregorianCalendar());
-
-                        if (status.getStatusAttributes().size() > 0) {
-                            activityStatusAttributeArray = new ActivityStatusAttribute[status.getStatusAttributes().size()];
-                            int i = 0;
-                            
-                            for (StatusAttributeName attribute : status.getStatusAttributes()) {
-                                activityStatusAttributeArray[i++] = ActivityStatusAttribute.Factory.fromValue(attribute.getName());
-                            }
-
-                            activityStatus.setAttribute(activityStatusAttributeArray);   
+                        
+                        for (StatusAttributeName attribute : status.getStatusAttributes()) {
+                            activityStatus.addAttribute(ActivityStatusAttribute.Factory.fromValue(attribute.getName()));
                         }
-
-                        activityStatusList.add(activityStatus);
-                        
-                        computingActivityState = new ComputingActivityState_t();
-                        computingActivityState.setComputingActivityState_t(status.getStatusName().getName());
-                        
-                        computingActivityStateList.add(computingActivityState);
+                                                
+                        history.addActivityStatus(activityStatus);
 
                         if (status.getTimestamp() != null) {
-                            DateTime_t time = new DateTime_t(status.getTimestamp().toGregorianCalendar());
-
-                            if (PrimaryActivityStatus.value4.getValue().equals(activityStatus.getStatus().getValue())) {
-                                computingActivity.setComputingManagerSubmissionTime(time);
-                            } else if (PrimaryActivityStatus.value6.getValue().equals(activityStatus.getStatus().getValue())) {
-                                computingActivity.setStartTime(time);
-                            } else if (PrimaryActivityStatus.value8.getValue().equals(activityStatus.getStatus().getValue())) {
-                                computingActivity.setComputingManagerEndTime(time);
-                                computingActivity.setEndTime(time);
+                            if (ActivityStatusState.value4.getValue().equals(activityStatus.getStatus().getValue())) {
+                                activityInfoDocument.setComputingManagerSubmissionTime(status.getTimestamp().toGregorianCalendar());
+                            } else if (ActivityStatusState.value6.getValue().equals(activityStatus.getStatus().getValue())) {
+                                activityInfoDocument.setStartTime(status.getTimestamp().toGregorianCalendar());
+                            } else if (ActivityStatusState.value8.getValue().equals(activityStatus.getStatus().getValue())) {
+                                activityInfoDocument.setComputingManagerEndTime(status.getTimestamp().toGregorianCalendar());
+                                activityInfoDocument.setEndTime(activityInfoDocument.getComputingManagerEndTime());
                             }
                         }
                     }
                 }
 
-                if (activityStatusList.size() > 0) {
-                    ActivityStatus_type0[] activityStatusArray = new ActivityStatus_type0[activityStatusList.size()];
-                    activityHistory.setActivityStatus(activityStatusList.toArray(activityStatusArray));
+                if (activity.getStates().size() > 0) {
+                    ActivityStatus lastStatus = activity.getStates().last();
                     
-                    computingActivityStateArray = new ComputingActivityState_t[computingActivityStateList.size()];
-                    computingActivity.setState(computingActivityStateList.toArray(computingActivityStateArray));
+                    ComputingActivityState_t computingActivityState = new ComputingActivityState_t();                    
+                    computingActivityState.setComputingActivityState_t("emies:" + lastStatus.getStatusName().getName());
+
+                    activityInfoDocument.addState(computingActivityState);
+                   
+                    for (StatusAttributeName statusAttribute : lastStatus.getStatusAttributes()) {
+                        computingActivityState = new ComputingActivityState_t();                    
+                        computingActivityState.setComputingActivityState_t("emiesattr:" + statusAttribute.getName());
+
+                        activityInfoDocument.addState(computingActivityState);
+                    }                    
                 }
-                
-                index = 0;
-                operationalResultArray = new OperationalResult_type0[activity.getCommands().size()];
-                activityHistory.setOperationalResult(operationalResultArray);
+          
+                Operation_type0 operation = null;
 
                 for (ActivityCommand activityCommand : activity.getCommands()) {
-                    operationalResultArray[index] = new OperationalResult_type0();
-                    operationalResultArray[index].setName(activityCommand.getName());
-                    operationalResultArray[index].setSuccess(activityCommand.isSuccess());
+                    operation = new Operation_type0();
+                    operation.setRequestedOperation(new NCName(activityCommand.getName().toLowerCase()));
+                    operation.setSuccess(activityCommand.isSuccess());
 
                     if (activityCommand.getTimestamp() != null) {
-                        DateTime_t time = new DateTime_t(activityCommand.getTimestamp().toGregorianCalendar());
-
                         if (ActivityCommandName.CREATE_ACTIVITY.name().equalsIgnoreCase(activityCommand.getName())) {
-                            computingActivity.setCreationTime(time);
-                            computingActivity.setSubmissionTime(time);
+                            activityInfoDocument.setSubmissionTime(activityCommand.getTimestamp().toGregorianCalendar());
                         }
 
-                        operationalResultArray[index].setTimestamp(activityCommand.getTimestamp().toGregorianCalendar());
+                        operation.setTimestamp(activityCommand.getTimestamp().toGregorianCalendar());
                     }
 
-                    index++;
+                    history.addOperation(operation);
                 }
                 
-                LocalID_t localId = new LocalID_t();
-                localId.setLocalID_t(activity.getId());
-                
-                activityHistoryExtension = new Extension_t();
-                activityHistoryExtension.setLocalID(localId);
-                activityHistoryExtension.setKey("ACTIVITY_HISTORY");
-                activityHistoryExtension.setValue("ACTIVITY_HISTORY");
-                activityHistoryExtension.setExtraElement(activityHistory.getOMElement(ComputingActivityHistory.MY_QNAME, OMAbstractFactory.getOMFactory()));
+                if (req.isAttributeNameSpecified() && req.getAttributeName().length > 0) {
+                    String xmlStream = activityInfoDocument.getOMElement(ActivityInfoDocument.MY_QNAME, OMAbstractFactory.getOMFactory()).toString();
 
-                stageInURLExtension = new Extension_t();
-                stageInURLExtension.setLocalID(localId);
-                stageInURLExtension.setKey("STAGE_IN_URI");
-                stageInURLExtension.setValue(activity.getProperties().get(Activity.STAGE_IN_URI));
-                
-                stageOutURLExtension = new Extension_t();
-                stageOutURLExtension.setLocalID(localId);
-                stageOutURLExtension.setKey("STAGE_OUT_URI");
-                stageOutURLExtension.setValue(activity.getProperties().get(Activity.STAGE_OUT_URI));
-                
-                extensions = new Extensions_t();
-                extensions.addExtension(activityHistoryExtension);
-                extensions.addExtension(stageInURLExtension);
-                extensions.addExtension(stageOutURLExtension);
+                    StAXBuilder builder = new StAXOMBuilder(new ByteArrayInputStream(xmlStream.getBytes()));
+                    OMElement activityInfoDocumentElement = builder.getDocumentElement();
 
-                computingActivity.setExtensions(extensions);
+                        for (int i = 0; i < req.getAttributeName().length; i++) {
+                            Iterator<OMElementImpl> children = (Iterator<OMElementImpl>) activityInfoDocumentElement.getChildrenWithName(req.getAttributeName()[i]);
 
-                activityInfoItemChoice.setActivityInfo(computingActivity);
+                            if (children != null) {
+                                OMElementImpl elem = null;
+                                AttributeInfoItem_type0 attributeInfoItem = null;
+
+                                if (!children.hasNext()) {
+                                    throw new Exception("attribute " + req.getAttributeName()[i].toString() + " unknown");
+                                }
+
+                                while (children.hasNext()) {
+                                    elem = children.next();
+                                    attributeInfoItem = new AttributeInfoItem_type0();
+                                    attributeInfoItem.setAttributeName(new QName(AttributeInfoItem.MY_QNAME.getNamespaceURI(), elem.getLocalName()));
+
+                                    if (elem.getText() != null && elem.getText().length() > 0) {
+                                        attributeInfoItem.setAttributeValue(elem.getText());
+                                    } else {
+                                        StringWriter stringWriter = new StringWriter();
+                                        elem.serializeAndConsume(stringWriter);
+                                        
+                                        attributeInfoItem.setAttributeValue(stringWriter.toString());
+                                    }
+
+                                    choice.addAttributeInfoItem(attributeInfoItem);
+                                }
+                            } else {
+                                throw new Exception("attribute " + req.getAttributeName()[i].toString() + " unknown");
+                            }
+                    }
+                } else {
+                    choice.setActivityInfoDocument(activityInfoDocument);
+                }
             } catch (Throwable t) {
-                activityInfoItemChoice.setInternalBaseFault(makeInternalBaseFaultType(t.getMessage()));
+                String message = t.getMessage();
+                
+                if (message == null) {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage("N/A");
+                    
+                    choice.setInternalBaseFault(fault);
+                } else if (message.indexOf("not found") != -1) {
+                    ActivityNotFoundFault_type0 fault = new ActivityNotFoundFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setActivityNotFoundFault(fault);
+                } else if (message.indexOf("invalid state") != -1) {
+                    OperationNotAllowedFault_type0 fault = new OperationNotAllowedFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setOperationNotAllowedFault(fault);
+                    choice.setAttributeInfoItem(null);
+                } else if (message.indexOf("unknown") != -1) {
+                    UnknownAttributeFault_type0 fault = new UnknownAttributeFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setUnknownAttributeFault(fault);
+                } else {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setInternalBaseFault(fault);
+                }
             }
-
-            x++;
         }
-
-        GetActivityInfoResponse response = new GetActivityInfoResponse();
-        response.setActivityInfoItem(activityInfoItemArray);
-
+//        XMLStreamWriter writer;
+//        try {
+//            writer = XMLOutputFactory.newInstance().createXMLStreamWriter(new FileWriter("/tmp/pippo3.xml"));
+//            response.serialize(GetActivityInfoResponse.MY_QNAME, writer);
+//            writer.flush();
+//            writer.close();
+//        } catch (XMLStreamException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        } catch (FactoryConfigurationError e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//        }
+               
         logger.debug("END getActivityInfo");
         return response;
     }
 
-    public GetActivityStatusResponse getActivityStatus(GetActivityStatus req) throws VectorLimitExceededFault, InternalBaseFault, AccessControlFault {
+    public GetActivityStatusResponse getActivityStatus(GetActivityStatus req) throws AccessControlFault, InternalBaseFault, VectorLimitExceededFault {
         logger.debug("BEGIN getActivityStatus");
 
         checkInitialization();
@@ -411,56 +498,71 @@ public class ActivityManagementService implements ActivityManagementServiceSkele
         if (req == null || req.getActivityID() == null) {
             throw new InternalBaseFault("ActivityId not specified!");
         }
-        
-        int index = 0;
+
         ActivityStatus_type0 status = null;
-        ActivityStatusAttribute[] activityStatusAttributeArray = null;
         ActivityStatusItemChoice_type1 choice = null;
-        ActivityStatusItem_type0[] activityStatusItem = new ActivityStatusItem_type0[req.getActivityID().length];
+        ActivityStatusItem_type0 activityStatusItem = null;
 
         ActivityCmd command = new ActivityCmd(ActivityCommandName.GET_ACTIVITY_STATUS);
         command.setUserId(CEUtils.getUserId());
 
+        GetActivityStatusResponse response = new GetActivityStatusResponse();      
+
         for (String activityId : req.getActivityID()) {
             command.addParameter(ActivityCommandField.ACTIVITY_ID, activityId);
             choice = new ActivityStatusItemChoice_type1();
-            
-            activityStatusItem[index] = new ActivityStatusItem_type0();
-            activityStatusItem[index].setActivityID(activityId);
-            activityStatusItem[index].setActivityStatusItemChoice_type1(choice);
+
+            activityStatusItem = new ActivityStatusItem_type0();
+            activityStatusItem.setActivityID(activityId);
+            activityStatusItem.setActivityStatusItemChoice_type1(choice);
+
+            response.addActivityStatusItem(activityStatusItem);
 
             try {
                 CommandManager.getInstance().execute(command);
-                ActivityStatus activityStatus = (ActivityStatus)command.getResult().getParameter(ActivityCommandField.ACTIVITY_STATUS.name());
-                
+                ActivityStatus activityStatus = (ActivityStatus) command.getResult().getParameter(ActivityCommandField.ACTIVITY_STATUS.name());
+
                 status = new ActivityStatus_type0();
-                status.setStatus(PrimaryActivityStatus.Factory.fromValue(activityStatus.getStatusName().getName()));
+                status.setStatus(ActivityStatusState.Factory.fromValue(activityStatus.getStatusName().getName()));
                 status.setTimestamp(activityStatus.getTimestamp().toGregorianCalendar());
                 status.setDescription(activityStatus.getDescription());
 
-                if ((activityStatus.getStatusAttributes() != null) && (activityStatus.getStatusAttributes().size() > 0)) {
-                    activityStatusAttributeArray = new ActivityStatusAttribute[activityStatus.getStatusAttributes().size()];
-                    int i = 0;
-                    
-                    for (StatusAttributeName attribute : activityStatus.getStatusAttributes()) {
-                        activityStatusAttributeArray[i++] = ActivityStatusAttribute.Factory.fromValue(attribute.getName());
-                    }
-
-                    status.setAttribute(activityStatusAttributeArray);   
+                for (StatusAttributeName attribute : activityStatus.getStatusAttributes()) {
+                    status.addAttribute(ActivityStatusAttribute.Factory.fromValue(attribute.getName()));
                 }
 
                 choice.setActivityStatus(status);
             } catch (Throwable t) {
-                logger.error(t.getMessage(), t);
-                choice.setInternalBaseFault(makeInternalBaseFaultType(t.getMessage()));
+                String message = t.getMessage();
+                
+                if (message == null) {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage("N/A");
+                    
+                    choice.setInternalBaseFault(fault);
+                } else if (message.indexOf("not found") != -1) {
+                    ActivityNotFoundFault_type0 fault = new ActivityNotFoundFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setActivityNotFoundFault(fault);
+                } else if (message.indexOf("invalid state") != -1) {
+                    OperationNotAllowedFault_type0 fault = new OperationNotAllowedFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setOperationNotAllowedFault(fault);
+                } else {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setInternalBaseFault(fault);
+                }
             }
-
-            index++;
         }
 
-        GetActivityStatusResponse response = new GetActivityStatusResponse();
-        response.setActivityStatusItem(activityStatusItem);
-        
         logger.debug("END getActivityStatus");
         return response;
     }
@@ -525,43 +627,21 @@ public class ActivityManagementService implements ActivityManagementServiceSkele
             logger.error("Configuration error: ActivityExecutor not loaded!");
             return;
         }
-        
+
         try {
-            String hostName = InetAddress.getLocalHost().getCanonicalHostName();
-            activityManagerURL = "https://" + hostName + ":8443/ce-cream-es/services/ActivityManagementService";
+            prefexIdFromEndpoint = "https://" + InetAddress.getLocalHost().getCanonicalHostName() + ":8443/Activity/";
         } catch (Throwable t) {
             initialization = INITIALIZATION_ERROR;
             logger.error("Configuration error: cannot get the host name: " + t.getMessage());
             return;
         }
-     
+
         initialization = INITIALIZATION_OK;
         logger.info("ActivityManagementService initialization done!");
         logger.info("ActivityManagementService started!");
     }
 
-    private InternalBaseFault_Type makeInternalBaseFaultType(String message) {
-        InternalBaseFault_Type fault = null;
-
-        if (message == null) {
-            fault = new InternalBaseFault_Type();
-            message = "N/A";
-        } else if (message.indexOf("not found") != 0) {
-            fault = new UnknownActivityIDFault();
-        } else if (message.indexOf("invalid state") != 0) {
-            fault = new InvalidActivityStateFault();
-        } else {
-            fault = new InternalBaseFault_Type();
-            message = "N/A";
-        }
-
-        fault.setMessage(message);
-        fault.setTimestamp(new GregorianCalendar());
-
-        return fault;
-    }
-
-    public NotifyServiceResponse notifyService(NotifyService req) throws VectorLimitExceededFault, InternalBaseFault, AccessControlFault {
+    public NotifyServiceResponse notifyService(NotifyService req) throws AccessControlFault, InternalBaseFault, InternalNotificationFault, VectorLimitExceededFault {
         logger.debug("BEGIN notifyService");
 
         checkInitialization();
@@ -575,15 +655,18 @@ public class ActivityManagementService implements ActivityManagementServiceSkele
         NotifyResponseItem_type0[] notifyResponseItem = new NotifyResponseItem_type0[req.getNotifyRequestItem().length];
 
         for (NotifyRequestItem_type0 item : req.getNotifyRequestItem()) {
+            NotifyResponseItemChoice_type0 choice = new NotifyResponseItemChoice_type0();
+
             notifyResponseItem[index] = new NotifyResponseItem_type0();
             notifyResponseItem[index].setActivityID(item.getActivityID());
+            notifyResponseItem[index].setNotifyResponseItemChoice_type0(choice);
 
             command = new ActivityCmd(ActivityCommandName.NOTIFY_SERVICE);
             command.setUserId(CEUtils.getUserId());
             command.setCommandGroupId(item.getActivityID());
             command.addParameter(ActivityCommandField.ACTIVITY_ID, item.getActivityID());
             command.addParameter(ActivityCommandField.NOTIFY_MESSAGE, item.getNotifyMessage().getValue());
-            command.addParameter(ActivityCommandField.USER_DN, CEUtils.getUserDN_RFC2253());
+            command.addParameter(ActivityCommandField.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
             command.addParameter(ActivityCommandField.ACTIVITY_CHECK, ActivityCommandField.ACTIVITY_CHECK_ON);
 
             try {
@@ -593,8 +676,35 @@ public class ActivityManagementService implements ActivityManagementServiceSkele
                 command.setAsynchronous(true);
 
                 CommandManager.getInstance().execute(command);
+                choice.setAcknowledgement(item.getActivityID());
             } catch (Throwable t) {
-                notifyResponseItem[index].setInternalBaseFault(makeInternalBaseFaultType(t.getMessage()));
+                String message = t.getMessage();
+                
+                if (message == null) {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage("N/A");
+                    
+                    choice.setInternalBaseFault(fault);
+                } else if (message.indexOf("not found") != -1) {
+                    ActivityNotFoundFault_type0 fault = new ActivityNotFoundFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setActivityNotFoundFault(fault);
+                } else if (message.indexOf("invalid state") != -1) {
+                    OperationNotAllowedFault_type0 fault = new OperationNotAllowedFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setOperationNotAllowedFault(fault);
+                } else {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setInternalBaseFault(fault);
+                }
             }
 
             index++;
@@ -602,54 +712,230 @@ public class ActivityManagementService implements ActivityManagementServiceSkele
 
         NotifyServiceResponse response = new NotifyServiceResponse();
         response.setNotifyResponseItem(notifyResponseItem);
-        
+
         logger.debug("END notifyService");
         return response;
     }
 
-    public PauseActivityResponse pauseActivity(PauseActivity req) throws VectorLimitExceededFault, InternalBaseFault, AccessControlFault {
+    public PauseActivityResponse pauseActivity(PauseActivity req) throws AccessControlFault, InternalBaseFault, VectorLimitExceededFault {
         logger.debug("BEGIN pauseActivity");
 
         checkInitialization();
 
+        if (req == null || req.getActivityID() == null || req.getActivityID().length == 0) {
+            throw new InternalBaseFault("none activityId found in the request");
+        }
+
+        String[] activityIds = req.getActivityID();
+
+        PauseActivityResponseItem_type0[] responseItems = new PauseActivityResponseItem_type0[activityIds.length];
+        PauseActivityResponseItemChoice_type1 choice = null;
+        ActivityCmd command = new ActivityCmd(ActivityCommandName.PAUSE_ACTIVITY);
+        command.setUserId(CEUtils.getUserId());
+
+        for (int i = 0; i < activityIds.length; i++) {
+            command.setAsynchronous(false);
+            command.setCommandGroupId(activityIds[i]);
+            command.addParameter(ActivityCommandField.ACTIVITY_ID, activityIds[i]);
+            command.addParameter(ActivityCommandField.ACTIVITY_CHECK, ActivityCommandField.ACTIVITY_CHECK_ON);
+            choice = new PauseActivityResponseItemChoice_type1();
+
+            try {
+                CommandManager.getInstance().execute(command);
+
+                command.getParameterKeySet().remove(ActivityCommandField.ACTIVITY_CHECK.name());
+                command.setAsynchronous(true);
+
+                CommandManager.getInstance().execute(command);
+            } catch (Throwable t) {
+                String message = t.getMessage();
+                
+                if (message == null) {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage("N/A");
+                    
+                    choice.setInternalBaseFault(fault);
+                } else if (message.indexOf("not found") != -1) {
+                    ActivityNotFoundFault_type0 fault = new ActivityNotFoundFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setActivityNotFoundFault(fault);
+                } else if (message.indexOf("invalid state") != -1) {
+                    OperationNotAllowedFault_type0 fault = new OperationNotAllowedFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setOperationNotAllowedFault(fault);
+                } else {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setInternalBaseFault(fault);
+                }
+            }
+
+            responseItems[i] = new PauseActivityResponseItem_type0();
+            responseItems[i].setActivityID(activityIds[i]);
+            responseItems[i].setPauseActivityResponseItemChoice_type1(choice);
+        }
+
         PauseActivityResponse response = new PauseActivityResponse();
-        response.setResponseItem(execute(new ActivityCmd(ActivityCommandName.PAUSE_ACTIVITY), req.getActivityID()));
-        
+        response.setPauseActivityResponseItem(responseItems);
+
         logger.debug("END pauseActivity");
         return response;
     }
-    
-    public RestartActivityResponse restartActivity(RestartActivity req) throws VectorLimitExceededFault, InternalBaseFault, AccessControlFault {
+
+    public RestartActivityResponse restartActivity(RestartActivity req) throws AccessControlFault, InternalBaseFault, OperationNotPossibleFault, VectorLimitExceededFault {
         logger.debug("BEGIN restartActivity");
-       
+
         checkInitialization();
 
-        RestartActivityResponse response = new RestartActivityResponse();
-        response.setResponseItem(execute(new ActivityCmd(ActivityCommandName.RESTART_ACTIVITY), req.getActivityID()));
-
-        logger.debug("END restartActivity");
-        return response;
+        throw new InternalBaseFault("operation not implemented");
     }
 
-    public ResumeActivityResponse resumeActivity(ResumeActivity req) throws VectorLimitExceededFault, InternalBaseFault, AccessControlFault {
+    public ResumeActivityResponse resumeActivity(ResumeActivity req) throws AccessControlFault, InternalBaseFault, VectorLimitExceededFault {
         logger.debug("BEGIN resumeActivity");
 
         checkInitialization();
-        
+
+        if (req == null || req.getActivityID() == null || req.getActivityID().length == 0) {
+            throw new InternalBaseFault("none activityId found in the request");
+        }
+
+        String[] activityIds = req.getActivityID();
+
+        ResumeActivityResponseItem_type0[] responseItems = new ResumeActivityResponseItem_type0[activityIds.length];
+        ResumeActivityResponseItemChoice_type1 choice = null;
+        ActivityCmd command = new ActivityCmd(ActivityCommandName.RESUME_ACTIVITY);
+        command.setUserId(CEUtils.getUserId());
+
+        for (int i = 0; i < activityIds.length; i++) {
+            command.setAsynchronous(false);
+            command.setCommandGroupId(activityIds[i]);
+            command.addParameter(ActivityCommandField.ACTIVITY_ID, activityIds[i]);
+            command.addParameter(ActivityCommandField.ACTIVITY_CHECK, ActivityCommandField.ACTIVITY_CHECK_ON);
+            choice = new ResumeActivityResponseItemChoice_type1();
+
+            try {
+                CommandManager.getInstance().execute(command);
+
+                command.getParameterKeySet().remove(ActivityCommandField.ACTIVITY_CHECK.name());
+                command.setAsynchronous(true);
+
+                CommandManager.getInstance().execute(command);
+            } catch (Throwable t) {
+                String message = t.getMessage();
+                
+                if (message == null) {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage("N/A");
+                    
+                    choice.setInternalBaseFault(fault);
+                } else if (message.indexOf("not found") != -1) {
+                    ActivityNotFoundFault_type0 fault = new ActivityNotFoundFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setActivityNotFoundFault(fault);
+                } else if (message.indexOf("invalid state") != -1) {
+                    OperationNotAllowedFault_type0 fault = new OperationNotAllowedFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setOperationNotAllowedFault(fault);
+                } else {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setInternalBaseFault(fault);
+                }
+            }
+
+            responseItems[i] = new ResumeActivityResponseItem_type0();
+            responseItems[i].setActivityID(activityIds[i]);
+            responseItems[i].setResumeActivityResponseItemChoice_type1(choice);
+        }
+
         ResumeActivityResponse response = new ResumeActivityResponse();
-        response.setResponseItem(execute(new ActivityCmd(ActivityCommandName.RESUME_ACTIVITY), req.getActivityID()));
+        response.setResumeActivityResponseItem(responseItems);
 
         logger.debug("END resumeActivity");
         return response;
     }
 
-    public WipeActivityResponse wipeActivity(WipeActivity req) throws VectorLimitExceededFault, InternalBaseFault, AccessControlFault {
+    public WipeActivityResponse wipeActivity(WipeActivity req) throws AccessControlFault, InternalBaseFault, VectorLimitExceededFault {
         logger.debug("BEGIN wipeActivity");
 
         checkInitialization();
-        
+
+        if (req == null || req.getActivityID() == null || req.getActivityID().length == 0) {
+            throw new InternalBaseFault("none activityId found in the request");
+        }
+
+        String[] activityIds = req.getActivityID();
+
+        WipeActivityResponseItem_type0[] responseItems = new WipeActivityResponseItem_type0[activityIds.length];
+        WipeActivityResponseItemChoice_type1 choice = null;
+        ActivityCmd command = new ActivityCmd(ActivityCommandName.WIPE_ACTIVITY);
+        command.setUserId(CEUtils.getUserId());
+
+        for (int i = 0; i < activityIds.length; i++) {
+            command.setAsynchronous(false);
+            command.setCommandGroupId(activityIds[i]);
+            command.addParameter(ActivityCommandField.ACTIVITY_ID, activityIds[i]);
+            command.addParameter(ActivityCommandField.ACTIVITY_CHECK, ActivityCommandField.ACTIVITY_CHECK_ON);
+            choice = new WipeActivityResponseItemChoice_type1();
+
+            try {
+                CommandManager.getInstance().execute(command);
+
+                command.getParameterKeySet().remove(ActivityCommandField.ACTIVITY_CHECK.name());
+                command.setAsynchronous(true);
+
+                CommandManager.getInstance().execute(command);
+            } catch (Throwable t) {
+                String message = t.getMessage();
+                
+                if (message == null) {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage("N/A");
+                    
+                    choice.setInternalBaseFault(fault);
+                } else if (message.indexOf("not found") != -1) {
+                    ActivityNotFoundFault_type0 fault = new ActivityNotFoundFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setActivityNotFoundFault(fault);
+                } else if (message.indexOf("invalid state") != -1) {
+                    OperationNotAllowedFault_type0 fault = new OperationNotAllowedFault_type0();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setOperationNotAllowedFault(fault);
+                } else {
+                    InternalBaseFault_Type fault = new InternalBaseFault_Type();
+                    fault.setTimestamp(GregorianCalendar.getInstance());
+                    fault.setMessage(message);
+                    
+                    choice.setInternalBaseFault(fault);
+                }
+            }
+
+            responseItems[i] = new WipeActivityResponseItem_type0();
+            responseItems[i].setActivityID(activityIds[i]);
+            responseItems[i].setWipeActivityResponseItemChoice_type1(choice);
+        }
+
         WipeActivityResponse response = new WipeActivityResponse();
-        response.setResponseItem(execute(new ActivityCmd(ActivityCommandName.WIPE_ACTIVITY), req.getActivityID()));
+        response.setWipeActivityResponseItem(responseItems);
 
         logger.debug("END wipeActivity");
         return response;

@@ -60,6 +60,10 @@ public final class JobRegisterCmd extends JobCmd {
         return getParameterAsString("LOGGER_DEST_URI");
     }
 
+    public String getUserDNX500() {
+        return getParameterAsString("USER_DN_X500");
+    }
+
     public String getUserVO() {
         return getParameterAsString("USER_VO");
     }
@@ -102,6 +106,10 @@ public final class JobRegisterCmd extends JobCmd {
 
     public void setLoggerDestURI(String loggerDestURI) {
         addParameter("LOGGER_DEST_URI", loggerDestURI);
+    }
+
+    public void setUserDNX500(String dn) {
+        addParameter("USER_DN_X500", dn);
     }
 
     public void setUserVO(String userVO) {

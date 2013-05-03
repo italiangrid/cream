@@ -66,7 +66,7 @@ public class CREAMDelegationService implements DelegationServiceSkeletonInterfac
 
         DelegationCommand command = new DelegationCommand(DelegationCommand.DESTROY_DELEGATION);
         command.addParameter(DelegationCommand.DELEGATION_ID, delegationId);
-        command.addParameter(DelegationCommand.USER_DN, CEUtils.getUserDN_RFC2253());
+        command.addParameter(DelegationCommand.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
         command.addParameter(DelegationCommand.LOCAL_USER, CEUtils.getLocalUser());
 
         try {
@@ -99,7 +99,7 @@ public class CREAMDelegationService implements DelegationServiceSkeletonInterfac
         logger.info("BEGIN getNewProxyReq");
 
         DelegationCommand command = new DelegationCommand(DelegationCommand.GET_NEW_DELEGATION_REQUEST);
-        command.addParameter(DelegationCommand.USER_DN, CEUtils.getUserDN_RFC2253());
+        command.addParameter(DelegationCommand.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
         command.addParameter(DelegationCommand.USER_CERTIFICATE, CEUtils.getUserCert());
         command.addParameter(DelegationCommand.VOMS_ATTRIBUTES, CEUtils.getVOMSAttributes());
         command.addParameter(DelegationCommand.LOCAL_USER, CEUtils.getLocalUser());
@@ -128,7 +128,7 @@ public class CREAMDelegationService implements DelegationServiceSkeletonInterfac
 
         DelegationCommand command = new DelegationCommand(DelegationCommand.GET_DELEGATION_REQUEST);
         command.addParameter(DelegationCommand.DELEGATION_ID, delegationId);
-        command.addParameter(DelegationCommand.USER_DN, CEUtils.getUserDN_RFC2253());
+        command.addParameter(DelegationCommand.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
         command.addParameter(DelegationCommand.LOCAL_USER, CEUtils.getLocalUser());
         command.addParameter(DelegationCommand.VOMS_ATTRIBUTES, CEUtils.getVOMSAttributes());
         command.addParameter(DelegationCommand.USER_CERTIFICATE, CEUtils.getUserCert());
@@ -168,7 +168,7 @@ public class CREAMDelegationService implements DelegationServiceSkeletonInterfac
 
         DelegationCommand command = new DelegationCommand(DelegationCommand.GET_TERMINATION_TIME);
         command.addParameter(DelegationCommand.DELEGATION_ID, delegationId);
-        command.addParameter(DelegationCommand.USER_DN, CEUtils.getUserDN_RFC2253());
+        command.addParameter(DelegationCommand.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
         command.addParameter(DelegationCommand.LOCAL_USER, CEUtils.getLocalUser());
 
         try {
@@ -290,7 +290,7 @@ public class CREAMDelegationService implements DelegationServiceSkeletonInterfac
         DelegationCommand command = new DelegationCommand(DelegationCommand.PUT_DELEGATION);
         command.addParameter(DelegationCommand.DELEGATION_ID, delegationId);
         command.addParameter(DelegationCommand.DELEGATION, delegation);
-        command.addParameter(DelegationCommand.USER_DN, CEUtils.getUserDN_RFC2253());
+        command.addParameter(DelegationCommand.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
         command.addParameter(DelegationCommand.USER_CERTIFICATE, CEUtils.getUserCert());
         command.addParameter(DelegationCommand.LOCAL_USER, CEUtils.getLocalUser());
         command.addParameter(DelegationCommand.LOCAL_USER_GROUP, CEUtils.getLocalUserGroup());
@@ -329,7 +329,7 @@ public class CREAMDelegationService implements DelegationServiceSkeletonInterfac
 
         DelegationCommand command = new DelegationCommand(DelegationCommand.RENEW_DELEGATION_REQUEST);
         command.addParameter(DelegationCommand.DELEGATION_ID, delegationId);
-        command.addParameter(DelegationCommand.USER_DN, CEUtils.getUserDN_RFC2253());
+        command.addParameter(DelegationCommand.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
         command.addParameter(DelegationCommand.USER_CERTIFICATE, CEUtils.getUserCert());
         command.addParameter(DelegationCommand.VOMS_ATTRIBUTES, CEUtils.getVOMSAttributes());
         command.addParameter(DelegationCommand.LOCAL_USER, CEUtils.getLocalUser());

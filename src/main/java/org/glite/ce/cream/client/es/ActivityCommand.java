@@ -34,8 +34,9 @@ import org.apache.commons.httpclient.protocol.Protocol;
 import org.glite.ce.cream.client.CmdLineParser;
 import org.glite.ce.creamapi.ws.es.activityinfo.ActivityInfoServiceStub;
 import org.glite.ce.creamapi.ws.es.activitymanagement.ActivityManagementServiceStub;
-import org.glite.ce.creamapi.ws.es.creation.CreationServiceStub;
+import org.glite.ce.creamapi.ws.es.creation.ActivityCreationServiceStub;
 import org.glite.ce.creamapi.ws.es.delegation.DelegationServiceStub;
+import org.glite.ce.creamapi.ws.es.resourceinfo.ResourceInfoServiceStub;
 import org.glite.security.delegation.GrDPX509Util;
 import org.glite.security.delegation.GrDProxyDlgorOptions;
 import org.glite.security.delegation.GrDProxyGenerator;
@@ -44,53 +45,67 @@ import org.glite.security.trustmanager.axis2.AXIS2SocketFactory;
 
 public abstract class ActivityCommand {
     public static final String ADL = "ADL";
-    public static final String EPR = "EPR";
-    public static final String DELEGATION_ID = "DELEGATION_ID";
-    public static final String FROM_DATE = "FROM_DATE";
-    public static final String TO_DATE = "TO_DATE";
-    public static final String PROXY = "PROXY";
-    public static final String RENEW_DELEGATION = "RENEW_DELEGATION";
-    public static final String GET_ACTIVITY_INFO = "GET_ACTIVITY_INFO";
-    public static final String GET_DELEGATION_INFO = "GET_DELEGATION_INFO";
     public static final String CANCEL_ACTIVITY = "CANCEL_ACTIVITY";
-    public static final String PAUSE_ACTIVITY = "PAUSE_ACTIVITY";
-    public static final String RESUME_ACTIVITY = "RESUME_ACTIVITY";
+    public static final String DELEGATION_ID = "DELEGATION_ID";
+    public static final String DESTROY = "DESTROY";
+    public static final String EPR = "EPR";
+//    public static final String FROM_DATE = "FROM_DATE";
+    public static final String GET_ACTIVITY_INFO = "GET_ACTIVITY_INFO";
     public static final String GET_ACTIVITY_STATUS = "GET_ACTIVITY_STATUS";
-    public static final String STATUS = "STATUS";
-    public static final String WIPE_ACTIVITY = "WIPE_ACTIVITY";
-    public static final String LIMIT = "LIMIT";
+    public static final String GET_INTERFACE_VERSION = "GET_INTERFACE_VERSION";
+    public static final String GET_NEW_PROXY_REQUEST = "GET_NEW_PROXY_REQUEST";
+    public static final String GET_PROXY_REQUEST = "GET_PROXY_REQUEST";
+    public static final String GET_RESOURCE_INFO = "GET_RESOURCE_INFO";
+    public static final String GET_TERMINATION_TIME = "GET_TERMINATION_TIME";
+    public static final String GET_VERSION = "GET_VERSION";
+//    public static final String LIMIT = "LIMIT";
     public static final String LIST_ACTIVITIES = "LIST_ACTIVITIES";
+    // public static final String NOTIFY_MESSAGE_TYPE = "NOTIFY_MESSAGE_TYPE";
     public static final String NOTIFY_SERVICE = "NOTIFY_SERVICE";
-    public static final String NOTIFY_MESSAGE_TYPE = "NOTIFY_MESSAGE_TYPE";
- 
-    private int limit = 0;
-    private String proxy = null;
+    public static final String PAUSE_ACTIVITY = "PAUSE_ACTIVITY";
+    public static final String PROXY = "PROXY";
+    public static final String QUERY_RESOURCE_INFO = "QUERY_RESOURCE_INFO";
+    public static final String RENEW_PROXY_REQUEST = "RENEW_PROXY_REQUEST";
+    public static final String RESUME_ACTIVITY = "RESUME_ACTIVITY";
+    public static final String STATUS = "STATUS";
+//    public static final String TO_DATE = "TO_DATE";
+    public static final String WIPE_ACTIVITY = "WIPE_ACTIVITY";
+
+    private List<String> activityDescFileList = null;
+    private List<String> attributeList = null;
     private String epr = null;
-    private String notifyMessageType = null;
     private Calendar fromDate = null;
-    private Calendar toDate = null;
-    private boolean isRenew = false;
+    private List<String> idList = null;
+    private boolean isCancelActivity = false;
+    private boolean isDestroy = false;
     private boolean isGetActivityInfo = false;
     private boolean isGetActivityStatus = false;
     private boolean isGetDelegationInfo = false;
+    private boolean isGetInterfaceVersion = false;
+    private boolean isGetNewProxyRequest = false;
+    private boolean isGetProxyRequest = false;
+    private boolean isGetResourceInfo = false;
+    private boolean isGetTerminationTime = false;
+    private boolean isGetVersion = false;
     private boolean isListActivities = false;
-    private boolean isNotifyService = false;
-    private boolean isCancelActivity = false;
+//    private boolean isNotifyService = false;
     private boolean isPauseActivity = false;
+    private boolean isQueryResourceInfo = false;
+    private boolean isRenew = false;
+    private boolean isRenewProxyRequest = false;
     private boolean isResumeActivity = false;
     private boolean isWipeActivity = false;
-
-    private List<String> idList = null;
-    private List<String> activityDescFileList = null;
-    private List<String> statusList = null;
+    private int limit = 0;
+    private String notifyMessageType = null;
     private List<String> options = null;
 
-    public ActivityCommand(String[] args, List<String> options) throws IllegalArgumentException {
-        if (args == null) {
-            throw new IllegalArgumentException("arguments not specified!");
-        }
+    private String proxy = null;
+    private String query = null;
+    private List<String> statusList = null;
+    private Calendar toDate = null;
 
-        if (options == null) {
+    public ActivityCommand(String[] args, List<String> options) throws IllegalArgumentException {
+        if (options == null || options.size() == 0) {
             throw new IllegalArgumentException("options not specified!");
         }
 
@@ -103,13 +118,25 @@ public abstract class ActivityCommand {
 
     protected abstract void execute();
 
+    public ActivityCreationServiceStub getActivityCreationServiceStub() throws AxisFault {
+        if (epr == null) {
+            throw new AxisFault("epr not specified!");
+        }
+
+        if (epr.startsWith("https")) {
+            setSSLProperties();
+        }
+
+        return new ActivityCreationServiceStub(epr); // + "/ce-cream-es/services/ActivityCreationService");
+    }
+
     public List<String> getActivityDescFileList() {
         if (activityDescFileList == null) {
             activityDescFileList = new ArrayList<String>(0);
         }
         return activityDescFileList;
     }
-    
+
     public ActivityInfoServiceStub getActivityInfoServiceStub() throws AxisFault {
         if (epr == null) {
             throw new AxisFault("epr not specified!");
@@ -119,9 +146,9 @@ public abstract class ActivityCommand {
             setSSLProperties();
         }
 
-        return new ActivityInfoServiceStub(epr + "/ce-cream-es/services/ActivityInfoService");
+        return new ActivityInfoServiceStub(epr); // + "/ce-cream-es/services/ActivityInfoService");
     }
-    
+
     public ActivityManagementServiceStub getActivityManagementServiceStub() throws AxisFault {
         if (epr == null) {
             throw new AxisFault("epr not specified!");
@@ -131,19 +158,7 @@ public abstract class ActivityCommand {
             setSSLProperties();
         }
 
-        return new ActivityManagementServiceStub(epr + "/ce-cream-es/services/ActivityManagementService");
-    }
-
-    public CreationServiceStub getCreationServiceStub() throws AxisFault {
-        if (epr == null) {
-            throw new AxisFault("epr not specified!");
-        }
-
-        if (epr.startsWith("https")) {
-            setSSLProperties();
-        }
-
-        return new CreationServiceStub(epr + "/ce-cream-es/services/CreationService");
+        return new ActivityManagementServiceStub(epr); // + "/ce-cream-es/services/ActivityManagementService");
     }
 
     public DelegationServiceStub getDelegationServiceStub() throws AxisFault {
@@ -155,7 +170,7 @@ public abstract class ActivityCommand {
             setSSLProperties();
         }
 
-        return new DelegationServiceStub(epr + "/ce-cream-es/services/DelegationService");
+        return new DelegationServiceStub(epr); // + "/ce-cream-es/services/DelegationService");
     }
 
     public String getEpr() {
@@ -166,13 +181,6 @@ public abstract class ActivityCommand {
         return fromDate;
     }
 
-    public List<String> getIdList() {
-        if (idList == null) {
-            idList = new ArrayList<String>(0);
-        }
-        return idList;
-    }
-    
     public String[] getIdArray() {
         String[] array = null;
         if (idList != null) {
@@ -181,6 +189,20 @@ public abstract class ActivityCommand {
         }
         return array;
     }
+
+    public List<String> getIdList() {
+        if (idList == null) {
+            idList = new ArrayList<String>(0);
+        }
+        return idList;
+    }
+
+    public List<String> getAttributeList() {
+        if (attributeList == null) {
+            attributeList = new ArrayList<String>(0);
+        }
+        return attributeList;
+    }
     
     public int getLimit() {
         return limit;
@@ -188,6 +210,22 @@ public abstract class ActivityCommand {
 
     public String getNotifyMessageType() {
         return notifyMessageType;
+    }
+
+    public String getQuery() {
+        return query;
+    }
+
+    public ResourceInfoServiceStub getResourceInfoServiceStub() throws AxisFault {
+        if (epr == null) {
+            throw new AxisFault("epr not specified!");
+        }
+
+        if (epr.startsWith("https")) {
+            setSSLProperties();
+        }
+
+        return new ResourceInfoServiceStub(epr); // + "/ce-cream-es/services/ResourceInfoService");
     }
 
     public List<String> getStatusList() {
@@ -205,6 +243,10 @@ public abstract class ActivityCommand {
         return isCancelActivity;
     }
 
+    public boolean isDestroy() {
+        return isDestroy;
+    }
+
     public boolean isGetActivityInfo() {
         return isGetActivityInfo;
     }
@@ -217,20 +259,52 @@ public abstract class ActivityCommand {
         return isGetDelegationInfo;
     }
 
+    public boolean isGetInterfaceVersion() {
+        return isGetInterfaceVersion;
+    }
+
+    public boolean isGetNewProxyRequest() {
+        return isGetNewProxyRequest;
+    }
+
+    public boolean isGetProxyRequest() {
+        return isGetProxyRequest;
+    }
+
+    public boolean isGetResourceInfo() {
+        return isGetResourceInfo;
+    }
+
+    public boolean isGetTerminationTime() {
+        return isGetTerminationTime;
+    }
+
+    public boolean isGetVersion() {
+        return isGetVersion;
+    }
+
     public boolean isListActivities() {
         return isListActivities;
     }
-    
+
     public boolean isNotifyService() {
-        return isNotifyService;
+        return notifyMessageType != null;
     }
 
     public boolean isPauseActivity() {
         return isPauseActivity;
     }
 
+    public boolean isQueryResourceInfo() {
+        return isQueryResourceInfo;
+    }
+
     public boolean isRenew() {
         return isRenew;
+    }
+
+    public boolean isRenewProxyRequest() {
+        return isRenewProxyRequest;
     }
 
     public boolean isResumeActivity() {
@@ -242,15 +316,8 @@ public abstract class ActivityCommand {
     }
 
     private void parseArguments(String[] args, List<String> options) {
-        try {
-              parseArguments2(args, options);
-            } catch(Throwable t) {
-                t.printStackTrace();
-            }
-    }
-
-    private void parseArguments2(String[] args, List<String> options) {
         CmdLineParser parser = new CmdLineParser();
+
         CmdLineParser.Option getHelpOpt = parser.addBooleanOption('h', "help");
         CmdLineParser.Option eprOpt = null;
         CmdLineParser.Option statusOpt = null;
@@ -260,15 +327,25 @@ public abstract class ActivityCommand {
         CmdLineParser.Option proxyOpt = null;
         CmdLineParser.Option renewOpt = null;
         CmdLineParser.Option activityInfoOpt = null;
-        CmdLineParser.Option delegationInfoOpt = null;
+        CmdLineParser.Option getVersionOpt = null;
+        CmdLineParser.Option getInterfaceVersionOpt = null;
+        CmdLineParser.Option getTerminationTimeOpt = null;
+        CmdLineParser.Option getNewProxyRequestOpt = null;
+        CmdLineParser.Option getProxyRequestOpt = null;
+        CmdLineParser.Option renewProxyRequestOpt = null;
+        CmdLineParser.Option destroyOpt = null;
         CmdLineParser.Option cancelOpt = null;
         CmdLineParser.Option pauseOpt = null;
         CmdLineParser.Option resumeOpt = null;
         CmdLineParser.Option wipeOpt = null;
         CmdLineParser.Option getStatusOpt = null;
         CmdLineParser.Option notifyServiceOpt = null;
-        CmdLineParser.Option notifyMessageTypeOpt = null;
+        // CmdLineParser.Option notifyMessageTypeOpt = null;
         CmdLineParser.Option listActivitiesOpt = null;
+        CmdLineParser.Option getResourceInfoOpt = null;
+        CmdLineParser.Option queryResourceInfoOpt = null;
+        CmdLineParser.Option attributeListOpt = null;
+
 
         if (options.contains(PROXY)) {
             proxyOpt = parser.addStringOption('x', "proxy");
@@ -282,36 +359,68 @@ public abstract class ActivityCommand {
             statusOpt = parser.addStringOption('s', "status");
         }
 
-        if (options.contains(FROM_DATE)) {
-            fromOpt = parser.addStringOption('f', "fromDate");
-        }
-
-        if (options.contains(TO_DATE)) {
-            toOpt = parser.addStringOption('t', "toDate");
-        }
-
-        if (options.contains(LIMIT)) {
-            limitOpt = parser.addIntegerOption("limit");
-        }
-        
-        if (options.contains(RENEW_DELEGATION)) {
-            renewOpt = parser.addBooleanOption('r', "renew");
-        }
+//        if (options.contains(FROM_DATE)) {
+//            fromOpt = parser.addStringOption('f', "fromDate");
+//        }
+//
+//        if (options.contains(TO_DATE)) {
+//            toOpt = parser.addStringOption('t', "toDate");
+//        }
+//
+//        if (options.contains(LIMIT)) {
+//            limitOpt = parser.addIntegerOption("limit");
+//        }
 
         if (options.contains(GET_ACTIVITY_INFO)) {
             activityInfoOpt = parser.addBooleanOption('i', "info");
+            attributeListOpt = parser.addStringOption('a', "attributes");
         }
 
-        if (options.contains(GET_DELEGATION_INFO)) {
-            delegationInfoOpt = parser.addBooleanOption('i', "info");
+        if (options.contains(GET_VERSION)) {
+            getVersionOpt = parser.addBooleanOption('v', "version");
         }
-        
+
+        if (options.contains(GET_INTERFACE_VERSION)) {
+            getInterfaceVersionOpt = parser.addBooleanOption('i', "interfaceversion");
+        }
+
+        if (options.contains(GET_TERMINATION_TIME)) {
+            getTerminationTimeOpt = parser.addBooleanOption('t', "termination");
+        }
+
+        if (options.contains(GET_PROXY_REQUEST)) {
+            getProxyRequestOpt = parser.addBooleanOption('g', "getreq");
+        }
+
+        if (options.contains(GET_NEW_PROXY_REQUEST)) {
+            getNewProxyRequestOpt = parser.addBooleanOption('n', "newreq");
+        }
+
+        if (options.contains(RENEW_PROXY_REQUEST)) {
+            renewProxyRequestOpt = parser.addBooleanOption('r', "renewreq");
+        }
+
+        if (options.contains(DESTROY)) {
+            destroyOpt = parser.addBooleanOption('d', "destroy");
+        }
+
+        if (options.contains(GET_RESOURCE_INFO)) {
+            getResourceInfoOpt = parser.addBooleanOption('i', "info");
+        }
+
+        if (options.contains(QUERY_RESOURCE_INFO)) {
+            queryResourceInfoOpt = parser.addStringOption('q', "query");
+        }
+
         if (options.contains(LIST_ACTIVITIES)) {
             listActivitiesOpt = parser.addBooleanOption('l', "listActivities");
+            fromOpt = parser.addStringOption('f', "fromDate");
+            toOpt = parser.addStringOption('t', "toDate");
+            limitOpt = parser.addIntegerOption("limit");
         }
-        
+
         if (options.contains(NOTIFY_SERVICE)) {
-            notifyServiceOpt = parser.addBooleanOption('n', "notify");
+            notifyServiceOpt = parser.addStringOption('n', "notify");
         }
 
         if (options.contains(CANCEL_ACTIVITY)) {
@@ -334,14 +443,15 @@ public abstract class ActivityCommand {
             getStatusOpt = parser.addBooleanOption('s', "getStatus");
         }
 
-        if (options.contains(NOTIFY_MESSAGE_TYPE)) {
-            notifyMessageTypeOpt = parser.addStringOption('m', "message");
-        }
+        // if (options.contains(NOTIFY_MESSAGE_TYPE)) {
+        // notifyMessageTypeOpt = parser.addStringOption('m', "message");
+        // }
 
         try {
             parser.parse(args);
         } catch (CmdLineParser.OptionException e) {
             System.err.println(e.getMessage());
+
             printUsage();
         }
 
@@ -363,6 +473,11 @@ public abstract class ActivityCommand {
             }
         }
 
+        if (queryResourceInfoOpt != null) {
+            isQueryResourceInfo = true;
+            setQuery((String) parser.getOptionValue(queryResourceInfoOpt));
+        }
+
         if (statusOpt != null) {
             String statuses = (String) parser.getOptionValue(statusOpt, null);
             if (statuses != null) {
@@ -378,58 +493,90 @@ public abstract class ActivityCommand {
             }
         }
 
-        if (fromOpt != null) {
-            String fromDateStr = (String) parser.getOptionValue(fromOpt, null);
-            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
+//        if (fromOpt != null) {
+//            String fromDateStr = (String) parser.getOptionValue(fromOpt, null);
+//            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
+//
+//            if (fromDateStr != null) {
+//                try {
+//                    fromDate = new GregorianCalendar();
+//                    fromDate.setTime(df.parse(fromDateStr));
+//                } catch (ParseException e) {
+//                    fromDate = null;
+//                    System.err.println("Invalid --from date " + fromDateStr + "; ignored");
+//                }
+//            }
+//        }
+//
+//        if (toOpt != null) {
+//            String toDateStr = (String) parser.getOptionValue(toOpt, null);
+//            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
+//
+//            if (toDateStr != null) {
+//                try {
+//                    toDate = new GregorianCalendar();
+//                    toDate.setTime(df.parse(toDateStr));
+//                } catch (ParseException e) {
+//                    toDate = null;
+//                    System.err.println("Invalid --end date " + toDateStr + "; ignored");
+//                }
+//            }
+//        }
 
-            if (fromDateStr != null) {
-                try {
-                    fromDate = new GregorianCalendar();
-                    fromDate.setTime(df.parse(fromDateStr));
-                } catch (ParseException e) {
-                    fromDate = null;
-                    System.err.println("Invalid --from date " + fromDateStr + "; ignored");
-                }
-            }
-        }
+//        if (limitOpt != null) {
+//            limit = ((Integer) parser.getOptionValue(limitOpt, -1)).intValue();
+//        }
 
-        if (toOpt != null) {
-            String toDateStr = (String) parser.getOptionValue(toOpt, null);
-            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
-
-            if (toDateStr != null) {
-                try {
-                    toDate = new GregorianCalendar();
-                    toDate.setTime(df.parse(toDateStr));
-                } catch (ParseException e) {
-                    toDate = null;
-                    System.err.println("Invalid --end date " + toDateStr + "; ignored");
-                }
-            }
-        }
-
-        if (limitOpt != null) {
-            limit = ((Integer) parser.getOptionValue(limitOpt, -1)).intValue();
-        }
-        
         if (renewOpt != null) {
             isRenew = ((Boolean) parser.getOptionValue(renewOpt, Boolean.FALSE)).booleanValue();
         }
 
         if (activityInfoOpt != null) {
             isGetActivityInfo = ((Boolean) parser.getOptionValue(activityInfoOpt, Boolean.FALSE)).booleanValue();
+            String attributes = (String) parser.getOptionValue(attributeListOpt);
+            
+            if (attributes != null) {
+                StringTokenizer st = new StringTokenizer(attributes, ":");
+                attributeList = new ArrayList<String>(0);
+                
+                while (st.hasMoreTokens()) {
+                    attributeList.add(st.nextToken());
+                }
+            }
         }
-        
-        if (delegationInfoOpt != null) {
-            isGetDelegationInfo = (((Boolean) parser.getOptionValue(delegationInfoOpt, Boolean.FALSE)).booleanValue());
-        }
-        
+
         if (listActivitiesOpt != null) {
             isListActivities = ((Boolean) parser.getOptionValue(listActivitiesOpt, Boolean.FALSE)).booleanValue();
+            limit = ((Integer) parser.getOptionValue(limitOpt, -1)).intValue();
+            
+            String dateStr = (String) parser.getOptionValue(toOpt, null);
+            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy-HH:mm:ss");
+
+            if (dateStr != null) {
+                try {
+                    toDate = new GregorianCalendar();
+                    toDate.setTime(df.parse(dateStr));
+                } catch (ParseException e) {
+                    toDate = null;
+                    System.err.println("Invalid --end date " + dateStr + "; ignored");
+                }
+            }
+            
+            dateStr = (String) parser.getOptionValue(fromOpt, null);
+
+            if (dateStr != null) {
+                try {
+                    fromDate = new GregorianCalendar();
+                    fromDate.setTime(df.parse(dateStr));
+                } catch (ParseException e) {
+                    fromDate = null;
+                    System.err.println("Invalid --from date " + dateStr + "; ignored");
+                }
+            }
         }
-        
+
         if (notifyServiceOpt != null) {
-            isNotifyService = ((Boolean) parser.getOptionValue(notifyServiceOpt, Boolean.FALSE)).booleanValue();
+            notifyMessageType = (String) parser.getOptionValue(notifyServiceOpt);
         }
 
         if (cancelOpt != null) {
@@ -452,8 +599,41 @@ public abstract class ActivityCommand {
             isGetActivityStatus = ((Boolean) parser.getOptionValue(getStatusOpt, Boolean.FALSE)).booleanValue();
         }
 
-        if (notifyMessageTypeOpt != null) {
-            notifyMessageType = (String) parser.getOptionValue(notifyMessageTypeOpt);
+        if (getResourceInfoOpt != null) {
+            isGetResourceInfo = ((Boolean) parser.getOptionValue(getResourceInfoOpt, Boolean.FALSE)).booleanValue();
+        }
+
+        // if (notifyMessageTypeOpt != null) {
+        // notifyMessageType = (String)
+        // parser.getOptionValue(notifyMessageTypeOpt);
+        // }
+
+        if (getVersionOpt != null) {
+            isGetVersion = (((Boolean) parser.getOptionValue(getVersionOpt, Boolean.FALSE)).booleanValue());
+        }
+
+        if (getInterfaceVersionOpt != null) {
+            isGetInterfaceVersion = (((Boolean) parser.getOptionValue(getInterfaceVersionOpt, Boolean.FALSE)).booleanValue());
+        }
+
+        if (getTerminationTimeOpt != null) {
+            isGetTerminationTime = (((Boolean) parser.getOptionValue(getTerminationTimeOpt, Boolean.FALSE)).booleanValue());
+        }
+
+        if (getNewProxyRequestOpt != null) {
+            isGetNewProxyRequest = (((Boolean) parser.getOptionValue(getNewProxyRequestOpt, Boolean.FALSE)).booleanValue());
+        }
+
+        if (getProxyRequestOpt != null) {
+            isGetProxyRequest = (((Boolean) parser.getOptionValue(getProxyRequestOpt, Boolean.FALSE)).booleanValue());
+        }
+
+        if (renewProxyRequestOpt != null) {
+            isRenewProxyRequest = (((Boolean) parser.getOptionValue(renewProxyRequestOpt, Boolean.FALSE)).booleanValue());
+        }
+
+        if (destroyOpt != null) {
+            isDestroy = (((Boolean) parser.getOptionValue(destroyOpt, Boolean.FALSE)).booleanValue());
         }
 
         String[] opt = parser.getRemainingArgs();
@@ -482,18 +662,30 @@ public abstract class ActivityCommand {
                     System.err.print(" [-s|--status]");
                 } else if (options.get(i).equals(DELEGATION_ID)) {
                     System.err.print(" [-d|--delegId <id>]");
-//                } else if (options.get(i).equals(FROM_DATE)) {
-//                    System.err.print(" [-f|--fromDate <'dd/MM/yyyy HH:mm:ss'>]");
-//                } else if (options.get(i).equals(TO_DATE)) {
-//                    System.err.print(" [-t|--toDate <'dd/MM/yyyy HH:mm:ss'>]");
-                } else if (options.get(i).equals(RENEW_DELEGATION)) {
-                    System.err.print(" [-r|--renew <id1 id2 ...>]");
+                    // } else if (options.get(i).equals(FROM_DATE)) {
+                    // System.err.print(" [-f|--fromDate <'dd/MM/yyyy HH:mm:ss'>]");
+                    // } else if (options.get(i).equals(TO_DATE)) {
+                    // System.err.print(" [-t|--toDate <'dd/MM/yyyy HH:mm:ss'>]");
+                } else if (options.get(i).equals(GET_PROXY_REQUEST)) {
+                    System.err.print(" [-g|--getreq id]");
+                } else if (options.get(i).equals(GET_NEW_PROXY_REQUEST)) {
+                    System.err.print(" [-n|--newreq]");
+                } else if (options.get(i).equals(RENEW_PROXY_REQUEST)) {
+                    System.err.print(" [-r|--renewreq id]");
+                } else if (options.get(i).equals(DESTROY)) {
+                    System.err.print(" [-d|--destroy id]");
+                } else if (options.get(i).equals(GET_VERSION)) {
+                    System.err.print(" [-v|--version]");
+                } else if (options.get(i).equals(GET_INTERFACE_VERSION)) {
+                    System.err.print(" [-i|--interfaceversion");
                 } else if (options.get(i).equals(GET_ACTIVITY_INFO)) {
-                    System.err.print(" [-i|--info <id1 id2 ...>]");
-                }  else if (options.get(i).equals(GET_DELEGATION_INFO)) {
-                    System.err.print(" [-i|--info <id1 id2 ...>]");
+                    System.err.print(" [-i|--info -a|--attributes attr1:attr2:... <id1 id2 ...>]");
+                } else if (options.get(i).equals(GET_RESOURCE_INFO)) {
+                    System.err.print(" [-i|--info]");
+                } else if (options.get(i).equals(QUERY_RESOURCE_INFO)) {
+                    System.err.print(" [-q| --query xpath_query]");
                 } else if (options.get(i).equals(NOTIFY_SERVICE)) {
-                    System.err.print(" [-n|--notify -m|--message {dataPushDone | dataPullDone} <id1 id2 ...>]");
+                    System.err.print(" [-n|--notify {dataPushDone | dataPullDone} <id1 id2 ...>]");
                 } else if (options.get(i).equals(CANCEL_ACTIVITY)) {
                     System.err.print(" [-c|--cancel <id1 id2 ...>]");
                 } else if (options.get(i).equals(PAUSE_ACTIVITY)) {
@@ -505,7 +697,7 @@ public abstract class ActivityCommand {
                 } else if (options.get(i).equals(GET_ACTIVITY_STATUS)) {
                     System.err.print(" [-s|--getStatus <id1 id2 ...>]");
                 } else if (options.get(i).equals(LIST_ACTIVITIES)) {
-                    System.err.print(" [-l|--listActivities -f|--fromDate dd/MM/yyyy-HH:mm:ss -t|--toDate dd/MM/yyyy-HH:mm:ss --limit x <status1 status2 ...>]");
+                    System.err.print(" [-l|--listActivities -f|--fromDate dd/MM/yyyy-HH:mm:ss -t|--toDate dd/MM/yyyy-HH:mm:ss --limit x <status1:attr1:attr2:.. status2 ...>]");
                 }
             }
 
@@ -527,10 +719,6 @@ public abstract class ActivityCommand {
         this.fromDate = fromDate;
     }
 
-    public void setIsGetDelegationInfo(boolean isGetDelegationInfo) {
-        this.isGetDelegationInfo = isGetDelegationInfo;
-    }
-
     public void setIsActivityInfo(boolean isGetActivityInfo) {
         this.isGetActivityInfo = isGetActivityInfo;
     }
@@ -539,9 +727,13 @@ public abstract class ActivityCommand {
         this.isGetActivityStatus = isGetActivityStatus;
     }
 
-    public void setIsNotifyService(boolean isNotifyService) {
-        this.isNotifyService = isNotifyService;
+    public void setIsGetDelegationInfo(boolean isGetDelegationInfo) {
+        this.isGetDelegationInfo = isGetDelegationInfo;
     }
+
+//    public void setIsNotifyService(boolean isNotifyService) {
+//        this.isNotifyService = isNotifyService;
+//    }
 
     public void setIsPauseActivity(boolean isPauseActivity) {
         this.isPauseActivity = isPauseActivity;
@@ -555,8 +747,12 @@ public abstract class ActivityCommand {
         this.isResumeActivity = isResumeActivity;
     }
 
-    public void setNotifyMessageType(String notifyMessageType) {
-        this.notifyMessageType = notifyMessageType;
+    // public void setNotifyMessageType(String notifyMessageType) {
+    // this.notifyMessageType = notifyMessageType;
+    // }
+
+    public void setQuery(String query) {
+        this.query = query;
     }
 
     private void setSSLProperties() throws AxisFault {
@@ -619,10 +815,10 @@ public abstract class ActivityCommand {
         this.isWipeActivity = isWipeActivity;
     }
 
-    protected String signRequest(String certReq, String delegationID) throws IOException {
+    protected String signRequest(String certReq) throws IOException {
         String strX509CertChain = null;
         String proxyFile = proxy;
-        
+
         if (proxyFile == null) {
             String confFileName = System.getProperty("user.home") + "/.glite/dlgor.properties";
             GrDProxyDlgorOptions dlgorOpt = new GrDProxyDlgorOptions(confFileName);

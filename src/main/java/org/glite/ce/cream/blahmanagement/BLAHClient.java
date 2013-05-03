@@ -26,7 +26,6 @@ package org.glite.ce.cream.blahmanagement;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -354,24 +353,24 @@ public class BLAHClient {
     }
 
     public void setPrefix(String prefix) {
-        String defaulprefix = "cream_";
+        String defaultPrefix = "crxxx_";
 
         if (prefix != null) {
             if (prefix.length() != 6) {
-                logger.warn("the prefix must be 6 chars long, usign the default value: " + defaulprefix);
-                prefix = defaulprefix;
+                logger.warn("the prefix must be 6 chars long, usign the default value: " + defaultPrefix);
+                prefix = defaultPrefix;
             } else if (!prefix.startsWith("cr")) {
-                logger.warn("the prefix must start with \"cr\", using the default value: " + defaulprefix + ")");
-                prefix = defaulprefix;
+                logger.warn("the prefix must start with \"cr\", using the default value: " + defaultPrefix + ")");
+                prefix = defaultPrefix;
             } else if (!prefix.endsWith("_")) {
-                logger.warn("the prefix must end with \'_\', using the default value: " + defaulprefix + ")");
-                prefix = defaulprefix;
+                logger.warn("the prefix must end with \'_\', using the default value: " + defaultPrefix + ")");
+                prefix = defaultPrefix;
             } else {
                 this.prefix = prefix;
             }
         } else {
-            logger.warn("prefix not specified, using the default value: " + defaulprefix + ")");
-            prefix = defaulprefix;
+            logger.warn("prefix not specified, using the default value: " + defaultPrefix + ")");
+            prefix = defaultPrefix;
         }
     }
 
@@ -467,11 +466,11 @@ public class BLAHClient {
         if (blahJob.getHostNumber() < 1) {
             throw new BLAHException("wrong hostNumber value: use hostNumber >= 1");
         }
-
+/*
         if (blahJob.getVirtualOrganisation() == null) {
             throw new BLAHException("virtualOrganisation not specified");
         }
-
+*/
         if (blahJob.getLocalUser() == null) {
             throw new BLAHException("localUser not specified");
         }
@@ -498,32 +497,35 @@ public class BLAHClient {
         blahpAD.append("\";uniquejobid=\"").append(jobId);
         blahpAD.append("\";Out=\"").append(blahJob.getStandardOutputFile());
         blahpAD.append("\";Err=\"").append(blahJob.getStandardErrorFile());
-        blahpAD.append("\";VirtualOrganisation=\"").append(blahJob.getVirtualOrganisation()).append("\"");
+ 
+        if (blahJob.getVirtualOrganisation() != null) {
+            blahpAD.append("\";VirtualOrganisation=\"").append(blahJob.getVirtualOrganisation());
+        }
         
         if (blahJob.getDelegationCertPath() != null) {
-            blahpAD.append(";x509userproxy=\"").append(blahJob.getDelegationCertPath()).append("\"");
-            blahpAD.append(";x509UserProxySubject=\"").append(blahJob.getUserDN()).append("\"");
-            blahpAD.append(";x509UserProxyFQAN=\"").append(blahJob.getUserFQAN()).append("\"");
+            blahpAD.append("\";x509userproxy=\"").append(blahJob.getDelegationCertPath());
+            blahpAD.append("\";x509UserProxySubject=\"").append(blahJob.getUserDN());
+            blahpAD.append("\";x509UserProxyFQAN=\"").append(blahJob.getUserFQAN());
         }
 
         if (blahJob.getMwVersion() != null) {
-            blahpAD.append(";Env=\"EDG_MW_VERSION=").append(blahJob.getMwVersion()).append("\"");
+            blahpAD.append("\";Env=\"EDG_MW_VERSION=").append(blahJob.getMwVersion());
         }
 
         if (blahJob.getCeId() != null) {
-            blahpAD.append(";ceid=\"").append(blahJob.getCeId()).append("\"");
+            blahpAD.append("\";ceid=\"").append(blahJob.getCeId());
         }
 
         if (prefix == null) {
-            blahpAD.append(";ClientJobId=\"").append(clientJobId).append("\"");
+            blahpAD.append("\";ClientJobId=\"").append(clientJobId);
         } else {
-            blahpAD.append(";ClientJobId=\"").append(prefix).append(clientJobId).append("\"");
+            blahpAD.append("\";ClientJobId=\"").append(prefix).append(clientJobId);
         }
 
         if (blahJob.isWholeNodes()) {
-            blahpAD.append(";WholeNodes=true;HostSMPSize=").append(hostSMPSize);
+            blahpAD.append("\";WholeNodes=true;HostSMPSize=").append(hostSMPSize);
         } else {
-            blahpAD.append(";NodeNumber=").append(blahJob.getNodeNumber());
+            blahpAD.append("\";NodeNumber=").append(blahJob.getNodeNumber());
 
             if (smpGranularity > 0 && hostNumber > 0) {
                 throw new BLAHException("the SMPGranularity and HostNumber attributes cannot be specified together when WholeNodes=false");

@@ -507,12 +507,12 @@ public class ActivityDBImplementation implements ActivityDBInterface {
         return (o != null);
     }
 
-    public ListActivitiesResult listActivities(XMLGregorianCalendar fromDate, XMLGregorianCalendar toDate, List<StatusName> statusList, List<StatusAttributeName> statusAttributeNameList, int limit, String userId) throws DatabaseException, IllegalArgumentException {
+    public ListActivitiesResult listActivities(XMLGregorianCalendar fromDate, XMLGregorianCalendar toDate, List<ActivityStatus> statusList, int limit, String userId) throws DatabaseException, IllegalArgumentException {
         logger.debug("Begin listActivities");
         ListActivitiesResult listActivitiesResult = null;
         Connection connection = DatasourceManager.getConnection(ActivityDBInterface.ACTIVITY_DATASOURCE_NAME);
         try { 
-            listActivitiesResult = activityStatusTable.executeListActivities(fromDate, toDate, statusList, statusAttributeNameList, limit, userId, connection);
+            listActivitiesResult = activityStatusTable.executeListActivities(fromDate, toDate, statusList, limit, userId, connection);
         } catch (SQLException e) {
             logger.error("ERRORCODE = " + e.getErrorCode() + " Message =  " + e.getMessage());
             throw new DatabaseException("ERRORCODE = " + e.getErrorCode() + " Message =  " + e.getMessage());

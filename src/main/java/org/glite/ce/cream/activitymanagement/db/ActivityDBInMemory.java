@@ -10,7 +10,6 @@ import org.glite.ce.commonj.db.DatabaseException;
 import org.glite.ce.creamapi.activitymanagement.Activity;
 import org.glite.ce.creamapi.activitymanagement.ActivityCommand;
 import org.glite.ce.creamapi.activitymanagement.ActivityStatus;
-import org.glite.ce.creamapi.activitymanagement.ActivityStatus.StatusAttributeName;
 import org.glite.ce.creamapi.activitymanagement.ActivityStatus.StatusName;
 import org.glite.ce.creamapi.activitymanagement.ListActivitiesResult;
 import org.glite.ce.creamapi.activitymanagement.db.ActivityDBInterface;
@@ -131,7 +130,7 @@ public class ActivityDBInMemory implements ActivityDBInterface {
         activity.getStates().add(activityStatus);
     }
 
-    public ListActivitiesResult listActivities(XMLGregorianCalendar fromDate, XMLGregorianCalendar toDate, List<StatusName> statusList, List<StatusAttributeName> attributeList, int limit, String userId) throws DatabaseException, IllegalArgumentException {
+    public ListActivitiesResult listActivities(XMLGregorianCalendar fromDate, XMLGregorianCalendar toDate, List<ActivityStatus> statusList, int limit, String userId) throws DatabaseException, IllegalArgumentException {
         if (userId == null) {
             throw new IllegalArgumentException("userId not specified!");
         }

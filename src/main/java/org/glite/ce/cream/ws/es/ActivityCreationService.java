@@ -67,24 +67,25 @@ import org.glite.ce.creamapi.delegationmanagement.Delegation;
 import org.glite.ce.creamapi.delegationmanagement.DelegationCommand;
 import org.glite.ce.creamapi.delegationmanagement.DelegationException;
 import org.glite.ce.creamapi.ws.es.adl.ActivityDescription_type0;
-import org.glite.ce.creamapi.ws.es.creation.CreationServiceSkeletonInterface;
+import org.glite.ce.creamapi.ws.es.creation.AccessControlFault;
+import org.glite.ce.creamapi.ws.es.creation.ActivityCreationServiceSkeletonInterface;
 import org.glite.ce.creamapi.ws.es.creation.InternalBaseFault;
 import org.glite.ce.creamapi.ws.es.creation.VectorLimitExceededFault;
 import org.glite.ce.creamapi.ws.es.creation.types.ActivityCreationResponseSequence_type1;
 import org.glite.ce.creamapi.ws.es.creation.types.ActivityCreationResponse_type0;
 import org.glite.ce.creamapi.ws.es.creation.types.ActivityStatusAttribute;
+import org.glite.ce.creamapi.ws.es.creation.types.ActivityStatusState;
 import org.glite.ce.creamapi.ws.es.creation.types.ActivityStatus_type0;
 import org.glite.ce.creamapi.ws.es.creation.types.CreateActivity;
 import org.glite.ce.creamapi.ws.es.creation.types.CreateActivityResponse;
 import org.glite.ce.creamapi.ws.es.creation.types.DirectoryReference;
 import org.glite.ce.creamapi.ws.es.creation.types.InternalBaseFault_Type;
-import org.glite.ce.creamapi.ws.es.creation.types.InvalidActivityDescriptionFault;
-import org.glite.ce.creamapi.ws.es.creation.types.InvalidActivityDescriptionSemanticFault;
-import org.glite.ce.creamapi.ws.es.creation.types.PrimaryActivityStatus;
-import org.glite.ce.creamapi.ws.es.creation.types.UnsupportedCapabilityFault;
+import org.glite.ce.creamapi.ws.es.creation.types.InvalidActivityDescriptionFault_type0;
+import org.glite.ce.creamapi.ws.es.creation.types.InvalidActivityDescriptionSemanticFault_type0;
+import org.glite.ce.creamapi.ws.es.creation.types.UnsupportedCapabilityFault_type0;
 
-public class CreationService implements CreationServiceSkeletonInterface, Lifecycle {
-    private static final Logger logger = Logger.getLogger(CreationService.class.getName());
+public class ActivityCreationService implements ActivityCreationServiceSkeletonInterface, Lifecycle {
+    private static final Logger logger = Logger.getLogger(ActivityCreationService.class.getName());
     private static final int INITIALIZATION_TBD = 0;
     private static final int INITIALIZATION_OK = 1;
     private static final int INITIALIZATION_ERROR = 2;
@@ -92,6 +93,7 @@ public class CreationService implements CreationServiceSkeletonInterface, Lifecy
     private static int vectorLimit = 200;
     private static String gsiURL = null;
     private static String activityManagerURL = null;
+    private static String resourceInfoEndpointURL = null;
 
     private void checkInitialization() throws InternalBaseFault {
         if (initialization == INITIALIZATION_ERROR) {
@@ -102,7 +104,7 @@ public class CreationService implements CreationServiceSkeletonInterface, Lifecy
     private Delegation getDelegation(String delegationId, String userDN, String localUser) throws DelegationException {
         DelegationCommand command = new DelegationCommand(DelegationCommand.GET_DELEGATION);
         command.addParameter(DelegationCommand.DELEGATION_ID, delegationId);
-        command.addParameter(DelegationCommand.USER_DN, userDN);
+        command.addParameter(DelegationCommand.USER_DN_RFC2253, userDN);
         command.addParameter(DelegationCommand.LOCAL_USER, localUser);
 
         try {
@@ -129,7 +131,7 @@ public class CreationService implements CreationServiceSkeletonInterface, Lifecy
             throw new IllegalArgumentException(key + " not specified!");
         }
 
-	return value.trim();
+        return value.trim();
     }
 
     private String checkValidity(ActivityDescription activity, String userDN, String localUser) throws IllegalArgumentException, DelegationException {
@@ -199,7 +201,7 @@ public class CreationService implements CreationServiceSkeletonInterface, Lifecy
                 inputFile.setName(checkValue("inputFile name", inputFile.getName()));
 
                 if (inputFile.getSource().size() == 0 && !dataStaging.isClientDataPush()) {
-                    throw new IllegalArgumentException("inputFile source(s) not specified for the inputFile " + inputFile.getName());
+                    throw new IllegalArgumentException("datastaging not possible: whenever the clientDataPush attribute is not set, at least one inputFile source must be specified (inputFile " + inputFile.getName() + ")");
                 }
 
                 for (Source source : inputFile.getSource()) {
@@ -330,20 +332,20 @@ public class CreationService implements CreationServiceSkeletonInterface, Lifecy
 
     }
 
-    public CreateActivityResponse createActivity(CreateActivity createActivity) throws VectorLimitExceededFault, InternalBaseFault {
+    public CreateActivityResponse createActivity(CreateActivity createActivity) throws AccessControlFault, InternalBaseFault, VectorLimitExceededFault {
         checkInitialization();
         logger.debug("BEGIN createActivity");
 
-        ActivityDescription_type0[] activityArray = createActivity.getActivityDescription();
-        if ((createActivity == null) || (activityArray == null)) {
+        ActivityDescription_type0[] activityDescriptionArray = createActivity.getActivityDescription();
+        if ((createActivity == null) || (activityDescriptionArray == null)) {
             throw new InternalBaseFault("Please provide at least an activity description");
         }
 
-        if (activityArray.length == 0) {
+        if (activityDescriptionArray.length == 0) {
             throw new InternalBaseFault("Please provide at least an activity description");
         }
 
-        if (activityArray.length > vectorLimit) {
+        if (activityDescriptionArray.length > vectorLimit) {
             throw new VectorLimitExceededFault("Vector limit exceeded! (limit=" + vectorLimit + ")");
         }
 
@@ -374,31 +376,52 @@ public class CreationService implements CreationServiceSkeletonInterface, Lifecy
         ActivityDescription activityDescription = null;
         ActivityStatus status = null;
         ActivityStatus_type0 activityStatus = null;
-        ActivityCreationResponse_type0[] activityCreationResponse = new ActivityCreationResponse_type0[activityArray.length];
+        ActivityCreationResponse_type0[] activityCreationResponse = new ActivityCreationResponse_type0[activityDescriptionArray.length];
         ActivityCreationResponseSequence_type1 seq = null;
 
-        for (int i=0; i<activityArray.length; i++) {
+        for (int i=0; i<activityDescriptionArray.length; i++) {
             activityCreationResponse[i] = new ActivityCreationResponse_type0();
-            activityDescription = new ActivityDescription(activityArray[i].getActivityDescriptionSequence_type1());
+            activityDescription = new ActivityDescription(activityDescriptionArray[i].getActivityDescriptionSequence_type1());
             
             try {
                 delegationSandboxPath = checkValidity(activityDescription, userDN, localUser);
             } catch (IllegalArgumentException e) {
-                logger.error(e.getMessage(), e);
-                InternalBaseFault_Type fault = null;
+                logger.error(e.getMessage());
+//                InternalBaseFault_Type fault = null;
+//
+//                if (e.getMessage().contains("capability")) {
+//                    fault = new UnsupportedCapabilityFault_type0();
+//                } else if (e.getMessage().contains("requirement")) {
+//                    fault = new InvalidActivityDescriptionFault_type0();
+//                } else {
+//                    fault = new InvalidActivityDescriptionSemanticFault_type0();
+//                }
+//
+//                fault.setMessage(e.getMessage());
+//                fault.setTimestamp(GregorianCalendar.getInstance());
+//
+//                activityCreationResponse[i].setInternalBaseFault(fault);
 
                 if (e.getMessage().contains("capability")) {
-                    fault = new UnsupportedCapabilityFault();
+                    UnsupportedCapabilityFault_type0 unsupportedCapabilityFault = new UnsupportedCapabilityFault_type0();
+                    unsupportedCapabilityFault.setMessage(e.getMessage());
+                    unsupportedCapabilityFault.setTimestamp(GregorianCalendar.getInstance());
+
+                    activityCreationResponse[i].setUnsupportedCapabilityFault(unsupportedCapabilityFault);
                 } else if (e.getMessage().contains("requirement")) {
-                    fault = new InvalidActivityDescriptionFault();
+                    InvalidActivityDescriptionFault_type0 invalidActivityDescriptionFault = new InvalidActivityDescriptionFault_type0();
+                    invalidActivityDescriptionFault.setMessage(e.getMessage());
+                    invalidActivityDescriptionFault.setTimestamp(GregorianCalendar.getInstance());
+
+                    activityCreationResponse[i].setInvalidActivityDescriptionFault(invalidActivityDescriptionFault);
                 } else {
-                    fault = new InvalidActivityDescriptionSemanticFault();
+                    InvalidActivityDescriptionSemanticFault_type0 invalidActivityDescriptionSemanticFault = new InvalidActivityDescriptionSemanticFault_type0();
+                    invalidActivityDescriptionSemanticFault.setMessage(e.getMessage());
+                    invalidActivityDescriptionSemanticFault.setTimestamp(GregorianCalendar.getInstance());
+
+                    activityCreationResponse[i].setInvalidActivityDescriptionSemanticFault(invalidActivityDescriptionSemanticFault);
                 }
-
-                fault.setMessage(e.getMessage());
-                fault.setTimestamp(GregorianCalendar.getInstance());
-
-                activityCreationResponse[i].setInternalBaseFault(fault);
+                
                 continue;
             } catch (Throwable de) {
                 InternalBaseFault_Type fault = new InternalBaseFault_Type();
@@ -412,7 +435,8 @@ public class CreationService implements CreationServiceSkeletonInterface, Lifecy
             try {
                 command = new ActivityCmd(ActivityCommandName.CREATE_ACTIVITY);
                 command.setUserId(userId);
-                command.addParameter(ActivityCommandField.USER_DN, userDN);
+                command.addParameter(ActivityCommandField.USER_DN_RFC2253, userDN);
+                command.addParameter(ActivityCommandField.USER_DN_X500, CEUtils.getUserDN_X500());
                 command.addParameter(ActivityCommandField.USER_FQAN, userFQAN);
                 command.addParameter(ActivityCommandField.VIRTUAL_ORGANISATION, userVO);
                 command.addParameter(ActivityCommandField.LOCAL_USER, localUser);
@@ -430,10 +454,6 @@ public class CreationService implements CreationServiceSkeletonInterface, Lifecy
                 activityId = command.getResult().getParameterAsString(ActivityCommandField.ACTIVITY_ID.name());
                 status = (ActivityStatus)command.getResult().getParameter(ActivityCommandField.ACTIVITY_STATUS.name());
 
-                activityStatus = new ActivityStatus_type0();
-                activityStatus.setStatus(PrimaryActivityStatus.Factory.fromValue(status.getStatusName().getName()));
-                activityStatus.setDescription(status.getDescription());
-                activityStatus.setTimestamp(status.getTimestamp().toGregorianCalendar());
                 ActivityStatusAttribute[] activityStatusAttributeArray = new ActivityStatusAttribute[status.getStatusAttributes().size()];
                 int j=0;
 
@@ -441,12 +461,17 @@ public class CreationService implements CreationServiceSkeletonInterface, Lifecy
                     activityStatusAttributeArray[j++] = ActivityStatusAttribute.Factory.fromValue(attribute.getName());
                 }
 
+                activityStatus = new ActivityStatus_type0();
+                activityStatus.setStatus(ActivityStatusState.Factory.fromValue(status.getStatusName().getName()));
+                activityStatus.setDescription(status.getDescription());
+                activityStatus.setTimestamp(status.getTimestamp().toGregorianCalendar());
                 activityStatus.setAttribute(activityStatusAttributeArray);
 
                 seq = new ActivityCreationResponseSequence_type1();
                 seq.setActivityStatus(activityStatus);   
                 seq.setActivityID(activityId);   
-                seq.setActivityManagerURI(new URI(activityManagerURL));
+                seq.setActivityMgmtEndpointURL(new URI(activityManagerURL));
+                seq.setResourceInfoEndpointURL(new URI(resourceInfoEndpointURL));
 
                 if (command.getResult().getParameterAsString(ActivityCommandField.STAGE_IN_URI.name()) != null) {
                     DirectoryReference dir = new DirectoryReference();
@@ -524,7 +549,7 @@ public class CreationService implements CreationServiceSkeletonInterface, Lifecy
             return;
         }
 
-        AxisService axisService = axisConfiguration.getService("CreationService");
+        AxisService axisService = axisConfiguration.getService("ActivityCreationService");
         if (axisService == null) {
             initialization = INITIALIZATION_ERROR;
             logger.error("Configuration error: AxisService 'CreationService' not found!");
@@ -570,6 +595,7 @@ public class CreationService implements CreationServiceSkeletonInterface, Lifecy
         try {
             String hostName = InetAddress.getLocalHost().getCanonicalHostName();
             activityManagerURL = "https://" + hostName + ":8443/ce-cream-es/services/ActivityManagementService";
+            resourceInfoEndpointURL = "https://" + hostName + ":8443/ce-cream-es/services/ResourceInfoService";
             gsiURL = "gsiftp://" + hostName;
         } catch (Throwable t) {
             initialization = INITIALIZATION_ERROR;

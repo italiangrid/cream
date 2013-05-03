@@ -35,7 +35,7 @@ public class ActionMapping
 
     private final static String ES_NS = "http://www.eu-emi.eu/es/2010/12";
 
-    private final static String DELEGATION_NS = "http://www.gridsite.org/namespaces/delegation-2";
+    private final static String DELEGATION_2_NS = "http://www.gridsite.org/namespaces/delegation-2";
 
     public final static String XACML_PREFIX = "http://glite.org/xacml/";
 
@@ -80,7 +80,7 @@ public class ActionMapping
                 return GridCEAuthorizationProfile.ACTION_GET_INFO;
             }
 
-        } else if (opNS.equals(DELEGATION_NS)) {
+        } else if (opNS.equals(DELEGATION_2_NS)) {
 
             if (opName.equals("getTerminationTime")) {
                 return GridCEAuthorizationProfile.ACTION_DELEGATION_GET_INFO;

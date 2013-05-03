@@ -45,6 +45,7 @@ import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -71,7 +72,6 @@ import org.glite.ce.creamapi.delegationmanagement.DelegationCommand;
 import org.glite.ce.creamapi.delegationmanagement.DelegationManagerInterface;
 import org.glite.ce.creamapi.delegationmanagement.DelegationRequest;
 import org.glite.ce.creamapi.jobmanagement.db.DBInfoManager;
-import org.glite.security.delegation.GrDPConstants;
 import org.glite.security.delegation.GrDPX509Util;
 import org.glite.security.util.CertUtil;
 import org.glite.security.util.FileCertReader;
@@ -153,7 +153,9 @@ public class DelegationExecutor extends AbstractCommandExecutor {
         // Generate the certificate request
         String certificateRequest = null;
         try {
-            certificateRequest = GrDPX509Util.createCertificateRequest(parentCert, GrDPConstants.DEFAULT_SIGNATURE_ALGORITHM, keyPair);
+            String sigAlgo = parentCert.getSigAlgName();
+            logger.debug("Signature algorithm to be used for pkcs10: " + sigAlgo);
+            certificateRequest = GrDPX509Util.createCertificateRequest(parentCert, sigAlgo, keyPair);
         } catch (GeneralSecurityException e) {
             throw new CommandException("Error while generating the certificate request [delegId=" + delegationId + "; dn=" + dn + "; localUser=" + localUser + "]: "
                     + e.getMessage());
@@ -233,7 +235,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
 
         if (delegation == null) {
             throw new CommandException("delegation [delegId=" + getParameterValueAsString(command, DelegationCommand.DELEGATION_ID) +                    
-                    "; dn=" + getParameterValueAsString(command, DelegationCommand.USER_DN) +
+                    "; dn=" + getParameterValueAsString(command, DelegationCommand.USER_DN_RFC2253) +
                     "; localUser=" + getParameterValueAsString(command, DelegationCommand.LOCAL_USER) + "] not found!");
         }
         
@@ -332,8 +334,8 @@ public class DelegationExecutor extends AbstractCommandExecutor {
             throw new CommandException("command category mismatch: found \"" + command.getCategory() + "\" required \"" + getCategory() + "\"");
         }
 
-        if (command.containsParameterKey(DelegationCommand.USER_DN)) {
-            command.addParameter(DelegationCommand.USER_DN, normalize(command.getParameterAsString(DelegationCommand.USER_DN)));
+        if (command.containsParameterKey(DelegationCommand.USER_DN_RFC2253)) {
+            command.addParameter(DelegationCommand.USER_DN_RFC2253, normalize(command.getParameterAsString(DelegationCommand.USER_DN_RFC2253)));
         }
 
         try {
@@ -348,7 +350,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
 
                 if (delegation == null) {
                     throw new CommandException("delegation [delegId=" + getParameterValueAsString(command, DelegationCommand.DELEGATION_ID) +                    
-                            "; dn=" + getParameterValueAsString(command, DelegationCommand.USER_DN) +
+                            "; dn=" + getParameterValueAsString(command, DelegationCommand.USER_DN_RFC2253) +
                             "; localUser=" + getParameterValueAsString(command, DelegationCommand.LOCAL_USER) + "] not found!");
                 }
             } else if (command.getName().equalsIgnoreCase(DelegationCommand.GET_DELEGATION_REQUEST)) {
@@ -411,7 +413,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
         logger.debug("BEGIN getDelegation");
 
         String delegationId = getParameterValueAsString(command, DelegationCommand.DELEGATION_ID);
-        String userDN = getParameterValueAsString(command, DelegationCommand.USER_DN);
+        String userDN = getParameterValueAsString(command, DelegationCommand.USER_DN_RFC2253);
         String localUser = getParameterValueAsString(command, DelegationCommand.LOCAL_USER);
 
         Delegation delegation = null;
@@ -437,7 +439,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
     private void getNewDelegationRequest(Command command) throws CommandException {
         logger.debug("BEGIN getNewDelegationRequest");
 
-        String userDN = getParameterValueAsString(command, DelegationCommand.USER_DN);
+        String userDN = getParameterValueAsString(command, DelegationCommand.USER_DN_RFC2253);
         String originalString = userDN;
         List<VOMSAttribute> vomsAttributes = (List<VOMSAttribute>) getParameterValue(command, DelegationCommand.VOMS_ATTRIBUTES);
 
@@ -462,7 +464,9 @@ public class DelegationExecutor extends AbstractCommandExecutor {
 
         // delegationID = GrDPX509Util.genDlgID(clientDN.getRFCDN(),
         // vomsAttributes);
-        command.addParameter(DelegationCommand.DELEGATION_ID, new String(Hex.encode(resultDigest)));
+        GregorianCalendar now = new GregorianCalendar();
+
+        command.addParameter(DelegationCommand.DELEGATION_ID, new String(Hex.encode(resultDigest)) + now.getTimeInMillis());
 
         getDelegationRequest(command);
 
@@ -535,7 +539,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
             }
         }
         
-        String userDN = getParameterValueAsString(command, DelegationCommand.USER_DN);
+        String userDN = getParameterValueAsString(command, DelegationCommand.USER_DN_RFC2253);
         String localUser = getParameterValueAsString(command, DelegationCommand.LOCAL_USER);
         X509Certificate userCertificate = (X509Certificate) getParameterValue(command, DelegationCommand.USER_CERTIFICATE);
         List<VOMSAttribute> vomsAttributes = (List<VOMSAttribute>) getParameterValue(command, DelegationCommand.VOMS_ATTRIBUTES);
@@ -556,7 +560,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
 
         if (delegation == null) {
             throw new CommandException("delegation [delegId=" + getParameterValueAsString(command, DelegationCommand.DELEGATION_ID) +
-                    "; dn=" + getParameterValueAsString(command, DelegationCommand.USER_DN) + 
+                    "; dn=" + getParameterValueAsString(command, DelegationCommand.USER_DN_RFC2253) + 
                     "; localUser=" + getParameterValueAsString(command, DelegationCommand.LOCAL_USER) + "] not found!");
         }
 
@@ -696,7 +700,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
 
         String delegationId = getParameterValueAsString(command, DelegationCommand.DELEGATION_ID);
         String deleg = getParameterValueAsString(command, DelegationCommand.DELEGATION);
-        String userDN = getParameterValueAsString(command, DelegationCommand.USER_DN);
+        String userDN = getParameterValueAsString(command, DelegationCommand.USER_DN_RFC2253);
         String localUser = getParameterValueAsString(command, DelegationCommand.LOCAL_USER);
         String localUserGroup = getParameterValueAsString(command, DelegationCommand.LOCAL_USER_GROUP);
         // X509Certificate userCert = (X509Certificate)getParameterValue(command, "USER_CERTIFICATE");
@@ -962,7 +966,6 @@ public class DelegationExecutor extends AbstractCommandExecutor {
                 DelegationManager.getInstance().insert(delegation);
             }
         } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
             throw new CommandException("Failure on storage interaction " + delegation.toString() + ": " + t.getMessage());
         }
 
@@ -986,7 +989,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
 
         if (delegation == null) {
             throw new CommandException("delegation [delegId=" + getParameterValueAsString(command, DelegationCommand.DELEGATION_ID) +                    
-                    "; dn=" + getParameterValueAsString(command, DelegationCommand.USER_DN) +
+                    "; dn=" + getParameterValueAsString(command, DelegationCommand.USER_DN_RFC2253) +
                     "; localUser=" + getParameterValueAsString(command, DelegationCommand.LOCAL_USER) + "] not found!");
         }
 

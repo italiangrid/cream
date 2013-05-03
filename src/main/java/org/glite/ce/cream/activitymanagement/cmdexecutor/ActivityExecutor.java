@@ -84,6 +84,8 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
     public static final String ACTIVITY_STATUS_MONITOR_AGE     = "ACTIVITY_STATUS_MONITOR_AGE";
     public static final String ACTIVITY_STATUS_MONITOR_RATE    = "ACTIVITY_STATUS_MONITOR_RATE";
     public static final String ACTIVITY_WRAPPER_TEMPLATE_PATH  = "ACTIVITY_WRAPPER_TEMPLATE_PATH";
+    public static final String BDII_URI                        = "BDII_URI";
+    public static final String BDII_RATE                       = "BDII_RATE";
     public static final String BLAH_BIN_PATH                   = "BLAH_BIN_PATH";
     public static final String BLAH_COMMAND_TIMEOUT            = "BLAH_COMMAND_TIMEOUT";
     public static final String BLAH_PREFIX                     = "BLAH_PREFIX";
@@ -100,20 +102,27 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
     public static final String DEFAULT_LRMS_NAME               = "DEFAULT_LRMS_NAME";
     public static final String DEFAULT_QUEUE_NAME              = "DEFAULT_QUEUE_NAME";
     public static final String DELEGATION_TIME_SLOT            = "DELEGATION_TIME_SLOT";
+    public static final String HOST_NAME                       = "HOST_NAME";
     public static final String LIMIT_FOR_LIST_ACTIVITIES       = "LIMIT_FOR_LIST_ACTIVITIES";
     public static final String NOT_AVAILABLE_VALUE             = "N/A";
     public static final String SANDBOX_DIR                     = "SANDBOX_DIR";
+    public static final String SERVICE_URL                     = "SERVICE_URL";
+    public static final String SERVICE_GSI_URL                 = "SERVICE_GSI_URL";
     public static final String PURGE_SANDBOX_BIN_PATH          = "PURGE_SANDBOX_BIN_PATH";
 
     private static String hostAddress = null;
     private static String hostName = null;
+    private static String serviceUrl = null;
+    private static String serviceGSIUrl = null;    
     private static String delegationSuffix = null;
     private static String activityWrapperNotificationStatusURI = null;
     private static BLAHClient blahClient = null;
     private boolean initialized = false;
     private static ActivityDBInterface activityDB = null;
     private static int limitForListActivities = 1000;
+    private static int bdiiRate = 60; //sec
     private static StdHandler stdHandler = null;
+    private static GLUE2Handler glue2Handler = null;
     private static ActivityStatusMonitor activityStatusMonitor = null;
 
     public ActivityExecutor() throws CommandExecutorException {
@@ -140,7 +149,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
 
         ActivityStatus status = states.last();
         if (StatusName.TERMINAL == status.getStatusName()) {
-            throw new CommandException("invalid state (TERMINAL)");     
+            throw new CommandException("invalid state (terminal)");     
         }
 
         String localUser = activity.getProperties().get(Activity.LOCAL_USER);
@@ -205,11 +214,12 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         
         String activityId = null;
         String gsiURL = getParameterValueAsString(command, ActivityCommandField.SERVICE_GSI_URL, true);
-        String userDN = getParameterValueAsString(command, ActivityCommandField.USER_DN, true);
+        String userDN_X500 = getParameterValueAsString(command, ActivityCommandField.USER_DN_X500, true);
+        String userDN_RFC2253 = getParameterValueAsString(command, ActivityCommandField.USER_DN_RFC2253, true);
         String userFQAN = getParameterValueAsString(command, ActivityCommandField.USER_FQAN, true);
         String localUser = getParameterValueAsString(command, ActivityCommandField.LOCAL_USER, true);
         String localUserGroup = getParameterValueAsString(command, ActivityCommandField.LOCAL_USER_GROUP, true);
-        String virtualOrganisation = getParameterValueAsString(command, ActivityCommandField.VIRTUAL_ORGANISATION, true);
+        String virtualOrganisation = getParameterValueAsString(command, ActivityCommandField.VIRTUAL_ORGANISATION, false);
         String activitySandboxDir = NOT_AVAILABLE_VALUE;
         String sandboxDir = getParameterValueAsString(SANDBOX_DIR);
         String createSandboxBinPath = getParameterValueAsString(CREATE_SANDBOX_BIN_PATH);
@@ -229,13 +239,17 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         activity.setDataStaging(activityDescription.getDataStaging());
         activity.setResources(activityDescription.getResources());
         activity.getCommands().add(makeActivityCommand(command.getName(), Boolean.TRUE));
-        activity.getStates().add(makeActivityStatus(StatusName.ACCEPTED));       
-        activity.getProperties().put(Activity.USER_DN, userDN);
+        activity.getStates().add(makeActivityStatus(StatusName.ACCEPTED));
+        activity.getProperties().put(Activity.USER_DN_X500, userDN_X500);
+        activity.getProperties().put(Activity.USER_DN_RFC2253, userDN_RFC2253);
         activity.getProperties().put(Activity.USER_FQAN, userFQAN);
         activity.getProperties().put(Activity.LOCAL_USER, localUser);
         activity.getProperties().put(Activity.LOCAL_USER_GROUP, localUserGroup);
         activity.getProperties().put(Activity.SERVICE_URL, serviceURL);
-        activity.getProperties().put(Activity.VIRTUAL_ORGANISATION, virtualOrganisation);
+
+        if (virtualOrganisation != null) {
+            activity.getProperties().put(Activity.VIRTUAL_ORGANISATION, virtualOrganisation);
+        }
         
         if (delegationSandboxPath != null) {
             activity.getProperties().put(Activity.DELEGATION_SANDBOX_PATH, delegationSandboxPath);
@@ -248,6 +262,8 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
 
             Resources resources = new Resources();
             resources.setQueueName(queueName);
+
+            activity.setResources(resources);
         } else if (activity.getResources().getQueueName() == null) {
             queueName = getParameterValueAsString(DEFAULT_QUEUE_NAME);
 
@@ -255,7 +271,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         } else {
             queueName = activity.getResources().getQueueName();
         }
-        
+
         try {
             activityId = activityDB.insertActivity(activity);
             logger.info("new activity " + activityId + " created! " + activity.getStates().last());
@@ -362,6 +378,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
 
         blahClient.terminate();
         stdHandler.terminate();
+        glue2Handler.terminate();
         activityStatusMonitor.terminate();
 
         super.destroy();
@@ -645,11 +662,13 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         try {
             activity = activityDB.getActivity(activityId, command.getUserId());
         } catch (Throwable t) {
-            throw new CommandException(t.getMessage());
-        }
-
-        if (activity == null) {
-            throw new CommandException("activity " + activityId + " not found!");
+            if (t.getMessage() == null) {
+                throw new CommandException("N/A");
+            } else if (t.getMessage().indexOf("is not enabled for that operation") != -1) {
+                throw new CommandException("activity " + activityId + " not found!");
+            } else {
+                throw new CommandException(t.getMessage());
+            }
         }
 
         return activity;
@@ -750,17 +769,14 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
     }
 
     private void getResourceInfo(Command command) throws CommandException {
-
+        try {
+            command.getResult().addParameter(ActivityCommandField.COMPUTING_SERVICE.name(), glue2Handler.getComputingService());
+        } catch (Throwable t) {
+            throw new CommandException(t.getMessage());
+        }       
     }
 
     public void initExecutor() throws CommandExecutorException {
-        try {
-            initExecutor2();
-        } catch(Throwable t) {
-            logger.error(t.getMessage(), t);
-        }
-    }
-    public void initExecutor2() throws CommandExecutorException {
         logger.debug("BEGIN initExecutor");
 
         if (!initialized) {
@@ -806,7 +822,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
             if (delegationSuffix == null || delegationSuffix.equals("")) {
                 throw new CommandExecutorException("delegationSuffix not defined!");
             }
-            
+
             try {
                 activityDB = new ActivityDBImplementation();
                 //activityDB = ActivityDBInMemory.getInstance();
@@ -816,7 +832,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
             }
 
             if (!containsParameterKey(LIMIT_FOR_LIST_ACTIVITIES)) {
-            	throw new CommandExecutorException("LIMIT_FOR_LIST_ACTIVITIES parameter not defined!");
+            	logger.info("LIMIT_FOR_LIST_ACTIVITIES parameter not defined: using the default value (" + limitForListActivities + ")");
             } else {
             	try {
             		limitForListActivities = Integer.parseInt(getParameterValueAsString(LIMIT_FOR_LIST_ACTIVITIES));
@@ -836,11 +852,11 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
             if (!containsParameterKey(DELEGATION_TIME_SLOT)) {
                 throw new CommandExecutorException("DELEGATION_TIME_SLOT parameter not defined!");
             }
-            
+
             if (!containsParameterKey(SANDBOX_DIR)) {
                 throw new CommandExecutorException("SANDBOX_DIR parameter not defined!");
             }
-            
+
             if (!containsParameterKey(PURGE_SANDBOX_BIN_PATH)) {
                 throw new CommandExecutorException("PURGE_SANDBOX_BIN_PATH parameter not defined!");
             }
@@ -855,6 +871,26 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
 
             if (!containsParameterKey(CREATE_WRAPPER_BIN_PATH)) {
                 throw new CommandExecutorException("CREATE_WRAPPER_BIN_PATH parameter not defined!");
+            }
+
+            if (!containsParameterKey(BDII_URI)) {
+                throw new CommandExecutorException("BDII_URI parameter not defined!");
+            }
+
+            if (!containsParameterKey(BDII_RATE)) {
+            	logger.info("BDII_RATE parameter not defined: using the default value (" + bdiiRate + "sec)");
+            } else {
+            	try {
+            		bdiiRate = Integer.parseInt(getParameterValueAsString(BDII_RATE));
+            	} catch(Throwable t) {
+                    throw new CommandExecutorException("wrong value for the BDII_RATE parameter found: " + t.getMessage());
+            	}
+            }
+
+            try {
+                glue2Handler = new GLUE2Handler(getParameterValueAsString(BDII_URI), bdiiRate);
+            } catch (Exception e) {
+                throw new CommandExecutorException("cannot instantiate the GLUE2Handler: " + e.getMessage());
             }
 
             stdHandler = new StdHandler();
@@ -908,10 +944,16 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
             }
 
             try {
+                if (containsParameterKey(HOST_NAME)) {
+                    hostName = getParameterValueAsString(HOST_NAME);
+                    //hostAddress = InetAddress.getAllByName(hostName)[0].getHostAddress();
+                } else {
+                    hostName = InetAddress.getLocalHost().getCanonicalHostName();                    
+                }
+
                 hostAddress = InetAddress.getLocalHost().getHostAddress();
-                hostName = InetAddress.getLocalHost().getCanonicalHostName();
             } catch (UnknownHostException e) {
-                throw new CommandExecutorException("cannot get the host address: " + e.getMessage());
+                throw new CommandExecutorException("cannot get the host's address: " + e.getMessage());
             }
 
             activityWrapperNotificationStatusURI = hostAddress + ":" + blahClient.getNotificationListenerPort();
@@ -946,7 +988,6 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
                 }
             }
 
-
             activityStatusMonitor = new ActivityStatusMonitor(blahClient, getParameterValueAsString(DEFAULT_LRMS_NAME), activityStatusMonitorRate, activityStatusMonitorAge);
             initialized = true;
             logger.info(getName() + " executor initialized!");
@@ -968,9 +1009,14 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
     private void listActivities(Command command) throws CommandException {
     	Calendar fromDate = (Calendar)getParameterValue(command, ActivityCommandField.FROM_DATE, false);
     	Calendar toDate = (Calendar)getParameterValue(command, ActivityCommandField.TO_DATE, false);
-        List<StatusName> statusList = (List<StatusName>)getParameterValue(command, ActivityCommandField.ACTIVITY_STATUS_LIST, false);
-        List<StatusAttributeName> attributeList = null; //(List<StatusAttributeName>)getParameterValue(command, ActivityCommandField.ACTIVITY_STATUS_ATTRIBUTE_LIST, false);
+        List<ActivityStatus> activityStatusList = null;
         int limit = limitForListActivities;
+        
+        if (command.containsParameterKey(ActivityCommandField.ACTIVITY_STATUS_LIST.name())) {
+            activityStatusList = (List<ActivityStatus>)getParameterValue(command, ActivityCommandField.ACTIVITY_STATUS_LIST, false);
+        } else {
+            activityStatusList = new ArrayList<ActivityStatus>(0);
+        }
 
         if (command.containsParameterKey(ActivityCommandField.LIMIT.name())) {
             limit = ((BigInteger)getParameterValue(command, ActivityCommandField.LIMIT, false)).intValue();
@@ -978,8 +1024,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         }
 
         try {
-            ListActivitiesResult result = activityDB.listActivities(CEUtils.getXMLGregorianCalendar(fromDate), CEUtils.getXMLGregorianCalendar(toDate), statusList, attributeList, limit, command.getUserId());
-
+            ListActivitiesResult result = activityDB.listActivities(CEUtils.getXMLGregorianCalendar(fromDate), CEUtils.getXMLGregorianCalendar(toDate), activityStatusList, limit, command.getUserId());
             command.getResult().addParameter(ActivityCommandField.ACTIVITY_ID_LIST.name(), result.getActivityIdList());
             command.getResult().addParameter(ActivityCommandField.IS_TRUNCATED.name(), result.isTruncated());  
         } catch (Throwable t) {
@@ -1052,18 +1097,17 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
 
         if (NotifyMessageType.CLIENT_DATAPUSH_DONE == notifyMessageType) {
             if (StatusName.PREPROCESSING != status.getStatusName()) {
-                throw new CommandException("invalid state (" + status.getStatusName() + ")\"");
+                throw new CommandException("invalid state (" + status.getStatusName() + ")");
             }
 
             List<StatusAttributeName> attributes = status.getStatusAttributes();
             if (attributes == null || !attributes.contains(StatusAttributeName.CLIENT_STAGEIN_POSSIBLE)) {
-                throw new CommandException("invalid state (activity not in CLIENT_STAGEIN_POSSIBLE state)");
+                throw new CommandException("invalid state (activity not in client-stagein-possible state)");
             }
 
             if (isActivityCheckOn(command)) {
                 return;
             }
-
 
             String localUser = activity.getProperties().get(Activity.LOCAL_USER);
             String stageInDir = activity.getProperties().get(Activity.SANDBOX_PATH) + File.separator + "ISB";
@@ -1147,12 +1191,12 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
             submitActivity(activity, command.getName());
         } else {
             if (StatusName.TERMINAL != status.getStatusName()) {
-                throw new CommandException("invalid state (" + status.getStatusName() + ")\"");
+                throw new CommandException("invalid state (" + status.getStatusName() + ")");
             }
 
             List<StatusAttributeName> attributes = status.getStatusAttributes();
             if (attributes == null || !attributes.contains(StatusAttributeName.CLIENT_STAGEOUT_POSSIBLE)) {
-                throw new CommandException("invalid state (activity not in CLIENT_STAGEOUT_POSSIBLE state)");
+                throw new CommandException("invalid state (activity not in client-stageout-possible state)");
             }
 
             attributes.remove(StatusAttributeName.CLIENT_STAGEOUT_POSSIBLE);
@@ -1169,6 +1213,8 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
     }
 
     private void submitActivity(Activity activity, String commandName) throws CommandException {
+        String userDNX500 = activity.getProperties().get(Activity.USER_DN_X500);
+        String userFQAN = activity.getProperties().get(Activity.USER_FQAN);
         String localUser = activity.getProperties().get(Activity.LOCAL_USER);
         String activitySandboxDir = activity.getProperties().get(Activity.SANDBOX_PATH);
         String lrmsName = getParameterValueAsString(DEFAULT_LRMS_NAME);
@@ -1280,6 +1326,8 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         }
         
         BLAHJob blahJob = new BLAHJob();
+        blahJob.setUserDN(userDNX500);
+        blahJob.setUserFQAN(userFQAN);
         blahJob.setIwd(activitySandboxDir);
         blahJob.setJobId(activity.getId());
         blahJob.setLocalUser(localUser);
@@ -1300,40 +1348,66 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         activity.getProperties().remove(Activity.TRANSFER_OUTPUT_REMAPS);
         activity.getProperties().remove(Activity.DELEGATION_SANDBOX_PATH);
 
-        Throwable error = null;
+        String failureReason = null;
         ActivityStatus status = null;
         
         try {
             status = makeActivityStatus(StatusName.PROCESSING_ACCEPTING);
             activityDB.insertActivityStatus(activity.getId(), status);
             logger.info("activity " + activity.getId() + " status changed => " + status.toString());
-
-            String blahId = blahClient.submit(blahJob);
-
-            activity.getProperties().put(Activity.LRMS_ABS_LAYER_ID, blahId);
-
-            status = makeActivityStatus(StatusName.PROCESSING_QUEUED);
-            activityDB.insertActivityStatus(activity.getId(), status);
-            logger.info("activity " + activity.getId() + " status changed => " + status.toString() + "; lrsmsId=" + blahId);
         } catch (Throwable t) {
-            error = t;
-            throw new CommandException("blah error: " + t.getMessage());
-        } finally {
-            try {
-                if (error != null) {
-                    ActivityStatus activityStatus = makeActivityStatus(StatusName.TERMINAL);
-                    activityStatus.setDescription(error.getMessage());
-                    activityStatus.getStatusAttributes().add(StatusAttributeName.PREPROCESSING_FAILURE);
-                    
-                    activityDB.insertActivityStatus(activity.getId(), activityStatus);
-                    logger.info("activity " + activity.getId() + " status changed => " + activityStatus.toString());
-                }
+            throw new CommandException(t.getMessage());
+        }
 
-                activityDB.insertActivityCommand(activity.getId(), makeActivityCommand(commandName, Boolean.valueOf(error == null)));
-                activityDB.updateActivity(activity);
+        String blahId = null;
+
+        for (int i=1; i<4 && blahId == null; i++) {
+            failureReason = null;
+            
+            try {
+                blahId = blahClient.submit(blahJob);
+            } catch (BLAHException be) {
+                logger.warn("submission to BLAH failed [activityId=" + activity.getId() + "; reason=" + failureReason + "; retry count=" + i + "/3]");
+                failureReason = be.getMessage();
+
+                synchronized(status) {
+                    try {
+                        logger.debug("sleeping 10 sec...");
+                        status.wait(10000);
+                        logger.debug("sleeping 10 sec... done");
+                    } catch (InterruptedException e) {
+                    }
+                }
+            } 
+        }
+
+        if (blahId == null) {
+            try {
+                failureReason = "submission to BLAH failed [retry count=3]" + (failureReason != null ? ": " + failureReason : "");
+                ActivityStatus activityStatus = makeActivityStatus(StatusName.TERMINAL);
+                activityStatus.setDescription(failureReason);
+                activityStatus.getStatusAttributes().add(StatusAttributeName.PREPROCESSING_FAILURE);
+
+                activityDB.insertActivityStatus(activity.getId(), activityStatus);
+                logger.info("activity " + activity.getId() + " status changed => " + activityStatus.toString());
             } catch (Throwable t) {
                 throw new CommandException(t.getMessage());
             }
+
+            throw new CommandException(failureReason);
+        }
+        
+        activity.getProperties().put(Activity.LRMS_ABS_LAYER_ID, blahId);
+
+        try {
+            status = makeActivityStatus(StatusName.PROCESSING_QUEUED);
+            activityDB.insertActivityStatus(activity.getId(), status);
+            logger.info("activity " + activity.getId() + " status changed => " + status.toString() + "; lrsmsId=" + blahId);
+
+            activityDB.insertActivityCommand(activity.getId(), makeActivityCommand(commandName, Boolean.valueOf(blahId != null)));
+            activityDB.updateActivity(activity);
+        } catch (Throwable t) {
+            throw new CommandException(t.getMessage());
         }
     }
 
@@ -1351,15 +1425,15 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         ActivityStatus status = states.last();
         
         if (StatusName.TERMINAL == status.getStatusName()) {
-            throw new CommandException("invalid state (TERMINAL)");     
+            throw new CommandException("invalid state (terminal)");     
         }
 
         if (status.getStatusAttributes().contains(StatusAttributeName.CLIENT_PAUSED)) {
-            throw new CommandException("invalid state (" + status.getStatusName() + ":CLIENT_PAUSED)");
+            throw new CommandException("invalid state (" + status.getStatusName() + ":client-paused)");
         }
         
         if (status.getStatusAttributes().contains(StatusAttributeName.SERVER_PAUSED)) {
-            throw new CommandException("invalid state (" + status.getStatusName() + ":SERVER_PAUSED)");
+            throw new CommandException("invalid state (" + status.getStatusName() + ":server-paused)");
         }
         
         String localUser = activity.getProperties().get(Activity.LOCAL_USER);
@@ -1410,7 +1484,11 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
     }
     
     private void queryResourceInfo(Command command) throws CommandException {
-        throw new CommandException("operation not yet implemented!");
+        try {
+            command.getResult().addParameter(ActivityCommandField.ACTIVITY_GLUE2_ATTRIBUTE_LIST.name(), glue2Handler.executeXPathQuery(command.getParameterAsString(ActivityCommandField.XPATH_QUERY.name())));
+        } catch (Throwable t) {
+            throw new CommandException(t.getMessage());
+        }
     }
 
     private void restartActivity(Command command) throws CommandException {
@@ -1431,12 +1509,12 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         ActivityStatus status = states.last();
 
         if (StatusName.TERMINAL == status.getStatusName()) {
-            throw new CommandException("invalid state (TERMINAL)");     
+            throw new CommandException("invalid state (terminal)");     
         }
         
         if (!status.getStatusAttributes().contains(StatusAttributeName.CLIENT_PAUSED) &&
                 !status.getStatusAttributes().contains(StatusAttributeName.SERVER_PAUSED)) {
-            throw new CommandException("invalid state (activity not PAUSED)");
+            throw new CommandException("invalid state (activity not paused)");
         } 
 
         String localUser = activity.getProperties().get(Activity.LOCAL_USER);

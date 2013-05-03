@@ -64,32 +64,50 @@ public class ActivityTable implements ActivityTableInterface {
             insertCS = connection.prepareCall(insertSP);
         
             insertCS.setString(2, userId);
-            if (activity.getActivityIdentification() != null) {
+            /*if (activity.getActivityIdentification() != null) {
                 insertCS.setString(3, activity.getActivityIdentification().getName());
                 insertCS.setString(4, activity.getActivityIdentification().getDescription());
                 insertCS.setString(5, (activity.getActivityIdentification().getType() != null) ? activity.getActivityIdentification().getType().value() : null);
                 insertCS.setString(6, activity.getApplication().getInput());
                 insertCS.setString(7, activity.getApplication().getOutput());
                 insertCS.setString(8, activity.getApplication().getError());
-            }
-            if ((activity.getApplication() != null) && (activity.getApplication().getExpirationTime() != null)) {
-                XMLGregorianCalendar expiration_time_date = activity.getApplication().getExpirationTime().getValue();
-                insertCS.setTimestamp(9, new java.sql.Timestamp(expiration_time_date.toGregorianCalendar().getTimeInMillis()));
-                insertCS.setBoolean(10, activity.getApplication().getExpirationTime().isOptional());
-            } else {
-                insertCS.setTimestamp(9, null);
-                insertCS.setBoolean(10, false);
-            }
+            }*/
+
+                if (activity.getActivityIdentification() != null) {
+                    insertCS.setString(3, activity.getActivityIdentification().getName());
+                    insertCS.setString(4, activity.getActivityIdentification().getDescription());
+                    insertCS.setString(5, (activity.getActivityIdentification().getType() != null) ? activity.getActivityIdentification().getType().value() : null);
+                } else {
+                    insertCS.setString(3, null);
+                    insertCS.setString(4, null);
+                    insertCS.setString(5, null);
+                }
+
+
+            if (activity.getApplication() != null) {
+                insertCS.setString(6, activity.getApplication().getInput());
+                insertCS.setString(7, activity.getApplication().getOutput());
+                insertCS.setString(8, activity.getApplication().getError());
+
+                if (activity.getApplication().getExpirationTime() != null) {
+                    XMLGregorianCalendar expiration_time_date = activity.getApplication().getExpirationTime().getValue();
+                    insertCS.setTimestamp(9, new java.sql.Timestamp(expiration_time_date.toGregorianCalendar().getTimeInMillis()));
+                    insertCS.setBoolean(10, activity.getApplication().getExpirationTime().isOptional());
+                } else {
+                    insertCS.setTimestamp(9, null);
+                    insertCS.setBoolean(10, false);
+                }
         
-            if ((activity.getApplication() != null) && (activity.getApplication().getWipeTime() != null)) {
-                Duration duration = activity.getApplication().getWipeTime().getValue();
-                insertCS.setString(11, duration.toString());
-                insertCS.setBoolean(12, activity.getApplication().getWipeTime().isOptional());
-            } else {
-                insertCS.setString(11, null);
-                insertCS.setBoolean(12, false);
+                if (activity.getApplication().getWipeTime() != null) {
+                    Duration duration = activity.getApplication().getWipeTime().getValue();
+                    insertCS.setString(11, duration.toString());
+                    insertCS.setBoolean(12, activity.getApplication().getWipeTime().isOptional());
+                } else {
+                    insertCS.setString(11, null);
+                    insertCS.setBoolean(12, false);
+                }
             }
-            
+    
             if ((activity.getDataStaging() != null) && (activity.getDataStaging().isClientDataPush() != null)) {
                 insertCS.setBoolean(13, activity.getDataStaging().isClientDataPush().booleanValue());
             } else {

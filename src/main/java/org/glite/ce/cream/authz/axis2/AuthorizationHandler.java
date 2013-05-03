@@ -52,7 +52,7 @@ public class AuthorizationHandler
 
     private static final String ES_CREATE_NS = "http://www.eu-emi.eu/es/2010/12/creation";
 
-    private static final String ES_DELEGATION_NS = "http://www.eu-emi.eu/es/2010/12/delegation";
+    private static final String ES_DELEGATION_NS = "http://www.gridsite.org/namespaces/delegation-2";
 
     private static final String ES_RESOURCES_NS = "http://www.eu-emi.eu/es/2010/12/resourceinfo";
 
@@ -132,16 +132,12 @@ public class AuthorizationHandler
 
                 faultDetail = accessFault.getOMElement(null, soapFactory);
 
-            } else if (operation.getNamespaceURI().startsWith(ES_DELEGATION_NS)) {
-
-                org.glite.ce.creamapi.ws.es.delegation.types.AccessControlFault accessFault = new org.glite.ce.creamapi.ws.es.delegation.types.AccessControlFault();
-                accessFault.setDescription(message);
-                accessFault.setFailureCode(0);
-                accessFault.setMessage(faultReason);
-                accessFault.setTimestamp(Calendar.getInstance());
+/*            } else if (operation.getNamespaceURI().startsWith(ES_DELEGATION_NS)) {
+                org.glite.ce.creamapi.ws.es.delegation.DelegationException accessFault = new org.glite.ce.creamapi.ws.es.delegation.DelegationException();
+                accessFault.setMsg(message);
 
                 faultDetail = accessFault.getOMElement(null, soapFactory);
-
+*/
             } else if (operation.getNamespaceURI().startsWith(ES_RESOURCES_NS)) {
 
                 org.glite.ce.creamapi.ws.es.resourceinfo.types.AccessControlFault accessFault = new org.glite.ce.creamapi.ws.es.resourceinfo.types.AccessControlFault();
@@ -153,7 +149,7 @@ public class AuthorizationHandler
                 faultDetail = accessFault.getOMElement(null, soapFactory);
 
             } else {
-                logger.error("Unreachable condition for " + operation.toString());
+                logger.error("Unreachable condition for " + operation.toString() + " operation.getNamespaceURI() = " + operation.getNamespaceURI());
             }
 
             return new AxisFault(faultCode, faultReason, null, null, faultDetail);

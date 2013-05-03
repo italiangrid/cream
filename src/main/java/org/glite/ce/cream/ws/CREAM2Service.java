@@ -296,7 +296,7 @@ public class CREAM2Service implements CREAMSkeletonInterface, Lifecycle {
         // set StartUpTime to null value.
         try {
             DBInfoManager.updateStartUpTime(JobDBInterface.JOB_DATASOURCE_NAME, null);
-        }   catch (Throwable t) {
+        } catch (Throwable t) {
             initialization = INITIALIZATION_ERROR;
             logger.error("Configuration error: " + t.getMessage());
             return;
@@ -306,7 +306,7 @@ public class CREAM2Service implements CREAMSkeletonInterface, Lifecycle {
         serviceInfo.setStartupTime(startUpTime);
         serviceInfo.setDoesAcceptNewJobSubmissions(false);
         serviceInfo.setStatus("INIT");
-        
+
         parameter = axisService.getParameter("serviceDescription");            
         serviceInfo.setDescription(parameter == null? "N/A": (String)parameter.getValue());
 
@@ -390,7 +390,7 @@ public class CREAM2Service implements CREAMSkeletonInterface, Lifecycle {
         // set StartUpTime value.
         try {
             DBInfoManager.updateStartUpTime(JobDBInterface.JOB_DATASOURCE_NAME, startUpTime);
-        }   catch (Throwable t) {
+        } catch (Throwable t) {
             initialization = INITIALIZATION_ERROR;
             logger.error("Configuration error: " + t.getMessage());
             return;
@@ -815,7 +815,7 @@ public class CREAM2Service implements CREAMSkeletonInterface, Lifecycle {
                             DelegationCommand command = new DelegationCommand(DelegationCommand.PUT_DELEGATION);
                             command.addParameter(DelegationCommand.DELEGATION_ID, delegationId);
                             command.addParameter(DelegationCommand.DELEGATION, delegationProxy);
-                            command.addParameter(DelegationCommand.USER_DN, CEUtils.getUserDN_RFC2253());
+                            command.addParameter(DelegationCommand.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
                             command.addParameter(DelegationCommand.USER_CERTIFICATE, CEUtils.getUserCert());
                             command.addParameter(DelegationCommand.LOCAL_USER, CEUtils.getLocalUser());
                             command.addParameter(DelegationCommand.LOCAL_USER_GROUP, CEUtils.getLocalUserGroup());
@@ -833,7 +833,7 @@ public class CREAM2Service implements CREAMSkeletonInterface, Lifecycle {
                         try {
                             DelegationCommand command = new DelegationCommand(DelegationCommand.GET_DELEGATION);
                             command.addParameter(DelegationCommand.DELEGATION_ID, delegationId);
-                            command.addParameter(DelegationCommand.USER_DN, CEUtils.getUserDN_RFC2253());
+                            command.addParameter(DelegationCommand.USER_DN_RFC2253, CEUtils.getUserDN_RFC2253());
                             command.addParameter(DelegationCommand.LOCAL_USER, CEUtils.getLocalUser());
 
                             CommandManager.getInstance().execute(command);
@@ -867,6 +867,7 @@ public class CREAM2Service implements CREAMSkeletonInterface, Lifecycle {
                 cmd.setLocalUserGroup(CEUtils.getLocalUserGroup());
                 cmd.setUserId(userId);
                 cmd.setUserDN(CEUtils.getUserDN_RFC2253());
+                cmd.setUserDNX500(CEUtils.getUserDN_X500());
                 cmd.setUserFQAN(fqanlist);
                 cmd.setUserVO(CEUtils.getUserDefaultVO());
                 cmd.setJDL(descr[i].getJDL());
@@ -1053,6 +1054,10 @@ public class CREAM2Service implements CREAMSkeletonInterface, Lifecycle {
                 cmd[i].setFailureReason(jobCmd.getFailureReason());
                 cmd[i].setName(jobCmd.getName());
                 cmd[i].setStatus(jobCmd.getStatusName());
+
+                if (jobCmd.getName().equalsIgnoreCase(JobCommandConstant.PROXY_RENEW)) {
+                    jobInfo.setDelegationProxyInfo(jobCmd.getDescription());
+                }
             }
 
             jobInfo.setLastCommand(cmd);
