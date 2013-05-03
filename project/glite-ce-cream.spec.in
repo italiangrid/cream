@@ -65,14 +65,12 @@ for((idx=0; idx<5; idx++)) ; do
   if [ $? == 0 ] ; then idx=5; else sleep 5; fi
 done
 
-%if %{extdist} == "sl5"
 # Remove the axis1-based installation 
 if [ -f /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/server-config.wsdd ] ; then
   rm -rf /var/lib/%{_tomcat}/webapps/ce-cream
   rm -f /etc/%{_tomcat}/Catalina/localhost/ce-cream.xml
   rm -rf /var/cache/%{_tomcat}/work/Catalina/localhost/ce-cream
 fi
-%endif
 
 %post
 # Do not overwrite axis2-based installation
@@ -97,7 +95,7 @@ if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services/glite-ce-cream.a
   ln -s /usr/share/java/glite-jdl-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/voms-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
 
-%if %{extdist} == "sl6"  
+%if 0%{?el6}
   # set allowLinking option for tomcat6
   mkdir /var/lib/%{_tomcat}/webapps/ce-cream/META-INF
   echo '<Context override="true" allowLinking="true"></Context>' > /var/lib/%{_tomcat}/webapps/ce-cream/META-INF/context.xml
@@ -264,7 +262,7 @@ if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services/glite-ce-crea
   ln -s /usr/share/java/glite-jdl-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/voms-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
 
-%if %{extdist} == "sl6"  
+%if 0%{?el6}
   # set allowLinking option for tomcat6
   mkdir /var/lib/%{_tomcat}/webapps/ce-cream-es/META-INF
   echo '<Context override="true" allowLinking="true"></Context>' > /var/lib/%{_tomcat}/webapps/ce-cream-es/META-INF/context.xml
