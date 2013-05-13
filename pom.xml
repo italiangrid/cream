@@ -320,35 +320,35 @@
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>cream-common</artifactId>
-      <version>1.14.3</version>
+      <version>1.15.2</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>cream-api-java</artifactId>
-      <version>1.14.4</version>
+      <version>1.15.2</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>cream-skeleton</artifactId>
-      <version>1.14.4</version>
+      <version>1.15.2</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>delegation-skeleton</artifactId>
-      <version>1.14.4</version>
+      <version>1.15.2</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>es-skeleton</artifactId>
-      <version>1.14.4</version>
+      <version>1.15.2</version>
       <scope>compile</scope>
     </dependency>
 
