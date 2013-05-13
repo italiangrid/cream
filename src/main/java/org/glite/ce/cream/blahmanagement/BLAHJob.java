@@ -24,9 +24,12 @@
 
 package org.glite.ce.cream.blahmanagement;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BLAHJob {
     private static final long serialVersionUID = 1L;
-
+        
     private String jobId = null;
     private String ceId = null;
     private String gridJobId = null;
@@ -35,7 +38,6 @@ public class BLAHJob {
  //   private String sandboxPath = null;
     private String ceRequirements = null;
     private String mwVersion = null;
-    private String sequenceCode = null;
     private String iwd = null;
     private String userDN = null;
     private String userFQAN = null;
@@ -52,8 +54,14 @@ public class BLAHJob {
     private int smpGranularity = -1;
     private int nodeNumber = -1;
     private int hostNumber = -1;
+    private List<String> arguments = null;
 
     public BLAHJob() {
+        setArguments(new ArrayList<String>(0));
+    }
+
+    public List<String> getArguments() {
+        return arguments;
     }
 
     public String getCeId() {
@@ -104,16 +112,12 @@ public class BLAHJob {
         return nodeNumber;
     }
 
-    public String getQueue() {
-        return queue;
-    }
-
 //    public String getSandboxPath() {
 //        return sandboxPath;
 //    }
 
-    public String getSequenceCode() {
-        return sequenceCode;
+    public String getQueue() {
+        return queue;
     }
 
     public int getSmpGranularity() {
@@ -154,6 +158,10 @@ public class BLAHJob {
 
     public boolean isWholeNodes() {
         return wholeNodes;
+    }
+
+    public void setArguments(List<String> arguments) {
+        this.arguments = arguments;
     }
 
     public void setCeId(String ceId) {
@@ -200,20 +208,16 @@ public class BLAHJob {
         this.mwVersion = mwVersion;
     }
 
+//    public void setSandboxPath(String sandboxPath) {
+//        this.sandboxPath = sandboxPath;
+//    }
+
     public void setNodeNumber(int nodeNumber) {
         this.nodeNumber = nodeNumber;
     }
 
     public void setQueue(String queue) {
         this.queue = queue;
-    }
-
-//    public void setSandboxPath(String sandboxPath) {
-//        this.sandboxPath = sandboxPath;
-//    }
-
-    public void setSequenceCode(String sequenceCode) {
-        this.sequenceCode = sequenceCode;
     }
 
     public void setSmpGranularity(int smpGranularity) {

@@ -4,18 +4,18 @@
 
   <groupId>org.glite.ce</groupId>
   <artifactId>cream</artifactId>
-  <version>1.14.5</version>
+  <version>1.15.2</version>
   <packaging>jar</packaging>
 
   <properties>
-    <rpm.release>1</rpm.release>
+    <rpm.release>2</rpm.release>
     <rpm.pkgname>glite-ce-cream</rpm.pkgname>
   </properties>
   
   <parent>
     <groupId>org.glite</groupId>
     <artifactId>cream-parent</artifactId>
-    <version>0.8.0</version>
+    <version>0.9.0</version>
   </parent>
 
   <scm>

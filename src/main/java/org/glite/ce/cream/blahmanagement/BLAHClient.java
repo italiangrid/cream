@@ -459,14 +459,14 @@ public class BLAHClient {
             throw (new BLAHException("executableFile not specified!"));
         }
 
-        if (blahJob.getNodeNumber() < 0) {
+/*        if (blahJob.getNodeNumber() < 0) {
             throw (new BLAHException("wrong nodeNumber value!"));
         }
 
         if (blahJob.getHostNumber() < 1) {
             throw new BLAHException("wrong hostNumber value: use hostNumber >= 1");
         }
-/*
+
         if (blahJob.getVirtualOrganisation() == null) {
             throw new BLAHException("virtualOrganisation not specified");
         }
@@ -517,15 +517,21 @@ public class BLAHClient {
         }
 
         if (prefix == null) {
-            blahpAD.append("\";ClientJobId=\"").append(clientJobId);
+            blahpAD.append("\";ClientJobId=\"").append(clientJobId).append("\"");
         } else {
-            blahpAD.append("\";ClientJobId=\"").append(prefix).append(clientJobId);
+            blahpAD.append("\";ClientJobId=\"").append(prefix).append(clientJobId).append("\"");
         }
 
         if (blahJob.isWholeNodes()) {
-            blahpAD.append("\";WholeNodes=true;HostSMPSize=").append(hostSMPSize);
+            blahpAD.append(";WholeNodes=true;HostSMPSize=").append(hostSMPSize);
         } else {
-            blahpAD.append("\";NodeNumber=").append(blahJob.getNodeNumber());
+            blahpAD.append(";WholeNodes=false");
+
+            if (blahJob.getNodeNumber()>0) {
+                blahpAD.append(";NodeNumber=").append(blahJob.getNodeNumber());
+            } else {
+                blahpAD.append(";NodeNumber=1");
+            }
 
             if (smpGranularity > 0 && hostNumber > 0) {
                 throw new BLAHException("the SMPGranularity and HostNumber attributes cannot be specified together when WholeNodes=false");
@@ -540,8 +546,15 @@ public class BLAHClient {
             blahpAD.append(";HostNumber=").append(hostNumber);
         }
 
-        if (blahJob.getSequenceCode() != null) {
-            blahpAD.append(";Args=\"").append(blahJob.getSequenceCode()).append("\"");
+        List<String> arguments = blahJob.getArguments();
+        if (!arguments.isEmpty()) {
+            blahpAD.append(";Args=\"'");
+            
+            for (String arg : arguments) {
+                blahpAD.append(arg).append(":");
+            }
+            
+            blahpAD.replace(blahpAD.length()-1, blahpAD.length(), "'\"");
         }
 
         if (blahJob.getCeRequirements() != null) {

@@ -296,7 +296,7 @@ public class GLUE2Handler extends Thread {
 
         AXIOMXPath xpathExpression = new AXIOMXPath(query);
         xpathExpression.addNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        
+
         List selectedNode = xpathExpression.selectNodes(computingServiceElement);
 
         logger.debug("END executeXPathQuery: found " + selectedNode.size() + " items");
@@ -757,6 +757,7 @@ public class GLUE2Handler extends Thread {
                 // printAttributes(attributes);
 
                 accessPolicy = new AccessPolicy_t();
+                accessPolicy.setBaseType("Policy");
                 // accessPolicy.setAssociations(param);
                 accessPolicy.setCreationTime(getAttributeValueAsDateTime(attributes.get("GLUE2EntityCreationTime")));
                 // accessPolicy.setExtensions(param);
@@ -899,6 +900,8 @@ public class GLUE2Handler extends Thread {
                 // printAttributes(attributes);
 
                 computingEndpoint = new ComputingEndpoint_t();
+                computingEndpoint.setBaseType("Endpoint");
+                
                 // computingEndpoint.setAssociations(param);
                 computingEndpoint.setCapability(getAttributeValueAsCapability(attributes.get("GLUE2EndpointCapability")));
                 // computingEndpoint.setComputingActivities(param);
@@ -974,6 +977,7 @@ public class GLUE2Handler extends Thread {
                 // printAttributes(attributes);
 
                 computingManager = new ComputingManager_t();
+                computingManager.setBaseType("Manager");
                 computingManager.setID(getAttributeValueAsURI(attributes.get("GLUE2ManagerID")));
                 computingManager.setApplicationDir(getAttributeValueAsString(attributes.get("GLUE2ComputingManagerApplicationDir")));
                 ApplicationEnvironments_type0 applicationEnvironments = new ApplicationEnvironments_type0();
@@ -1045,6 +1049,7 @@ public class GLUE2Handler extends Thread {
 
             if (attributes != null) {
                 // printAttributes(attributes);
+                computingService.setBaseType("Service");
 
                 // computingService.setAssociations(param);
                 computingService.setID(getAttributeValueAsURI(attributes.get("GLUE2ServiceID")));
@@ -1096,6 +1101,7 @@ public class GLUE2Handler extends Thread {
                 // printAttributes(attributes);
 
                 computingShare = new ComputingShare_t();
+                computingShare.setBaseType("Share");
                 // computingShare.setAssociations(param);
                 computingShare.setCreationTime(getAttributeValueAsDateTime(attributes.get("GLUE2EntityCreationTime")));
                 computingShare.setDefaultCPUTime(getAttributeValueAsUnsignedLong(attributes.get("GLUE2ComputingShareDefaultCPUTime")));
@@ -1169,7 +1175,7 @@ public class GLUE2Handler extends Thread {
         SearchControls ctls = new SearchControls();
         ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
         NamingEnumeration<SearchResult> answer = ctx.search("o=glue", "(&(GLUE2MappingPolicyShareForeignKey=" + computingShareId + ")(objectclass=GLUE2MappingPolicy))", ctls);
-        MappingPolicy_t mappingPolicie = null;
+        MappingPolicy_t mappingPolicy = null;
         List<MappingPolicy_t> mappingPolicies = new ArrayList<MappingPolicy_t>(0);
 
         while (answer.hasMoreElements()) {
@@ -1181,18 +1187,19 @@ public class GLUE2Handler extends Thread {
             if (attributes != null) {
                 // printAttributes(attributes);
 
-                mappingPolicie = new MappingPolicy_t();
-                // mappingPolicie.setAssociations(param);
-                mappingPolicie.setCreationTime(getAttributeValueAsDateTime(attributes.get("GLUE2EntityCreationTime")));
-                // mappingPolicie.setExtensions(param);
-                mappingPolicie.setID(getAttributeValueAsURI(attributes.get("GLUE2PolicyID")));
-                mappingPolicie.setName(getAttributeValueAsString(attributes.get("GLUE2EntityName")));
-                mappingPolicie.setOtherInfo(getAttributeValueAsStringArray(attributes.get("GLUE2EntityOtherInfo")));
-                mappingPolicie.setRule(getAttributeValueAsStringArray(attributes.get("GLUE2PolicyRule")));
-                mappingPolicie.setScheme(getAttributeValueAsPolicyScheme(attributes.get("GLUE2PolicyScheme")));
-                mappingPolicie.setValidity(getAttributeValueAsUnsignedLong(attributes.get("GLUE2EntityValidity")));
+                mappingPolicy = new MappingPolicy_t();
+                mappingPolicy.setBaseType("Policy");
+                // mappingPolicy.setAssociations(param);
+                mappingPolicy.setCreationTime(getAttributeValueAsDateTime(attributes.get("GLUE2EntityCreationTime")));
+                // mappingPolicy.setExtensions(param);
+                mappingPolicy.setID(getAttributeValueAsURI(attributes.get("GLUE2PolicyID")));
+                mappingPolicy.setName(getAttributeValueAsString(attributes.get("GLUE2EntityName")));
+                mappingPolicy.setOtherInfo(getAttributeValueAsStringArray(attributes.get("GLUE2EntityOtherInfo")));
+                mappingPolicy.setRule(getAttributeValueAsStringArray(attributes.get("GLUE2PolicyRule")));
+                mappingPolicy.setScheme(getAttributeValueAsPolicyScheme(attributes.get("GLUE2PolicyScheme")));
+                mappingPolicy.setValidity(getAttributeValueAsUnsignedLong(attributes.get("GLUE2EntityValidity")));
 
-                mappingPolicies.add(mappingPolicie);
+                mappingPolicies.add(mappingPolicy);
             }
         }
 
@@ -1291,7 +1298,7 @@ public class GLUE2Handler extends Thread {
 
                         int index = xmlStream.indexOf(ns);
                         if (index > 0) {
-                            xmlStream = xmlStream.substring(0, index) + xmlStream.substring(index + 1);
+                            xmlStream = xmlStream.substring(0, index) + xmlStream.substring(index + ns.length() + 1);
                         }
 
                         StAXBuilder builder = new StAXOMBuilder(new ByteArrayInputStream(xmlStream.getBytes()));

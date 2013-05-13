@@ -62,6 +62,7 @@ import org.apache.axis2.service.Lifecycle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.xmlbeans.impl.values.NamespaceContext;
 import org.glite.ce.commonj.utils.CEUtils;
 import org.glite.ce.cream.activitymanagement.ActivityCmd;
 import org.glite.ce.cream.activitymanagement.ActivityCmd.ActivityCommandField;
@@ -266,6 +267,7 @@ public class ActivityManagementService implements ActivityManagementServiceSkele
                 jobDescription.setJobDescription_t("emi:adl");
 
                 activityInfoDocument = new ActivityInfoDocument_t();
+                activityInfoDocument.setBaseType("Activity");
                 activityInfoDocument.setCreationTime(GregorianCalendar.getInstance());
                 activityInfoDocument.setID(new URI(activity.getId()));
                 activityInfoDocument.setIDFromEndpoint(new URI(prefexIdFromEndpoint + activity.getId()));

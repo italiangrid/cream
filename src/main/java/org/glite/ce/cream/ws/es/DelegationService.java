@@ -21,6 +21,7 @@ import org.glite.ce.creamapi.cmdmanagement.CommandManagerInterface;
 import org.glite.ce.creamapi.delegationmanagement.Delegation;
 import org.glite.ce.creamapi.delegationmanagement.DelegationCommand;
 import org.glite.ce.creamapi.jobmanagement.cmdexecutor.JobCommandConstant;
+import org.glite.ce.creamapi.ws.es.delegation.DelegationException;
 import org.glite.ce.creamapi.ws.es.delegation.DelegationExceptionException;
 import org.glite.ce.creamapi.ws.es.delegation.DelegationServiceSkeletonInterface;
 import org.glite.ce.creamapi.ws.es.delegation.Destroy;
@@ -201,6 +202,16 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
         logger.info("DelegationService started!");
     }
 
+    private DelegationExceptionException makeDelegationException(String msg) {
+        DelegationException fault = new DelegationException();
+        fault.setMsg(msg);
+
+        DelegationExceptionException delegationException = new DelegationExceptionException();
+        delegationException.setFaultMessage(fault);
+        
+        return delegationException;
+    }
+    
     public void destroy(Destroy req) throws DelegationExceptionException {
         checkInitialization();
 
@@ -219,7 +230,7 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
             CommandManager.getInstance().execute(command);
         } catch (Throwable t) {
             logger.debug("destroy error: " + t.getMessage());
-            throw new DelegationExceptionException(t.getMessage());
+            throw makeDelegationException(t.getMessage());
         }
 
         logger.info("END destroy");
@@ -253,7 +264,7 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
             CommandManager.getInstance().execute(command);
         } catch (Throwable t) {
             logger.debug("getNewProxyRequest error: " + t.getMessage());
-            throw new DelegationExceptionException(t.getMessage());
+            throw makeDelegationException(t.getMessage());
         }
 
         // Create and return the proxy request object
@@ -286,7 +297,7 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
             CommandManager.getInstance().execute(command);
         } catch (Throwable t) {
             logger.debug("getProxyReq error: " + t.getMessage());
-            throw new DelegationExceptionException(t.getMessage());
+            throw makeDelegationException(t.getMessage());
         }
 
         String certificateRequest = command.getResult().getParameterAsString(DelegationCommand.CERTIFICATE_REQUEST);
@@ -302,7 +313,7 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
     public GetServiceMetadataResponse getServiceMetadata(GetServiceMetadata req) throws DelegationExceptionException {
         checkInitialization();
 
-        throw new DelegationExceptionException("operation not implemented!");
+        throw makeDelegationException("operation not implemented!");
     }
 
     public GetTerminationTimeResponse getTerminationTime(GetTerminationTime req) throws DelegationExceptionException {
@@ -323,7 +334,7 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
             CommandManager.getInstance().execute(command);
         } catch (Throwable t) {
             logger.debug("getTerminationTime error: " + t.getMessage());
-            throw new DelegationExceptionException(t.getMessage());
+            throw makeDelegationException(t.getMessage());
         }
 
         Calendar time = (Calendar) command.getResult().getParameter(DelegationCommand.TERMINATION_TIME);
@@ -350,7 +361,7 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
         checkInitialization();
 
         if (req == null || req.getDelegationID() == null) {
-            throw new DelegationExceptionException("delegationId not specified!");
+            throw makeDelegationException("delegationId not specified!");
         }
 
         logger.info("BEGIN putProxy");
@@ -367,7 +378,7 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
             CommandManager.getInstance().execute(command);
         } catch (Throwable t) {
             logger.debug("putProxy error: " + t.getMessage());
-            throw new DelegationExceptionException(t.getMessage());
+            throw makeDelegationException(t.getMessage());
         }
 
 //        Delegation deleg = (Delegation) command.getResult().getParameter(DelegationCommand.DELEGATION);
@@ -410,7 +421,7 @@ public class DelegationService implements DelegationServiceSkeletonInterface, Li
             CommandManager.getInstance().execute(command);
         } catch (Throwable t) {
             logger.debug("renewProxyReq error: " + t.getMessage());
-            throw new DelegationExceptionException(t.getMessage());
+            throw makeDelegationException(t.getMessage());
         }
 
         String request = command.getResult().getParameterAsString(DelegationCommand.CERTIFICATE_REQUEST);

@@ -80,11 +80,11 @@ if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services/glite-ce-cream.a
   
   ln -s /usr/share/java/jclassads/cedar.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/jclassads/classad.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
-  ln -s /usr/share/java/argus-pep-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
-  ln -s /usr/share/java/argus-pep-common.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
-  ln -s /usr/share/java/trustmanager.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/argus-pep-api-java-compat.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/argus-pep-common-compat.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/trustmanager-compat.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/bcprov.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
-  ln -s /usr/share/java/delegation-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/delegation-java-compat.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/glite-ce-common-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/glite-ce-cream-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
   ln -s /usr/share/java/glite-ce-cream-blahExecutor.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
@@ -247,11 +247,11 @@ if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services/glite-ce-crea
   
   ln -s /usr/share/java/jclassads/cedar.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/jclassads/classad.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
-  ln -s /usr/share/java/argus-pep-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
-  ln -s /usr/share/java/argus-pep-common.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
-  ln -s /usr/share/java/trustmanager.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/argus-pep-api-java-compat.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/argus-pep-common-compat.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/trustmanager-compat.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/bcprov.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
-  ln -s /usr/share/java/delegation-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/delegation-java-compat.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/glite-ce-common-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/glite-ce-cream-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/glite-ce-cream-blahExecutor.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib

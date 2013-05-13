@@ -346,8 +346,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
                 putDelegation(command);
                 
             } else if (command.getName().equalsIgnoreCase(DelegationCommand.GET_DELEGATION)) {
-                Delegation delegation = getDelegation(command);
-
+                Delegation delegation = getDelegation(command, true);
                 if (delegation == null) {
                     throw new CommandException("delegation [delegId=" + getParameterValueAsString(command, DelegationCommand.DELEGATION_ID) +                    
                             "; dn=" + getParameterValueAsString(command, DelegationCommand.USER_DN_RFC2253) +
@@ -410,6 +409,10 @@ public class DelegationExecutor extends AbstractCommandExecutor {
     }
 
     private Delegation getDelegation(Command command) throws CommandException {
+        return getDelegation(command, false);
+    }
+
+    private Delegation getDelegation(Command command, boolean includeCertificate) throws CommandException {
         logger.debug("BEGIN getDelegation");
 
         String delegationId = getParameterValueAsString(command, DelegationCommand.DELEGATION_ID);
@@ -420,7 +423,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
 
         try {
             // Search for an existing entry in storage for this delegation ID
-            delegation = DelegationManager.getInstance().getDelegation(delegationId, userDN, localUser);
+            delegation = DelegationManager.getInstance().getDelegation(delegationId, userDN, localUser, includeCertificate);
         } catch (Exception e) {
             throw new CommandException("Failure on storage interaction [delegId=" + delegationId + "; dn=" + userDN + "; localUser=" + localUser + "]: " + e.getMessage());
         }
@@ -911,7 +914,7 @@ public class DelegationExecutor extends AbstractCommandExecutor {
         Delegation delegation = null;
 
         try {
-            delegation = DelegationManager.getInstance().getDelegation(delegationId, userDN, localUser);
+            delegation = DelegationManager.getInstance().getDelegation(delegationId, userDN, localUser, false);
         } catch (Exception e) {
             throw new CommandException("Failure on storage interaction [delegId=" + delegationId + "; dn=" + userDN + "; localUser=" + localUser + "]: " + e.getMessage());
         }
