@@ -563,6 +563,10 @@ public class DelegationManager implements DelegationManagerInterface {
     }
 
     public Delegation getDelegation(String delegationId, String dn, String localUser) throws DelegationException, DelegationManagerException {
+        return getDelegation(delegationId, dn, localUser, true);
+    }
+
+    public Delegation getDelegation(String delegationId, String dn, String localUser, boolean includeCertificate) throws DelegationException, DelegationManagerException {
         if (delegationId == null || delegationId.length() == 0) {
             throw new DelegationException("delegationId not specified!");
         }
@@ -608,7 +612,7 @@ public class DelegationManager implements DelegationManagerInterface {
             rs = getProxyStatement.executeQuery();
 
             if (rs.next()) {
-                delegation = makeDelegation(rs);
+                delegation = makeDelegation(rs, includeCertificate);
             }
         } catch (SQLException sqle) {
             logger.error("Failure on storage interaction", sqle);
@@ -797,8 +801,12 @@ public class DelegationManager implements DelegationManagerInterface {
         logger.debug("END getDelegationRequests");
         return result;
     }
-    
+   
     public List<Delegation> getDelegations(Calendar expirationTime) throws DelegationException, DelegationManagerException {
+        return getDelegations(expirationTime, true);
+    }
+ 
+    public List<Delegation> getDelegations(Calendar expirationTime, boolean includeCertificate) throws DelegationException, DelegationManagerException {
         if (expirationTime == null) {
             throw new IllegalArgumentException("expirationTime not specified!");
         }
@@ -812,7 +820,11 @@ public class DelegationManager implements DelegationManagerInterface {
         query.append(DELEGATION_TABLE).append(".").append(VO_FIELD).append(" as ").append(VO_FIELD).append(", ");
         query.append(DELEGATION_TABLE).append(".").append(VOMS_ATTRIBUTE_FIELD).append(" as ").append(VOMS_ATTRIBUTE_FIELD).append(", ");
         query.append(DELEGATION_TABLE).append(".").append(INFO_FIELD).append(" as ").append(INFO_FIELD).append(", ");
-        query.append(DELEGATION_TABLE).append(".").append(CERTIFICATE_FIELD).append(" as ").append(CERTIFICATE_FIELD).append(", ");
+
+        if (includeCertificate) {
+            query.append(DELEGATION_TABLE).append(".").append(CERTIFICATE_FIELD).append(" as ").append(CERTIFICATE_FIELD).append(", ");
+        }
+
         query.append(DELEGATION_TABLE).append(".").append(LOCAL_USER_FIELD).append(" as ").append(LOCAL_USER_FIELD).append(", ");
         query.append(DELEGATION_TABLE).append(".").append(LOCAL_USER_GROUP_FIELD).append(" as ").append(LOCAL_USER_GROUP_FIELD).append(", ");
         query.append(DELEGATION_TABLE).append(".").append(START_TIME_FIELD).append(" as ").append(START_TIME_FIELD).append(", ");
@@ -834,7 +846,7 @@ public class DelegationManager implements DelegationManagerInterface {
             rs = selectPreparedStatement.executeQuery();
 
             while (rs.next()) {
-                result.add(makeDelegation(rs));
+                result.add(makeDelegation(rs, includeCertificate));
             }
         } catch (SQLException sqle) {
             logger.error("Failure on storage interaction", sqle);
@@ -868,8 +880,12 @@ public class DelegationManager implements DelegationManagerInterface {
         logger.debug("END getDelegations");
         return result;
     }
-    
+   
     public List<Delegation> getDelegations(String dn, String localUser) throws DelegationException, DelegationManagerException {
+        return getDelegations(dn, localUser, true);
+    }
+
+    public List<Delegation> getDelegations(String dn, String localUser, boolean includeCertificate) throws DelegationException, DelegationManagerException {
         if (dn == null || dn.length() == 0) {
             throw new IllegalArgumentException("user DN not specified!");
         }
@@ -887,7 +903,11 @@ public class DelegationManager implements DelegationManagerInterface {
         query.append(DELEGATION_TABLE).append(".").append(VO_FIELD).append(" as ").append(VO_FIELD).append(", ");
         query.append(DELEGATION_TABLE).append(".").append(VOMS_ATTRIBUTE_FIELD).append(" as ").append(VOMS_ATTRIBUTE_FIELD).append(", ");
         query.append(DELEGATION_TABLE).append(".").append(INFO_FIELD).append(" as ").append(INFO_FIELD).append(", ");
-        query.append(DELEGATION_TABLE).append(".").append(CERTIFICATE_FIELD).append(" as ").append(CERTIFICATE_FIELD).append(", ");
+
+        if (includeCertificate) {
+            query.append(DELEGATION_TABLE).append(".").append(CERTIFICATE_FIELD).append(" as ").append(CERTIFICATE_FIELD).append(", ");
+        }
+
         query.append(DELEGATION_TABLE).append(".").append(LOCAL_USER_FIELD).append(" as ").append(LOCAL_USER_FIELD).append(", ");
         query.append(DELEGATION_TABLE).append(".").append(LOCAL_USER_GROUP_FIELD).append(" as ").append(LOCAL_USER_GROUP_FIELD).append(", ");
         query.append(DELEGATION_TABLE).append(".").append(START_TIME_FIELD).append(" as ").append(START_TIME_FIELD).append(", ");
@@ -910,7 +930,7 @@ public class DelegationManager implements DelegationManagerInterface {
             rs = selectPreparedStatement.executeQuery();
 
             while (rs.next()) {
-                result.add(makeDelegation(rs));
+                result.add(makeDelegation(rs, includeCertificate));
             }
         } catch (SQLException sqle) {
             logger.error("Failure on storage interaction", sqle);
@@ -956,7 +976,7 @@ public class DelegationManager implements DelegationManagerInterface {
     public List<Delegation> getExpiredDelegations() throws DelegationException, DelegationManagerException {
         logger.debug("BEGIN getExpiredDelegations");
 
-        List<Delegation> result = getDelegations(Calendar.getInstance());
+        List<Delegation> result = getDelegations(Calendar.getInstance(), false);
 
         logger.debug("END getExpiredDelegations (found " + result.size() + " delegations)");
 
@@ -1179,7 +1199,7 @@ public class DelegationManager implements DelegationManagerInterface {
         logger.debug("END insertDelegationRequest for delegationId=" + delegationRequest.getId() + " dn=" + delegationRequest.getDN());
     }
 
-    private Delegation makeDelegation(ResultSet rs) throws DelegationException {
+    private Delegation makeDelegation(ResultSet rs, boolean includeCertificate) throws DelegationException {
         if (rs == null) {
             throw new DelegationException("rs new defined!");
         }
@@ -1191,11 +1211,14 @@ public class DelegationManager implements DelegationManagerInterface {
             delegation.setVO(rs.getString(VO_FIELD));
             delegation.setLocalUser(rs.getString(LOCAL_USER_FIELD));
             delegation.setLocalUserGroup(rs.getString(LOCAL_USER_GROUP_FIELD));
-            delegation.setCertificate(rs.getString(CERTIFICATE_FIELD));
             delegation.setInfo(rs.getString(INFO_FIELD));
             delegation.setStartTime(rs.getTimestamp(START_TIME_FIELD));
             delegation.setExpirationTime(rs.getTimestamp(EXPIRATION_TIME_FIELD));
             delegation.setLastUpdateTime(rs.getTimestamp(LAST_UPDATE_TIME_FIELD));
+
+            if (includeCertificate) {
+                delegation.setCertificate(rs.getString(CERTIFICATE_FIELD));
+            }
 
             String vomsAttr = rs.getString(VOMS_ATTRIBUTE_FIELD);
 
