@@ -243,12 +243,12 @@ if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services/glite-ce-crea
   ln -s /usr/share/java/jclassads/cedar.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/jclassads/classad.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
 
-  ln -s /usr/share/java/argus-pep-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
-  ln -s /usr/share/java/argus-pep-common.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
-  ln -s /usr/share/java/canl.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
-  ln -s /usr/share/java/voms-api-java3.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
-  ln -s /usr/share/java/glite-jobid-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
-  ln -s /usr/share/java/lb-client-java.jar /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+  ln -s /usr/share/java/argus-pep-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/argus-pep-common.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/canl.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/voms-api-java3.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/glite-jobid-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
+  ln -s /usr/share/java/lb-client-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
 
   ln -s /usr/share/java/glite-ce-common-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
   ln -s /usr/share/java/glite-ce-cream-api-java.jar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
