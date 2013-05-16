@@ -33,7 +33,7 @@ public class ServiceConfig
 
     protected static ServiceConfig serviceConfiguration = null;
 
-    protected ServiceConfig() throws CommonConfigException {
+    public ServiceConfig() throws CommonConfigException {
         super();
     }
 
