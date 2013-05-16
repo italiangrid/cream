@@ -124,7 +124,7 @@ fi
 
 # cannot use symlinks for the following files, copy is needed:
 cp -f /etc/glite-ce-cream/web.xml /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/
-cp -f /etc/glite-ce-cream/axi2.xml /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/conf/
+cp -f /etc/glite-ce-cream/axis2.xml /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/conf/
 chmod 600 /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/conf/axis2.xml
 chown tomcat.tomcat /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/conf/axis2.xml
 
