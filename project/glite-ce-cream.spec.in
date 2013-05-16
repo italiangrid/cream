@@ -9,7 +9,6 @@ Group: Applications/Internet
 BuildArch: noarch
 BuildRequires: maven
 Requires: glite-ce-cream-utils, glite-ce-cream-core, glite-ce-blahp, mysql-connector-java
-Requires(post): openssl
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 AutoReqProv: yes
 Source: %{name}.tar.gz
@@ -181,6 +180,7 @@ fi
 %config(noreplace) /etc/glite-ce-cream/*.template
 %config(noreplace) /etc/glite-ce-cream/*.tpl
 %config(noreplace) /etc/glite-ce-cream/*.properties
+%config(noreplace) /etc/glite-ce-cream/*.xml
 /usr/share/glite-ce-cream/services/glite-ce-cream.aar
 
 
@@ -228,6 +228,7 @@ And Management service.
 %config(noreplace) /etc/glite-ce-cream-es/*.template
 %config(noreplace) /etc/glite-ce-cream-es/*.tpl
 %config(noreplace) /etc/glite-ce-cream-es/*.properties
+%config(noreplace) /etc/glite-ce-cream-es/*.xml
 %config(noreplace) /etc/glite-ce-cream-es/storedprocedures/*.sql
 /usr/share/glite-ce-cream/services/glite-ce-cream-es.aar
 
