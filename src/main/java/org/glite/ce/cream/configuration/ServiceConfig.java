@@ -94,11 +94,8 @@ public class ServiceConfig
             synchronized (ServiceConfig.class) {
 
                 if (serviceConfiguration == null) {
-                    try {
-                        serviceConfiguration = new ServiceConfig();
-                    } catch (CommonConfigException cEx) {
-                        logger.error(cEx.getMessage(), cEx);
-                    }
+
+                    serviceConfiguration = (ServiceConfig) CommonServiceConfig.getConfiguration();
 
                 }
             }
