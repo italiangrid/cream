@@ -54,7 +54,8 @@ sed -e 's|__CHANGE_SERVICE__|/etc/glite-ce-cream/cream-config.xml|g' \
 
 mkdir -p %{buildroot}/etc/glite-ce-cream-es
 cp %{_builddir}/%{name}-%{version}/config/cream-es/db/*.sql %{buildroot}/etc/glite-ce-cream-es
-cp %{_builddir}/%{name}-%{version}/config/cream-es/*.properties %{buildroot}/etc/glite-ce-cream-es
+cp %{_builddir}/%{name}-%{version}/config/cream-es/log4j.properties %{buildroot}/etc/glite-ce-cream-es
+cp %{_builddir}/%{name}-%{version}/config/cream-es/services.properties %{buildroot}/etc/glite-ce-cream-es/service.properties
 cp %{_builddir}/%{name}-%{version}/config/cream-es/*.template %{buildroot}/etc/glite-ce-cream-es
 cp %{_builddir}/%{name}-%{version}/config/cream-es/*.tpl %{buildroot}/etc/glite-ce-cream-es
 mkdir -p %{buildroot}/etc/glite-ce-cream-es/storedprocedures
