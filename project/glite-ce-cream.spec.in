@@ -45,9 +45,14 @@ cp %{_builddir}/%{name}-%{version}/target/cream-authorization.jar %{buildroot}/u
 mkdir -p %{buildroot}/etc/glite-ce-cream
 cp %{_builddir}/%{name}-%{version}/config/cream/db/*.sql %{buildroot}/etc/glite-ce-cream
 cp %{_builddir}/%{name}-%{version}/config/cream/log4j.properties %{buildroot}/etc/glite-ce-cream
-cp %{_builddir}/%{name}-%{version}/target/cream-defs/services.properties %{buildroot}/etc/glite-ce-cream
+cp %{_builddir}/%{name}-%{version}/target/cream-defs/services.properties %{buildroot}/etc/glite-ce-cream/service.properties
 cp %{_builddir}/%{name}-%{version}/config/cream/*.template %{buildroot}/etc/glite-ce-cream
 cp %{_builddir}/%{name}-%{version}/config/cream/*.tpl %{buildroot}/etc/glite-ce-cream
+cp %{_builddir}/%{name}-%{version}/config/cream/web.xml %{buildroot}/etc/glite-ce-cream
+sed -e 's|__CHANGE_SERVICE__|/etc/glite-ce-cream/cream-config.xml|g' \
+    -e 's|__CHANGE_LOG4J__|/etc/glite-ce-cream/log4j.properties|g' \
+    %{_builddir}/%{name}-%{version}/config/cream/axis2.xml > %{buildroot}/etc/glite-ce-cream/axis2.xml
+
 mkdir -p %{buildroot}/etc/glite-ce-cream-es
 cp %{_builddir}/%{name}-%{version}/config/cream-es/db/*.sql %{buildroot}/etc/glite-ce-cream-es
 cp %{_builddir}/%{name}-%{version}/config/cream-es/*.properties %{buildroot}/etc/glite-ce-cream-es
@@ -55,6 +60,10 @@ cp %{_builddir}/%{name}-%{version}/config/cream-es/*.template %{buildroot}/etc/g
 cp %{_builddir}/%{name}-%{version}/config/cream-es/*.tpl %{buildroot}/etc/glite-ce-cream-es
 mkdir -p %{buildroot}/etc/glite-ce-cream-es/storedprocedures
 cp %{_builddir}/%{name}-%{version}/config/cream-es/db/storedprocedures/*.sql %{buildroot}/etc/glite-ce-cream-es/storedprocedures
+cp %{_builddir}/%{name}-%{version}/config/cream-es/web.xml %{buildroot}/etc/glite-ce-cream-es
+sed -e 's|__CHANGE_SERVICE__|/etc/glite-ce-cream-es/cream-config.xml|g' \
+    -e 's|__CHANGE_LOG4J__|/etc/glite-ce-cream-es/log4j.properties|g' \
+    %{_builddir}/%{name}-%{version}/config/cream-es/axis2.xml > %{buildroot}/etc/glite-ce-cream-es/axis2.xml
 
 %clean
 rm -rf %{buildroot}
@@ -114,16 +123,11 @@ if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/services/glite-ce-cream.a
   
 fi
 
-# Axis Servlet configuration
-# customization of axis2.xml
-REPLACE1='s|__CHANGE_SERVICE__|/etc/glite-ce-cream/cream-config.xml|g'
-REPLACE2='s|__CHANGE_LOG4J__|/etc/glite-ce-cream/log4j.properties|g'
-  
-sed "$REPLACE1 ; $REPLACE2 " /etc/glite-ce-common-java/axis2.xml > /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/conf/axis2.xml
+# cannot use symlinks for the following files, copy is needed:
+cp -f /etc/glite-ce-cream/web.xml /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/
+cp -f /etc/glite-ce-cream/axi2.xml /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/conf/
 chmod 600 /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/conf/axis2.xml
 chown tomcat.tomcat /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/conf/axis2.xml
-# cannot use symlinks for the following files:
-cp -f /etc/glite-ce-common-java/web.xml /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/
 
 if [ $1 -eq 1 ] ; then
 # Creation of the back-end and log dir
@@ -275,16 +279,11 @@ if [ ! -L /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services/glite-ce-crea
   
 fi
 
-# Axis Servlet configuration
-# customization of axis2.xml
-REPLACE1='s|__CHANGE_SERVICE__|/etc/glite-ce-cream-es/cream-config.xml|g'
-REPLACE2='s|__CHANGE_LOG4J__|/etc/glite-ce-cream-es/log4j.properties|g'
-  
-sed "$REPLACE1 ; $REPLACE2 " /etc/glite-ce-common-java/axis2.xml > /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/conf/axis2.xml
+# cannot use symlinks for the following files, copy is needed:
+cp -f /etc/glite-ce-cream-es/web.xml /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/
+cp -f /etc/glite-ce-cream-es/axis2.xml /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/
 chmod 600 /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/conf/axis2.xml
 chown tomcat.tomcat /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/conf/axis2.xml
-# cannot use symlinks for the following files:
-cp -f /etc/glite-ce-common-java/web.xml /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/
 
 if [ $1 -eq 1 ] ; then
 # Creation of the back-end and log dir
