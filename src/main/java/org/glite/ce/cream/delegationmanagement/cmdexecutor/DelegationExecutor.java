@@ -37,8 +37,7 @@ import java.io.StringWriter;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.PublicKey;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
@@ -48,7 +47,6 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 import java.util.TimeZone;
 
 import javax.sql.DataSource;
@@ -61,6 +59,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.glite.ce.commonj.authz.VOMSResultCollector;
 import org.glite.ce.commonj.authz.axis2.AuthorizationModule;
 import org.glite.ce.commonj.db.DatasourceManager;
+import org.glite.ce.commonj.utils.CEUtils;
 import org.glite.ce.cream.configuration.ServiceConfig;
 import org.glite.ce.cream.delegationmanagement.DelegationManager;
 import org.glite.ce.cream.delegationmanagement.DelegationPurger;
@@ -77,10 +76,14 @@ import org.italiangrid.voms.VOMSAttribute;
 import org.italiangrid.voms.VOMSValidators;
 import org.italiangrid.voms.ac.VOMSACValidator;
 
+import eu.emi.security.authn.x509.ValidationError;
+import eu.emi.security.authn.x509.ValidationResult;
 import eu.emi.security.authn.x509.impl.CertificateUtils;
 import eu.emi.security.authn.x509.proxy.ProxyCSR;
 import eu.emi.security.authn.x509.proxy.ProxyCSRGenerator;
 import eu.emi.security.authn.x509.proxy.ProxyCertificateOptions;
+import eu.emi.security.authn.x509.proxy.ProxyChainInfo;
+import eu.emi.security.authn.x509.proxy.ProxyChainType;
 import eu.emi.security.authn.x509.proxy.ProxyUtils;
 
 public class DelegationExecutor
@@ -445,7 +448,8 @@ public class DelegationExecutor
 
         try {
             // Search for an existing entry in storage for this delegation ID
-            delegation = DelegationManager.getInstance().getDelegation(delegationId, userDN, localUser, includeCertificate);
+            delegation = DelegationManager.getInstance().getDelegation(delegationId, userDN, localUser,
+                    includeCertificate);
         } catch (Exception e) {
             throw new CommandException("Failure on storage interaction [delegId=" + delegationId + "; dn=" + userDN
                     + "; localUser=" + localUser + "]: " + e.getMessage());
@@ -742,57 +746,57 @@ public class DelegationExecutor
         String userDN = getParameterValueAsString(command, DelegationCommand.USER_DN_RFC2253);
         String localUser = getParameterValueAsString(command, DelegationCommand.LOCAL_USER);
         String localUserGroup = getParameterValueAsString(command, DelegationCommand.LOCAL_USER_GROUP);
-        // X509Certificate userCert =
-        // (X509Certificate)getParameterValue(command, "USER_CERTIFICATE");
+
+        String delegInfoStr = "[delegId=" + delegationId + "; dn=" + userDN + "; localUser=" + localUser + "]";
 
         X509Certificate[] certChain = null;
         try {
+
             BufferedInputStream pemStream = new BufferedInputStream(new ByteArrayInputStream(deleg.getBytes()));
             certChain = CertificateUtils.loadCertificateChain(pemStream, CertificateUtils.Encoding.PEM);
+
+            if (certChain.length == 0) {
+                throw new IOException("Chain has size 0");
+            } else {
+                logger.debug("Given proxy certificate loaded successfully.");
+            }
+
         } catch (IOException ex) {
-            throw new CommandException("Failed to load certificate chain [delegId=" + delegationId + "; dn=" + userDN
-                    + "; localUser=" + localUser + "]: " + ex.getMessage());
+            throw new CommandException("Failed to load certificate chain " + delegInfoStr + ": " + ex.getMessage());
         }
 
-        if (certChain == null || certChain.length == 0) {
-            throw new CommandException("Failed to load certificate chain [delegId=" + delegationId + "; dn=" + userDN
-                    + "; localUser=" + localUser + "]: chain was null or size 0.");
-        }
-        logger.debug("Given proxy certificate loaded successfully.");
+        ValidationResult vRes = AuthorizationModule.validator.validate(certChain);
+        if (!vRes.isValid()) {
 
-        Set<String> criticalSet = null;
+            StringBuffer buff = new StringBuffer("Proxy certificate is not valid\n");
+            for (ValidationError vErr : vRes.getErrors()) {
+                buff.append(vErr.getMessage()).append("\n");
+            }
+
+            String tmps = buff.toString();
+            throw new CommandException("Validation failed " + delegInfoStr + ": " + tmps);
+
+        }
+
+        ProxyChainInfo pChainInfo = null;
         boolean isRFCproxy = false;
 
-        // check if the chain is within it's validity period.
-        for (int i = 0; i < certChain.length; i++) {
-            // Check if the proxy is currently valid
-            try {
-                certChain[i].checkValidity();
-            } catch (CertificateExpiredException e) {
-                throw new CommandException("Validation failed [delegId=" + delegationId + "; dn=" + userDN
-                        + "; localUser=" + localUser + "]: it expired on " + certChain[i].getNotAfter());
-            } catch (CertificateNotYetValidException e) {
-                throw new CommandException("Validation failed [delegId=" + delegationId + "; dn=" + userDN
-                        + "; localUser=" + localUser + "]: it will be valid from " + certChain[i].getNotBefore());
-            }
+        try {
 
-            if (!isRFCproxy) {
-                criticalSet = certChain[i].getCriticalExtensionOIDs();
+            pChainInfo = new ProxyChainInfo(certChain);
 
-                isRFCproxy = (criticalSet != null && criticalSet.contains("1.3.6.1.5.5.7.1.14"));
-            }
+            isRFCproxy = pChainInfo.getProxyType().equals(ProxyChainType.RFC3820);
+
+        } catch (CertificateException ex) {
+            throw new CommandException("Proxy parsing error " + delegInfoStr + ": " + ex.getMessage());
         }
 
-        criticalSet = null;
-
-        // Get the given proxy information
         String subjectDN = certChain[0].getIssuerX500Principal().getName();
         String issuerDN = certChain[0].getSubjectX500Principal().getName();
 
         if (logger.isDebugEnabled()) {
             logger.debug("subject DN: " + subjectDN);
             logger.debug("issuer DN: " + issuerDN);
-            // logger.debug("Proxy Public key:" + certChain[0].getPublicKey());
             logger.debug("chain length is: " + certChain.length);
             logger.debug("last cert is:" + certChain[certChain.length - 1]);
 
@@ -802,28 +806,26 @@ public class DelegationExecutor
         }
 
         if (subjectDN == null || issuerDN == null) {
-            throw new CommandException("Failed to get DN (subject or issuer) out of delegation [delegId="
-                    + delegationId + "; dn=" + userDN + "; localUser=" + localUser + "]: it came null");
+            throw new CommandException("Failed to get DN (subject or issuer) out of delegation " + delegInfoStr
+                    + ": it came null");
         }
 
         String clientDN;
         try {
             X509Certificate eeCert = ProxyUtils.getEndUserCertificate(certChain);
-            clientDN = eeCert.getSubjectDN().getName();
+            clientDN = eeCert.getSubjectX500Principal().getName();
         } catch (Exception ex) {
-            throw new CommandException("No user certificate found in the delegation chain [delegId=" + delegationId
-                    + "; dn=" + userDN + "; localUser=" + localUser + "]: " + ex.getMessage());
+            throw new CommandException("No user certificate found in the delegation chain " + delegInfoStr + ": "
+                    + ex.getMessage());
         }
 
         if (clientDN == null) {
-            throw new CommandException("Failed to get client DN [delegId=" + delegationId + "; dn=" + userDN
-                    + "; localUser=" + localUser + "]: it came null");
+            throw new CommandException("Failed to get client DN " + delegInfoStr + ": it came null");
         }
 
-        // Check that the client is the issuer of the given proxy
-        if (!issuerDN.endsWith(clientDN)) {
-            throw new CommandException("Client '" + clientDN + "' is not issuer of the delegation '" + issuerDN
-                    + "' [delegId=" + delegationId + "; dn=" + userDN + "; localUser=" + localUser + "]");
+        String authDN = CEUtils.getUserDN_RFC2253();
+        if (!clientDN.equals(authDN)) {
+            throw new CommandException("Invalid delegation issuer: '" + clientDN + "' " + authDN);
         }
 
         String reqId = delegationId;
@@ -831,8 +833,7 @@ public class DelegationExecutor
             reqId = delegationId + '+' + this.generateSessionID(certChain[0].getPublicKey());
             logger.debug("reqId (delegationId + sessionId): " + reqId);
         } catch (GeneralSecurityException e) {
-            throw new CommandException("Failed to generate the session ID [delegId=" + delegationId + "; dn=" + userDN
-                    + "; localUser=" + localUser + "]: " + e.getMessage());
+            throw new CommandException("Failed to generate the session ID " + delegInfoStr + ": " + e.getMessage());
         }
 
         DelegationRequest delegationRequest = null;
@@ -840,17 +841,14 @@ public class DelegationExecutor
             // Search for an existing entry in storage for this delegation ID
             delegationRequest = DelegationManager.getInstance().getDelegationRequest(reqId, userDN, localUser);
         } catch (Exception e) {
-            throw new CommandException("Failure on storage interaction [delegId=" + delegationId + "; dn=" + userDN
-                    + "; localUser=" + localUser + "]: " + e.getMessage());
+            throw new CommandException("Failure on storage interaction " + delegInfoStr + ": " + e.getMessage());
         }
 
         // Check if the delegation request existed
         if (delegationRequest == null) {
-            throw new CommandException("Delegation request not found! [delegId=" + delegationId + "; dn=" + userDN
-                    + "; localUser=" + localUser + "]");
+            throw new CommandException("Delegation request not found! " + delegInfoStr);
         }
-        logger.debug("Got delegation request from cache [delegId=" + delegationId + "; dn=" + userDN + "; localUser="
-                + localUser + "]");
+        logger.debug("Got delegation request from cache " + delegInfoStr);
 
         // the public key of the cached certificate request has to
         // match the public key of the proxy certificate, otherwise
@@ -860,28 +858,26 @@ public class DelegationExecutor
         try {
             req = (PKCS10CertificationRequest) pemReader.readObject();
         } catch (IOException e1) {
-            throw new CommandException("Could not load the original certificate request from cache [delegId="
-                    + delegationId + "; dn=" + userDN + "; localUser=" + localUser + "]: " + e1.getMessage());
+            throw new CommandException("Could not load the original certificate request from cache " + delegInfoStr
+                    + ": " + e1.getMessage());
         }
 
         if (req == null) {
-            throw new CommandException("Could not load the original certificate request from cache [delegId="
-                    + delegationId + "; dn=" + userDN + "; localUser=" + localUser + "]");
+            throw new CommandException("Could not load the original certificate request from cache " + delegInfoStr);
         }
 
         PublicKey publicKey = null;
         try {
             publicKey = req.getPublicKey();
         } catch (Exception e) {
-            throw new CommandException("cannot get the public key [delegId=" + delegationId + "; dn=" + userDN
-                    + "; localUser=" + localUser + "]: " + e.getMessage());
+            throw new CommandException("cannot get the public key " + delegInfoStr + ": " + e.getMessage());
         }
 
         if (!publicKey.equals(certChain[0].getPublicKey())) {
             logger.error("The delegation and the original request's public key do not match [delegation public key: '"
                     + certChain[0].getPublicKey() + "'; request public key: '" + publicKey + "']");
-            throw new CommandException("The delegation and the original request's public key do not match [delegId="
-                    + delegationId + "; dn=" + userDN + "; localUser=" + localUser + "]");
+            throw new CommandException("The delegation and the original request's public key do not match "
+                    + delegInfoStr);
         }
 
         // Add the private key to the proxy certificate chain and check it was
@@ -913,13 +909,12 @@ public class DelegationExecutor
             completeProxy = writer.toString();
             pemWriter.close();
         } catch (IOException e) {
-            throw new CommandException("Could not properly process given delegation [delegId=" + delegationId + "; dn="
-                    + userDN + "; localUser=" + localUser + "]: " + e.getMessage());
+            throw new CommandException("Could not properly process given delegation " + delegInfoStr + ": "
+                    + e.getMessage());
         }
 
         if (completeProxy == null) {
-            throw new CommandException("Could not properly process given delegation [delegId=" + delegationId + "; dn="
-                    + userDN + "; localUser=" + localUser + "]");
+            throw new CommandException("Could not properly process given delegation " + delegInfoStr);
         }
 
         SimpleDateFormat dateFormat = new SimpleDateFormat();
@@ -973,8 +968,7 @@ public class DelegationExecutor
         try {
             delegation = DelegationManager.getInstance().getDelegation(delegationId, userDN, localUser, false);
         } catch (Exception e) {
-            throw new CommandException("Failure on storage interaction [delegId=" + delegationId + "; dn=" + userDN
-                    + "; localUser=" + localUser + "]: " + e.getMessage());
+            throw new CommandException("Failure on storage interaction " + delegInfoStr + ": " + e.getMessage());
         }
 
         boolean found = true;
