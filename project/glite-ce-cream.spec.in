@@ -281,7 +281,7 @@ cp /etc/glite-ce-dbtool/creamdb_min_access.conf.template /etc/glite-ce-cream-es/
   
 # cannot use symlinks for the following files, copy is needed:
 cp -f /etc/glite-ce-cream-es/web.xml /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/
-cp -f /etc/glite-ce-cream-es/axis2.xml /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/
+cp -f /etc/glite-ce-cream-es/axis2.xml /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/conf
 chmod 600 /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/conf/axis2.xml
 chown tomcat.tomcat /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/conf/axis2.xml
 
