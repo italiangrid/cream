@@ -238,7 +238,6 @@ done
 %post es
 set -e
 
-%{_eslibdir}
 [ -d /var/lib/%{_tomcat}/webapps/ce-cream-es ] || cp -R /usr/share/axis2/webapp /var/lib/%{_tomcat}/webapps/ce-cream-es
 
 [ -h %{_eslibdir}/cedar.jar ] || ln -s /usr/share/java/jclassads/cedar.jar %{_eslibdir}
@@ -261,7 +260,7 @@ set -e
 [ -h %{_eslibdir}/glite-jdl-api-java.jar ] || ln -s /usr/share/java/glite-jdl-api-java.jar %{_eslibdir}
 
 #removing broken links from previous installation
-find -L %{_webapplibdir} -type l -exec rm -f '{}' \;
+find -L %{_eslibdir} -type l -exec rm -f '{}' \;
 
 %if 0%{?el6}
 # set allowLinking option for tomcat6
