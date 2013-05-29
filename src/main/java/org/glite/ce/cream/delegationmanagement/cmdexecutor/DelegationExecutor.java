@@ -1021,7 +1021,7 @@ public class DelegationExecutor
                 DelegationManager.getInstance().insert(delegation);
             }
         } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
+            logger.error(t.getMessage());
             throw new CommandException("Failure on storage interaction " + delegation.toString() + ": "
                     + t.getMessage());
         }

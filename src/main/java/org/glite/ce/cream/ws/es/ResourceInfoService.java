@@ -366,7 +366,7 @@ logger.info(">>>>>>>>>>>>>>>>>>>>>> dialect " + req.getQueryDialect().toString()
 
             CommandManager.getInstance().execute(command);
         } catch (Throwable t) {
-logger.error(t.getMessage(), t);
+            logger.error(t.getMessage());
             org.glite.ce.creamapi.ws.es.resourceinfo.types.InternalResourceInfoFault msg = new org.glite.ce.creamapi.ws.es.resourceinfo.types.InternalResourceInfoFault();
             msg.setDescription("internal error");
             msg.setMessage(t.getMessage());
@@ -396,10 +396,9 @@ logger.error(t.getMessage(), t);
                     
                     response.addQueryResourceInfoItem(item);     
                 } else if (omObj instanceof OMElement) {      
-try {              
                     //((OMElement) omObj).declareDefaultNamespace("http://schemas.ogf.org/glue/2009/03/spec_2.0_r1");
                     //((OMElement) omObj).addAttribute("xmlns1", "http://schemas.ogf.org/glue/2009/03/spec_2.0_r1", null);
-               try {
+                    try {
                         String xmlns = " xmlns=\"http://schemas.ogf.org/glue/2009/03/spec_2.0_r1\" ";
                         String xmlStream = ((OMElement) omObj).toString();//computingServicei.getOMElement(ComputingService.MY_QNAME, OMAbstractFactory.getOMFactory()).toString();
 
@@ -411,11 +410,10 @@ try {
 logger.info(xmlStream);
                         StAXBuilder builder = new StAXOMBuilder(new ByteArrayInputStream(xmlStream.getBytes()));
                         //computingServiceElement = builder.getDocumentElement();
-                    QueryResourceInfoItem_type0 item = new QueryResourceInfoItem_type0();
-                    item.setExtraElement(builder.getDocumentElement());
+                        QueryResourceInfoItem_type0 item = new QueryResourceInfoItem_type0();
+                        item.setExtraElement(builder.getDocumentElement());
 
-                    response.addQueryResourceInfoItem(item);
-
+                        response.addQueryResourceInfoItem(item);
                     } catch (Throwable t) {
                         logger.error(t.getMessage());
                     }
@@ -425,10 +423,7 @@ logger.info(xmlStream);
                     
                     response.addQueryResourceInfoItem(item); 
 */
-} catch(Throwable t) {
-logger.error(t.getMessage(), t);
-}
-                }
+               }
             }
         }
 //        try {

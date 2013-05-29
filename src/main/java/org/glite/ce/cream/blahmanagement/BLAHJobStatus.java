@@ -108,7 +108,7 @@ public class BLAHJobStatus {
             try {
                 dateFormat.parse(attributeTable.get("ChangeTime"));
             } catch (ParseException e) {
-                logger.error(e.getMessage(), e);
+                logger.error(e.getMessage());
             }
         }
 

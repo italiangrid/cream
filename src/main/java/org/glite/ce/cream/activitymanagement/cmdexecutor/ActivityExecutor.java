@@ -319,7 +319,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
             activityId = activityDB.insertActivity(activity);
             logger.info("new activity " + activityId + " created! " + activity.getStates().last());
         } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
+            logger.error(t.getMessage());
             throw new CommandException("cannot store the activity: " + t.getMessage());
         }
         
@@ -346,7 +346,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
                 activityStatus.getStatusAttributes().add(StatusAttributeName.CLIENT_STAGEIN_POSSIBLE);
             }
         } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
+            logger.error(t.getMessage());
             activityStatus = makeActivityStatus(StatusName.TERMINAL);
             activityStatus.getStatusAttributes().add(StatusAttributeName.PREPROCESSING_FAILURE);
             activityStatus.setDescription(t.getMessage());
@@ -405,7 +405,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
         try {
             activityDB.updateActivity(activity);
         } catch (Throwable t) {
-            logger.error(t.getMessage(), t);
+            logger.error(t.getMessage());
             throw new CommandException("cannot store the activity: " + t.getMessage());
         }
 
@@ -870,7 +870,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
                 activityDB = new ActivityDBImplementation();
                 //activityDB = ActivityDBInMemory.getInstance();
             } catch (Throwable t) {
-                logger.error(t.getMessage(), t);
+                logger.error(t.getMessage());
                 throw new CommandExecutorException("ActivityDB initialization failed: " + t.getMessage());
             }
 
@@ -1176,7 +1176,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
                     throw new Exception(s);
                 }
             } catch (Throwable t) {
-                logger.error(t.getMessage(), t);
+                logger.error(t.getMessage());
 
                 if (proc != null) {
                     proc.destroy();
@@ -1317,10 +1317,10 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
                 activityDB.insertActivityStatus(activity.getId(), activityStatus);
                 logger.info("activity " + activity.getId() + " status changed => " + activityStatus.toString());
             } catch (Throwable t1) {
-                logger.error(t1.getMessage(), t1);
+                logger.error(t1.getMessage());
             }
 
-            logger.error(t.getMessage(), t);
+            logger.error(t.getMessage());
 
             if (proc != null) {
                 proc.destroy();
@@ -1670,7 +1670,7 @@ public class ActivityExecutor extends AbstractCommandExecutor implements BLAHJob
 
             proc = Runtime.getRuntime().exec(cmd);
         } catch (Throwable e) {
-            logger.error(e.getMessage(), e);
+            logger.error(e.getMessage());
         } finally {
             if (proc != null) {
                 try {
