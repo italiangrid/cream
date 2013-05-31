@@ -84,7 +84,7 @@ set -e
 [ -h %{_creamlibdir}/bcprov.jar ] || ln -s /usr/share/java/bcprov.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/bcmail.jar ] || ln -s /usr/share/java/bcmail.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/cedar.jar ] || ln -s /usr/share/java/jclassads/cedar.jar %{_creamlibdir}
-[ -h %{_creamlibdir}/classad.jar ] || ln -s /usr/share/java/jclassads/classad.jar/ %{_creamlibdir}
+[ -h %{_creamlibdir}/classad.jar ] || ln -s /usr/share/java/jclassads/classad.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/argus-pep-api-java.jar ] || ln -s /usr/share/java/argus-pep-api-java.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/argus-pep-common.jar ] || ln -s /usr/share/java/argus-pep-common.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/canl.jar ] || ln -s /usr/share/java/canl.jar %{_creamlibdir}
