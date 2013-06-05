@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.glite.ce.cream.cmdmanagement.CommandManager;
-import org.glite.ce.creamapi.cmdmanagement.Command;
 import org.glite.ce.creamapi.cmdmanagement.CommandException;
 import org.glite.ce.creamapi.cmdmanagement.CommandManagerException;
 import org.glite.ce.creamapi.delegationmanagement.Delegation;
@@ -106,20 +105,7 @@ public class DelegationPurger extends Thread {
 
                         CommandManager.getInstance().execute(destroyCmd);
 
-                        logger.info("deleted the expired delegation " + delegation.toString() + "; now I'm going to cancel all related active jobs");
-
-                        Command jobCancelCmd = new Command("JOB_CANCEL", "JOB_MANAGEMENT");
-                        jobCancelCmd.setCommandGroupId("COMPOUND");
-                        jobCancelCmd.setAsynchronous(true);
-                        jobCancelCmd.setUserId(delegation.getUserId());
-                        jobCancelCmd.setDescription("job cancelled because the related delegation has expired");
-                        jobCancelCmd.addParameter("USER_DN", delegation.getDN());
-                        jobCancelCmd.addParameter("USER_FQAN", delegation.getFQAN());
-                        jobCancelCmd.addParameter("LOCAL_USER", delegation.getLocalUser());
-                        jobCancelCmd.addParameter("LOCAL_USER_GROUP", delegation.getLocalUserGroup());
-                        jobCancelCmd.addParameter("DELEGATION_PROXY_ID", delegation.getId());
-
-                        CommandManager.getInstance().execute(jobCancelCmd);
+                        logger.info("deleted the expired delegation " + delegation.toString());
                     } catch (CommandException e) {
                         logger.error("DelegationPurger CommandException: " + e.getMessage());
                     } catch (CommandManagerException e) {
