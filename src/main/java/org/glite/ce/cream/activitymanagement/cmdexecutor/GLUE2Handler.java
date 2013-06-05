@@ -1,6 +1,7 @@
 package org.glite.ce.cream.activitymanagement.cmdexecutor;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
@@ -75,7 +76,7 @@ public class GLUE2Handler extends Thread {
         try {
             glue2Handler = new GLUE2Handler("ldap://cream-36.pd.infn.it:2170", 60);
         } catch (Exception e1) {
-            e1.printStackTrace();
+            logger.error(e1.getMessage(), e1);
             return;
         }
 
@@ -83,7 +84,7 @@ public class GLUE2Handler extends Thread {
             System.in.read();
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
 
         try {
@@ -96,10 +97,10 @@ public class GLUE2Handler extends Thread {
             writer.flush();
             writer.close();
         
-            System.out.println(ComputingService.MY_QNAME.getLocalPart());
-            System.out.println(ComputingService.MY_QNAME.getPrefix());
+            logger.debug(ComputingService.MY_QNAME.getLocalPart());
+            logger.debug(ComputingService.MY_QNAME.getPrefix());
         } catch (Throwable e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
 
         try {
@@ -196,14 +197,15 @@ public class GLUE2Handler extends Thread {
             List selectedNode = glue2Handler.executeXPathQuery("/ComputingService/ComputingShare");
             // List selectedNode =
             // glue2Handler.executeXPathQuery("/ComputingService/ComputingEndpoint");
-            System.out.println(selectedNode.size());
+            logger.debug(selectedNode.size());
 
             for (int i = 0; i < selectedNode.size(); i++) {
                 if (selectedNode.get(i) instanceof OMAttribute) {
-                    System.out.println(((OMAttribute) selectedNode.get(i)).getAttributeValue());
+                    logger.debug(((OMAttribute) selectedNode.get(i)).getAttributeValue());
                 } else if (selectedNode.get(i) instanceof OMElement) {
-                    ((OMElement) selectedNode.get(i)).serialize(System.out);
-                    System.out.println();
+                    ByteArrayOutputStream tmpOut = new ByteArrayOutputStream();
+                    ((OMElement) selectedNode.get(i)).serialize(tmpOut);
+                    logger.debug(tmpOut.toString("UTF-8"));
                 }
             }
 
@@ -259,7 +261,7 @@ public class GLUE2Handler extends Thread {
             // System.out.println(computingS.getOMElement(ComputingService.MY_QNAME,
             // OMAbstractFactory.getOMFactory()).toStringWithConsume());
         } catch (Throwable e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
 
         glue2Handler.terminate();
@@ -311,7 +313,7 @@ public class GLUE2Handler extends Thread {
                 value = new BenchmarkType_t();
                 value.setBenchmarkType_t((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -329,7 +331,7 @@ public class GLUE2Handler extends Thread {
                     value[i].setBenchmarkType_t((String) attribute.get(0));
                 }
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -348,7 +350,7 @@ public class GLUE2Handler extends Thread {
                     value[i].setCapability_t((String) attribute.get(i));
                 }
             } catch (NamingException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
         }
 
@@ -363,7 +365,7 @@ public class GLUE2Handler extends Thread {
                 value = new ComputingManagerType_t();
                 value.setComputingManagerType_t((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -399,7 +401,7 @@ public class GLUE2Handler extends Thread {
                 value = new DN_t();
                 value.setDN_t((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -418,7 +420,7 @@ public class GLUE2Handler extends Thread {
                     value[i].setDN_t((String) attribute.get(i));
                 }
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -432,7 +434,7 @@ public class GLUE2Handler extends Thread {
             try {
                 value = EndpointHealthState_t.Factory.fromValue((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -450,7 +452,7 @@ public class GLUE2Handler extends Thread {
     // try {
     // dateFormat.parse((String) attribute.get(0));
     // } catch (Throwable t) {
-    // t.printStackTrace();
+    // logger.error(t.getMessage(), t);
     // }
     //
     // System.out.println("getAttributeValueAsDateTime: " + date.getTime());
@@ -466,7 +468,7 @@ public class GLUE2Handler extends Thread {
                 value = new EndpointTechnology_t();
                 value.setEndpointTechnology_t((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -480,7 +482,7 @@ public class GLUE2Handler extends Thread {
             try {
                 value = ExtendedBoolean_t.Factory.fromValue((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -494,7 +496,7 @@ public class GLUE2Handler extends Thread {
             try {
                 value = Float.valueOf((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -509,7 +511,7 @@ public class GLUE2Handler extends Thread {
                 value = new InterfaceName_t();
                 value.setInterfaceName_t((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -528,7 +530,7 @@ public class GLUE2Handler extends Thread {
                     value[i].setJobDescription_t((String) attribute.get(i));
                 }
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -543,7 +545,7 @@ public class GLUE2Handler extends Thread {
                 value = new PolicyScheme_t();
                 value.setPolicyScheme_t((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -557,7 +559,7 @@ public class GLUE2Handler extends Thread {
             try {
                 value = QualityLevel_t.Factory.fromValue((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -571,7 +573,7 @@ public class GLUE2Handler extends Thread {
             try {
                 value = ReservationPolicy_t.Factory.fromValue((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -586,7 +588,7 @@ public class GLUE2Handler extends Thread {
                 value = new SchedulingPolicy_t();
                 value.setSchedulingPolicy_t((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -601,7 +603,7 @@ public class GLUE2Handler extends Thread {
                 value = new ServiceType_t();
                 value.setServiceType_t((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -615,7 +617,7 @@ public class GLUE2Handler extends Thread {
             try {
                 value = ServingState_t.Factory.fromValue((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -629,7 +631,7 @@ public class GLUE2Handler extends Thread {
             try {
                 value = Staging_t.Factory.fromValue((String) attribute.get(0));
             } catch (NamingException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
         }
 
@@ -643,7 +645,7 @@ public class GLUE2Handler extends Thread {
             try {
                 value = (String) attribute.get(0);
             } catch (NamingException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
         }
 
@@ -661,7 +663,7 @@ public class GLUE2Handler extends Thread {
                     value[i] = (String) attribute.get(i);
                 }
             } catch (NamingException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
         }
 
@@ -675,7 +677,7 @@ public class GLUE2Handler extends Thread {
             try {
                 value = new UnsignedInt((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -689,7 +691,7 @@ public class GLUE2Handler extends Thread {
             try {
                 value = new UnsignedLong((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -703,7 +705,7 @@ public class GLUE2Handler extends Thread {
             try {
                 value = new URI((String) attribute.get(0));
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -721,7 +723,7 @@ public class GLUE2Handler extends Thread {
                     value[i] = new URI((String) attribute.get(i));
                 }
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error(t.getMessage(), t);
             }
         }
 
@@ -749,7 +751,6 @@ public class GLUE2Handler extends Thread {
 
         while (answer.hasMoreElements()) {
             searchResult = answer.nextElement();
-            // System.out.println(searchResult.getNameInNamespace());
 
             attributes = searchResult.getAttributes();
 
@@ -794,7 +795,6 @@ public class GLUE2Handler extends Thread {
 
         while (answer.hasMoreElements()) {
             searchResult = answer.nextElement();
-            // System.out.println(searchResult.getNameInNamespace());
 
             attributes = searchResult.getAttributes();
 
@@ -850,7 +850,6 @@ public class GLUE2Handler extends Thread {
 
         while (answer.hasMoreElements()) {
             searchResult = answer.nextElement();
-            // System.out.println(searchResult.getNameInNamespace());
 
             attributes = searchResult.getAttributes();
 
@@ -892,7 +891,6 @@ public class GLUE2Handler extends Thread {
 
         while (answer.hasMoreElements()) {
             searchResult = answer.nextElement();
-            // System.out.println(searchResult.getNameInNamespace());
 
             attributes = searchResult.getAttributes();
 
@@ -969,7 +967,6 @@ public class GLUE2Handler extends Thread {
 
         while (answer.hasMoreElements()) {
             searchResult = answer.nextElement();
-            // System.out.println(searchResult.getNameInNamespace());
 
             attributes = searchResult.getAttributes();
 
@@ -1043,7 +1040,6 @@ public class GLUE2Handler extends Thread {
 
         while (answer.hasMoreElements()) {
             searchResult = answer.nextElement();
-            // System.out.println(searchResult.getNameInNamespace());
 
             attributes = searchResult.getAttributes();
 
@@ -1093,7 +1089,6 @@ public class GLUE2Handler extends Thread {
 
         while (answer.hasMoreElements()) {
             searchResult = answer.nextElement();
-            // System.out.println(searchResult.getNameInNamespace());
 
             attributes = searchResult.getAttributes();
 
@@ -1180,7 +1175,6 @@ public class GLUE2Handler extends Thread {
 
         while (answer.hasMoreElements()) {
             searchResult = answer.nextElement();
-            // System.out.println(searchResult.getNameInNamespace());
 
             attributes = searchResult.getAttributes();
 
@@ -1225,7 +1219,6 @@ public class GLUE2Handler extends Thread {
 
         if (answer.hasMoreElements()) {
             searchResult = answer.nextElement();
-            // System.out.println(searchResult.getNameInNamespace());
 
             attributes = searchResult.getAttributes();
 
@@ -1259,10 +1252,10 @@ public class GLUE2Handler extends Thread {
         while (attr.hasMoreElements()) {
             attribute = attr.nextElement();
             try {
-                for (NamingEnumeration vals = attribute.getAll(); vals.hasMoreElements(); System.out.println("\t" + attribute.getID() + " = " + vals.nextElement()))
+                for (NamingEnumeration vals = attribute.getAll(); vals.hasMoreElements(); logger.debug("\t" + attribute.getID() + " = " + vals.nextElement()))
                     ;
             } catch (NamingException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
         }
     }
