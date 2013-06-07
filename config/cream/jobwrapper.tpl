@@ -63,6 +63,8 @@ else
   __copy_retry_first_wait_osb=${GLITE_LOCAL_COPY_RETRY_FIRST_WAIT_OSB}
 fi
 
+USR2_signal_received=0;
+
 ###################################################################
 #                           functions definitions
 ###################################################################
@@ -138,7 +140,16 @@ retry_copy() # 1 - command, 2 - source, 3 - dest
       retry_error_message="proxy expired"
       return 1
     fi
-    sleep $sleep_time
+    
+    sleep $sleep_time & sleep_time_pid=$!
+    trap 'USR2_signal_received=1; kill -ALRM $sleep_time_pid >/dev/null 2>&1' USR2
+    wait $sleep_time_pid >/dev/null 2>&1
+
+    if [ $USR2_signal_received -ne 0 ]; then
+       succeded=1;
+       break;
+    fi
+    
     if [ $sleep_time -eq 0 ]; then
       sleep_time=${__copy_retry_first_wait}
     else
@@ -331,18 +342,21 @@ function send_partial_file {
   local GLOBUS_RETURN_CODE
   local SLICENAME
   local LISTFILE=`pwd`/listfile.$$
-  local LAST_CYCLE=""
   local SLEEP_PID
   local MD5
   local OLDSIZE
   local NEWSIZE
   local COUNTER
 
-  while [ -z "$LAST_CYCLE" ] ; do
+  while [ $USR2_signal_received -eq 0 ] ; do
 
-    sleep $POLL_INTERVAL & SLEEP_PID=$!
-    trap 'LAST_CYCLE="y"; kill -ALRM $SLEEP_PID >/dev/null 2>&1' USR2
+    sleep $POLL_INTERVAL>/dev/null 2>&1 & SLEEP_PID=$!
+    trap 'USR2_signal_received=1; kill -ALRM $SLEEP_PID >/dev/null 2>&1' USR2
     wait $SLEEP_PID >/dev/null 2>&1
+  
+    if [ $USR2_signal_received -eq 1 ]; then
+      break;
+    fi
 
     if [ "${TRIGGERFILE:0:9}" == "gsiftp://" ]; then
       retry_copy ${globus_transfer_cmd} ${TRIGGERFILE} file://${LISTFILE}
