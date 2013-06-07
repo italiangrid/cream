@@ -133,13 +133,9 @@ chown tomcat.tomcat /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/conf/axis2.xml
 if [ $1 -eq 1 ] ; then
 # Creation of the back-end and log dir
   if [ ! "x`grep tomcat /etc/passwd`" == "x" ] ; then
-    mkdir -p /var/cream
-    chown tomcat:tomcat /var/cream
-    chmod 700 /var/cream
-
     mkdir -p /var/cream_sandbox
     chown tomcat:tomcat /var/cream_sandbox
-    chmod 700 /var/cream_sandbox
+    chmod 775 /var/cream_sandbox
 
     mkdir -p /var/log/cream
     chown tomcat:tomcat /var/log/cream
@@ -297,13 +293,9 @@ chown tomcat.tomcat /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/conf/axis2.x
 if [ $1 -eq 1 ] ; then
 # Creation of the back-end and log dir
   if [ ! "x`grep tomcat /etc/passwd`" == "x" ] ; then
-    mkdir -p /var/cream-es
-    chown tomcat:tomcat /var/cream-es
-    chmod 700 /var/cream-es
-
     mkdir -p /var/cream_es_sandbox 
     chown tomcat:tomcat /var/cream_es_sandbox 
-    chmod 700 /var/cream_es_sandbox 
+    chmod 775 /var/cream_es_sandbox 
     
     mkdir -p /var/log/cream-es
     chown tomcat:tomcat /var/log/cream-es
