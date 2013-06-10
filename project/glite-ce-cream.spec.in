@@ -82,15 +82,15 @@ set -e
 [ -d /var/lib/%{_tomcat}/webapps/ce-cream ] || cp -R /usr/share/axis2/webapp /var/lib/%{_tomcat}/webapps/ce-cream
 
 if [ -e /usr/share/java/bcprov-1.46.jar ] ; then
-    BCPROVLIB=/usr/share/java/bcprov-1.46.jar
+    ln -sf /usr/share/java/bcprov-1.46.jar %{_creamlibdir}/bcprov.jar
 else
-    BCPROVLIB=/usr/share/java/bcprov.jar
+    ln -sf /usr/share/java/bcprov.jar %{_creamlibdir}
 fi
 
 if [ -e /usr/share/java/bcmail-1.46.jar ] ; then
-    BCMAILLIB=/usr/share/java/bcmail-1.46.jar
+    ln -sf /usr/share/java/bcmail-1.46.jar %{_creamlibdir}/bcmail.jar
 else
-    BCMAILLIB=/usr/share/java/bcmail.jar
+    ln -sf /usr/share/java/bcmail.jar %{_creamlibdir}
 fi
 
 [ -h %{_creamlibdir}/bcprov.jar ] || ln -s ${BCPROVLIB} %{_creamlibdir}/bcprov.jar
@@ -254,21 +254,19 @@ set -e
 [ -d /var/lib/%{_tomcat}/webapps/ce-cream-es ] || cp -R /usr/share/axis2/webapp /var/lib/%{_tomcat}/webapps/ce-cream-es
 
 if [ -e /usr/share/java/bcprov-1.46.jar ] ; then
-    BCPROVLIB=/usr/share/java/bcprov-1.46.jar
+    ln -sf /usr/share/java/bcprov-1.46.jar %{_eslibdir}/bcprov.jar
 else
-    BCPROVLIB=/usr/share/java/bcprov.jar
+    ln -sf /usr/share/java/bcprov.jar %{_eslibdir}
 fi
 
 if [ -e /usr/share/java/bcmail-1.46.jar ] ; then
-    BCMAILLIB=/usr/share/java/bcmail-1.46.jar
+    ln -sf /usr/share/java/bcmail-1.46.jar %{_eslibdir}/bcmail.jar
 else
-    BCMAILLIB=/usr/share/java/bcmail.jar
+    ln -sf /usr/share/java/bcmail.jar %{_eslibdir}
 fi
 
 [ -h %{_eslibdir}/cedar.jar ] || ln -s /usr/share/java/jclassads/cedar.jar %{_eslibdir}
 [ -h %{_eslibdir}/classad.jar ] || ln -s /usr/share/java/jclassads/classad.jar %{_eslibdir}
-[ -h %{_eslibdir}/bcprov.jar ] || ln -s ${BCPROVLIB} %{_eslibdir}/bcprov.jar
-[ -h %{_eslibdir}/bcmail.jar ] || ln -s ${BCMAILLIB} %{_eslibdir}/bcmail.jar
 [ -h %{_eslibdir}/argus-pep-api-java.jar ] || ln -s /usr/share/java/argus-pep-api-java.jar %{_eslibdir}
 [ -h %{_eslibdir}/argus-pep-common.jar ] || ln -s /usr/share/java/argus-pep-common.jar %{_eslibdir}
 [ -h %{_eslibdir}/canl.jar ] || ln -s /usr/share/java/canl.jar %{_eslibdir}
