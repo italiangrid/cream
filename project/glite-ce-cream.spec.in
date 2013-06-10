@@ -81,8 +81,20 @@ set -e
 
 [ -d /var/lib/%{_tomcat}/webapps/ce-cream ] || cp -R /usr/share/axis2/webapp /var/lib/%{_tomcat}/webapps/ce-cream
 
-[ -h %{_creamlibdir}/bcprov.jar ] || ln -s /usr/share/java/bcprov.jar %{_creamlibdir}
-[ -h %{_creamlibdir}/bcmail.jar ] || ln -s /usr/share/java/bcmail.jar %{_creamlibdir}
+if [ -e /usr/share/java/bcprov-1.46.jar ] ; then
+    BCPROVLIB=/usr/share/java/bcprov-1.46.jar
+else
+    BCPROVLIB=/usr/share/java/bcprov.jar
+fi
+
+if [ -e /usr/share/java/bcmail-1.46.jar ] ; then
+    BCMAILLIB=/usr/share/java/bcmail-1.46.jar
+else
+    BCMAILLIB=/usr/share/java/bcmail.jar
+fi
+
+[ -h %{_creamlibdir}/bcprov.jar ] || ln -s ${BCPROVLIB} %{_creamlibdir}/bcprov.jar
+[ -h %{_creamlibdir}/bcmail.jar ] || ln -s ${BCMAILLIB} %{_creamlibdir}/bcmail.jar
 [ -h %{_creamlibdir}/cedar.jar ] || ln -s /usr/share/java/jclassads/cedar.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/classad.jar ] || ln -s /usr/share/java/jclassads/classad.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/argus-pep-api-java.jar ] || ln -s /usr/share/java/argus-pep-api-java.jar %{_creamlibdir}
@@ -241,10 +253,22 @@ set -e
 
 [ -d /var/lib/%{_tomcat}/webapps/ce-cream-es ] || cp -R /usr/share/axis2/webapp /var/lib/%{_tomcat}/webapps/ce-cream-es
 
+if [ -e /usr/share/java/bcprov-1.46.jar ] ; then
+    BCPROVLIB=/usr/share/java/bcprov-1.46.jar
+else
+    BCPROVLIB=/usr/share/java/bcprov.jar
+fi
+
+if [ -e /usr/share/java/bcmail-1.46.jar ] ; then
+    BCMAILLIB=/usr/share/java/bcmail-1.46.jar
+else
+    BCMAILLIB=/usr/share/java/bcmail.jar
+fi
+
 [ -h %{_eslibdir}/cedar.jar ] || ln -s /usr/share/java/jclassads/cedar.jar %{_eslibdir}
 [ -h %{_eslibdir}/classad.jar ] || ln -s /usr/share/java/jclassads/classad.jar %{_eslibdir}
-[ -h %{_eslibdir}/bcprov.jar ] || ln -s /usr/share/java/bcprov.jar %{_eslibdir}
-[ -h %{_eslibdir}/bcmail.jar ] || ln -s /usr/share/java/bcmail.jar %{_eslibdir}
+[ -h %{_eslibdir}/bcprov.jar ] || ln -s ${BCPROVLIB} %{_eslibdir}/bcprov.jar
+[ -h %{_eslibdir}/bcmail.jar ] || ln -s ${BCMAILLIB} %{_eslibdir}/bcmail.jar
 [ -h %{_eslibdir}/argus-pep-api-java.jar ] || ln -s /usr/share/java/argus-pep-api-java.jar %{_eslibdir}
 [ -h %{_eslibdir}/argus-pep-common.jar ] || ln -s /usr/share/java/argus-pep-common.jar %{_eslibdir}
 [ -h %{_eslibdir}/canl.jar ] || ln -s /usr/share/java/canl.jar %{_eslibdir}
