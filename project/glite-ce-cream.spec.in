@@ -93,8 +93,6 @@ else
     ln -sf /usr/share/java/bcmail.jar %{_creamlibdir}
 fi
 
-[ -h %{_creamlibdir}/bcprov.jar ] || ln -s ${BCPROVLIB} %{_creamlibdir}/bcprov.jar
-[ -h %{_creamlibdir}/bcmail.jar ] || ln -s ${BCMAILLIB} %{_creamlibdir}/bcmail.jar
 [ -h %{_creamlibdir}/cedar.jar ] || ln -s /usr/share/java/jclassads/cedar.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/classad.jar ] || ln -s /usr/share/java/jclassads/classad.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/argus-pep-api-java.jar ] || ln -s /usr/share/java/argus-pep-api-java.jar %{_creamlibdir}
@@ -116,6 +114,11 @@ fi
 [ -h %{_creamlibdir}/delegation-java.jar ] && rm -f %{_creamlibdir}/delegation-java.jar
 [ -h %{_creamlibdir}/trustmanager.jar ] && rm -f %{_creamlibdir}/trustmanager.jar
 [ -h %{_creamlibdir}/voms-api-java.jar ] && rm -f %{_creamlibdir}/voms-api-java.jar
+
+#removing EMI-3 compat symlinks
+[ -h %{_creamlibdir}/argus-pep-api-java-compat.jar ] && rm -f %{_creamlibdir}/argus-pep-api-java-compat.jar
+[ -h %{_creamlibdir}/argus-pep-common-compat.jar ] && rm -f %{_creamlibdir}/argus-pep-common-compat.jar
+[ -h %{_creamlibdir}/delegation-java-compat.jar ] && rm -f %{_creamlibdir}/delegation-java-compat.jar
 
 #removing broken links from previous installation
 find -L %{_creamlibdir} -type l -exec rm -f '{}' \;
@@ -286,6 +289,11 @@ fi
 [ -h %{_eslibdir}/delegation-java.jar ] && rm -f %{_eslibdir}/delegation-java.jar
 [ -h %{_eslibdir}/trustmanager.jar ] && rm -f %{_eslibdir}/trustmanager.jar
 [ -h %{_eslibdir}/voms-api-java.jar ] && rm -f %{_eslibdir}/voms-api-java.jar
+
+#removing EMI-3 compat symlinks
+[ -h %{_eslibdir}/argus-pep-api-java-compat.jar ] && rm -f %{_eslibdir}/argus-pep-api-java-compat.jar
+[ -h %{_eslibdir}/argus-pep-common-compat.jar ] && rm -f %{_eslibdir}/argus-pep-common-compat.jar
+[ -h %{_eslibdir}/delegation-java-compat.jar ] && rm -f %{_eslibdir}/delegation-java-compat.jar
 
 #removing broken links from previous installation
 find -L %{_eslibdir} -type l -exec rm -f '{}' \;
