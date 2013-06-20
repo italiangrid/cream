@@ -53,8 +53,6 @@
       <parameter name="HOST_SMP_SIZE" value="changeme" />
       <parameter name="JOB_PURGE_RATE" value="300" /> <!-- minutes -->
       <parameter name="JOB_PURGE_POLICY" value="ABORTED 10 days; CANCELLED 10 days; DONE-OK 10 days; DONE-FAILED 10 days; REGISTERED 2 days;" />
-      <!-- parameter name="LB_DEFAULT_ADDRESS" value="LB_ADDRESS" / -->
-      <!-- parameter name="LB_IL_PREFIX" value="/var/glite/lbcream/lbcream" / -->
   </commandexecutor>
   
   <dataSource name="datasource_creamdb" 
