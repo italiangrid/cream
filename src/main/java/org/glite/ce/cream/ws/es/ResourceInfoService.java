@@ -328,7 +328,6 @@ public class ResourceInfoService implements ResourceInfoServiceSkeletonInterface
         logger.debug("BEGIN queryResourceInfo");
 
         if (req == null || req.getQueryExpression() == null || req.getQueryExpression().getExtraElement() == null || req.getQueryExpression().getExtraElement().getText() == null) {
-logger.info(">>>>>>>>>>>>>>>>>>>>>> query not defined!!!");    
             String message = "query not defined!";
             org.glite.ce.creamapi.ws.es.resourceinfo.types.NotValidQueryStatementFault msg = new org.glite.ce.creamapi.ws.es.resourceinfo.types.NotValidQueryStatementFault();
             msg.setMessage(message);
@@ -340,11 +339,8 @@ logger.info(">>>>>>>>>>>>>>>>>>>>>> query not defined!!!");
 
             throw fault;
         }
-        
-//logger.info(">>>>>>>>>>>>>>>>>>>>>> query '"+req.getQueryExpression().getExtraElement().getText()+"'");
 
         if (req.getQueryDialect() == null || !req.getQueryDialect().toString().equals(DefaultQueryDialectsEnumType.value1.toString())) {
-logger.info(">>>>>>>>>>>>>>>>>>>>>> dialect not supported; " + req.getQueryDialect().toString());
             String message = "dialect not supported; please define " + DefaultQueryDialectsEnumType.value1;
             org.glite.ce.creamapi.ws.es.resourceinfo.types.NotSupportedQueryDialectFault msg = new org.glite.ce.creamapi.ws.es.resourceinfo.types.NotSupportedQueryDialectFault();
             msg.setMessage(message);
@@ -356,8 +352,6 @@ logger.info(">>>>>>>>>>>>>>>>>>>>>> dialect not supported; " + req.getQueryDiale
 
             throw fault;
         }
-
-logger.info(">>>>>>>>>>>>>>>>>>>>>> dialect " + req.getQueryDialect().toString());
 
         ActivityCmd command = null;
         try {
