@@ -215,7 +215,7 @@ public class BLAHProcess extends ThreadLocal<Process> {
 
                     super.set(makeBLAHProcess());
                 } else {
-                    logger.error(e.getMessage(), e);
+                    logger.error(e.getMessage());
                     command.setException(new BLAHException(e.getMessage()));
                 }
             }

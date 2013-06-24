@@ -484,7 +484,7 @@ public class CommandManager extends Thread implements CommandManagerInterface {
                                         " cmd/min; maxInThroughput=" + queue.getMaxInThroughput() + " cmd/min; currentOutThroughput=" + queue.getCurrentOutThroughput() +
                                         " cmd/min; maxOutThroughput=" + queue.getMaxOutThroughput() + " cmd/min]\n");
                             } catch (Throwable t) {
-                               logger.error("failure on evalutating the throughput of the " + executor.getName() + "'s queue: " + t.getMessage(), t);
+                               logger.error("failure on evalutating the throughput of the " + executor.getName() + "'s queue: " + t.getMessage());
                             }
                         }
                     }
@@ -543,7 +543,7 @@ public class CommandManager extends Thread implements CommandManagerInterface {
                         executor.destroy();
                         logger.info(executor.getName() + " executor termitated!");
                     } catch (Throwable t) {
-                        logger.error("failure on terminating the CommandExecutor \": " + executor.getName() + "\": " + t.getMessage(), t);
+                        logger.error("failure on terminating the CommandExecutor \": " + executor.getName() + "\": " + t.getMessage());
                     }
                 }
             }

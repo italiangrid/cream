@@ -933,7 +933,7 @@ public class CREAM2Service implements CREAMSkeletonInterface, Lifecycle {
 
                 result[i].setJobId(jobId);
             } catch (Throwable e) {
-                logger.error(e.getMessage(), e);
+                logger.error(e.getMessage());
 
                 if (e.getMessage().startsWith("lease id")) {
                     result[i].setLeaseIdMismatchFault(FaultFactory.makeLeaseIdMismatchFault("jobRegister", "0", "lease id not found!", e.getMessage()));
@@ -1054,7 +1054,7 @@ public class CREAM2Service implements CREAMSkeletonInterface, Lifecycle {
                 cmd[i].setFailureReason(jobCmd.getFailureReason());
                 cmd[i].setName(jobCmd.getName());
                 cmd[i].setStatus(jobCmd.getStatusName());
-
+                
                 if (jobCmd.getName().equalsIgnoreCase(JobCommandConstant.PROXY_RENEW)) {
                     jobInfo.setDelegationProxyInfo(jobCmd.getDescription());
                 }

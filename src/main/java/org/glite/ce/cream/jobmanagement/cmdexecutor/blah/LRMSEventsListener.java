@@ -130,14 +130,14 @@ public class LRMSEventsListener extends Thread {
 
                 str = null;
             } catch (Exception e) {
-                logger.error(e.getMessage(), e);
+                logger.error(e.getMessage());
             } finally {
                 try {
                     if (rd != null) {
                         rd.close();
                     }
                 } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
+                    logger.error(e.getMessage());
                 }
             }
 
@@ -156,7 +156,7 @@ public class LRMSEventsListener extends Thread {
             try {
                 clientSocket.close();
             } catch (IOException e) {
-                logger.error(e.getMessage(), e);
+                logger.error(e.getMessage());
             } finally {
                 clientSocket = null;
             }

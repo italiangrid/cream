@@ -118,7 +118,7 @@ public class BLAHNotificationListener extends Thread {
                 clientSocket.setSoLinger(true, 10);
                 // clientSocket.setSoTimeout(30000);
             } catch (SocketException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage());
             }
         }
 
@@ -136,14 +136,14 @@ public class BLAHNotificationListener extends Thread {
 
                 str = null;
             } catch (Exception e) {
-                logger.error(e.getMessage(), e);
+                logger.error(e.getMessage());
             } finally {
                 try {
                     if (rd != null) {
                         rd.close();
                     }
                 } catch (IOException e) {
-                    logger.error(e.getMessage(), e);
+                    logger.error(e.getMessage());
                 }
             }
 
@@ -160,7 +160,7 @@ public class BLAHNotificationListener extends Thread {
             try {
                 clientSocket.close();
             } catch (IOException e) {
-                logger.error(e.getMessage(), e);
+                logger.error(e.getMessage());
             } finally {
                 clientSocket = null;
             }

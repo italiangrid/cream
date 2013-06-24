@@ -284,7 +284,7 @@ public class JobDBManager {
             jobIdList = jobTableJobStatusJobCommandTable.executeSelectToRetrieveJobId(userId, delegationId, jobStatusType, leaseId, startStatusDate, endStatusDate, registerCommandStartDate, registerCommandEndDate,
                     connection);
         } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
+            logger.error(e.getMessage());
             throw new DatabaseException(e.getMessage());
         } finally {
             if (connection != null) {
