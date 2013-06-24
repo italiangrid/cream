@@ -38,7 +38,7 @@ cp %{_builddir}/%{name}-%{version}/target/cream-@PKGVERSION@.jar %{buildroot}/us
 cp %{_builddir}/%{name}-%{version}/target/plugins/cream-activityExecutor.jar %{buildroot}/usr/share/java/glite-ce-cream-activityExecutor.jar
 cp %{_builddir}/%{name}-%{version}/target/plugins/cream-blahExecutor.jar %{buildroot}/usr/share/java/glite-ce-cream-blahExecutor.jar
 cp %{_builddir}/%{name}-%{version}/target/plugins/cream-delegationExecutor.jar %{buildroot}/usr/share/java/glite-ce-cream-delegationExecutor.jar
-cp %{_builddir}/%{name}-%{version}/target/plugins/cream-client.jar %{buildroot}/usr/share/java/glite-ce-cream-clients.jar
+cp %{_builddir}/%{name}-%{version}/target/cream-client.jar %{buildroot}/usr/share/java/glite-ce-cream-clients.jar
 mkdir -p %{buildroot}/usr/share/glite-ce-cream/services
 cp %{_builddir}/%{name}-%{version}/target/cream-es-interface.jar %{buildroot}/usr/share/glite-ce-cream/services/glite-ce-cream-es.aar
 cp %{_builddir}/%{name}-%{version}/target/cream-legacy-interface.jar %{buildroot}/usr/share/glite-ce-cream/services/glite-ce-cream.aar
