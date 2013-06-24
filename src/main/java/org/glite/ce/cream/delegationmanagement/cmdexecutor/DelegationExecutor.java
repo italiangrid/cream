@@ -61,6 +61,7 @@ import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.util.encoders.Hex;
 import org.glite.ce.commonj.db.DatasourceManager;
 import org.glite.ce.cream.configuration.ServiceConfig;
+import org.glite.ce.cream.cmdmanagement.CommandManager;
 import org.glite.ce.cream.delegationmanagement.DelegationManager;
 import org.glite.ce.cream.delegationmanagement.DelegationPurger;
 import org.glite.ce.creamapi.cmdmanagement.AbstractCommandExecutor;
@@ -314,6 +315,27 @@ public class DelegationExecutor extends AbstractCommandExecutor {
             DelegationManager.getInstance().delete(delegation);
         } catch (Exception e) {
             throw new CommandException("Failure on deleting the delegation " + delegation.toString() + ": " + e.getMessage());
+        }
+
+        try {
+            logger.info("cancelling all related active jobs");
+
+            Command jobCancelCmd = new Command("JOB_CANCEL", "JOB_MANAGEMENT");
+            jobCancelCmd.setCommandGroupId("COMPOUND");
+            jobCancelCmd.setAsynchronous(true);
+            jobCancelCmd.setUserId(delegation.getUserId());
+            jobCancelCmd.setDescription("job cancelled because the related delegation has expired");
+            jobCancelCmd.addParameter("USER_DN", delegation.getDN());
+            jobCancelCmd.addParameter("USER_FQAN", delegation.getFQAN());
+            jobCancelCmd.addParameter("LOCAL_USER", delegation.getLocalUser());
+            jobCancelCmd.addParameter("LOCAL_USER_GROUP", delegation.getLocalUserGroup());
+            jobCancelCmd.addParameter("DELEGATION_PROXY_ID", delegation.getId());
+
+            CommandManager.getInstance().execute(jobCancelCmd);
+
+            logger.info("cancelled all related active jobs");
+        } catch (Throwable t) {
+            logger.error("failure on invoking the jobCancel: " + t.getMessage());
         }
 
         logger.debug("END destroy");

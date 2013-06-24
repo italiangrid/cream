@@ -96,14 +96,14 @@ public class DelegationPurger extends Thread {
                     logger.debug("deleting the expired delegation " + delegation.toString());
 
                     try {
-                        DelegationCommand command = new DelegationCommand(DelegationCommand.DESTROY_DELEGATION);
-                        command.setUserId(delegation.getUserId());
-                        command.addParameter(DelegationCommand.DELEGATION_ID, delegation.getId());
-                        command.addParameter(DelegationCommand.USER_DN_RFC2253, delegation.getDN());
-                        command.addParameter(DelegationCommand.LOCAL_USER, delegation.getLocalUser());
-                        command.addParameter(DelegationCommand.LOCAL_USER_GROUP, delegation.getLocalUserGroup());
+                        DelegationCommand destroyCmd = new DelegationCommand(DelegationCommand.DESTROY_DELEGATION);
+                        destroyCmd.setUserId(delegation.getUserId());
+                        destroyCmd.addParameter(DelegationCommand.DELEGATION_ID, delegation.getId());
+                        destroyCmd.addParameter(DelegationCommand.USER_DN_RFC2253, delegation.getDN());
+                        destroyCmd.addParameter(DelegationCommand.LOCAL_USER, delegation.getLocalUser());
+                        destroyCmd.addParameter(DelegationCommand.LOCAL_USER_GROUP, delegation.getLocalUserGroup());
 
-                        CommandManager.getInstance().execute(command);
+                        CommandManager.getInstance().execute(destroyCmd);
 
                         logger.info("deleted the expired delegation " + delegation.toString());
                     } catch (CommandException e) {
