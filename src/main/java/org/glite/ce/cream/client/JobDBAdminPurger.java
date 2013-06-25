@@ -43,8 +43,9 @@ import java.util.StringTokenizer;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-//import org.apache.log4j.BasicConfigurator;
-//import org.apache.log4j.Logger;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.Logger;
 import org.glite.ce.cream.client.CmdLineParser;
 import org.glite.ce.cream.configuration.CommandExecutorConfig;
 import org.glite.ce.cream.configuration.ServiceConfig;
@@ -86,7 +87,7 @@ public class JobDBAdminPurger {
     
     //public static final String CREAMDB_DEFAULT = "creamdb";
     
-    //private final static Logger logger = Logger.getLogger(JobDBAdminPurger.class.getName());
+    private final static Logger logger = Logger.getLogger(JobDBAdminPurger.class.getName());
     private JobTableInterface jobTable = null;
     private JobTableJobStatusInterface jobTableJobStatusTable = null;
     private EnviromentTableInterface enviromentTable = null;
@@ -117,34 +118,41 @@ public class JobDBAdminPurger {
     
     
     public JobDBAdminPurger(String[] args) throws IllegalArgumentException, CommandException {
-      //BasicConfigurator.configure();
-      options = new ArrayList<String>();
-      //options.add(NAMEDB);
-      //options.add(USERDB);
-      //options.add(PSWDB);
-      options.add(STATUS);
-      options.add(JOB_IDS);
-      options.add(CONF_PATH);
-      options.add(FILE_JOB_IDS);
 
-      statusTable = new Hashtable<String, Integer>();
-      for (int index = 0; index < JobStatus.statusName.length; index++) {
-          statusTable.put(JobStatus.statusName[index].toUpperCase().trim(), index);
-      }
-      
-      try{
-      this.parseArguments(args, options);
-        this.init();
-        this.jobAdminPurger(jobIdL, jobStatusType);
-      } catch (Exception ne){
-          throw new CommandException(ne.getMessage());
-      } finally{
-          this.destroy();
-      }
+        String log4jFile = System.getProperty("log4j.configuration");
+        if (log4jFile != null) {
+            PropertyConfigurator.configure(log4jFile);
+        } else {
+            BasicConfigurator.configure();
+        }
+
+        options = new ArrayList<String>();
+        // options.add(NAMEDB);
+        // options.add(USERDB);
+        // options.add(PSWDB);
+        options.add(STATUS);
+        options.add(JOB_IDS);
+        options.add(CONF_PATH);
+        options.add(FILE_JOB_IDS);
+
+        statusTable = new Hashtable<String, Integer>();
+        for (int index = 0; index < JobStatus.statusName.length; index++) {
+            statusTable.put(JobStatus.statusName[index].toUpperCase().trim(), index);
+        }
+
+        try {
+            this.parseArguments(args, options);
+            this.init();
+            this.jobAdminPurger(jobIdL, jobStatusType);
+        } catch (Exception ne) {
+            throw new CommandException(ne.getMessage());
+        } finally {
+            this.destroy();
+        }
     }
     
     public void jobAdminPurger(List<String> jobIdList, int[] jobStatusType) throws CommandException {
-        //logger.info("Begin jobAdminPurger");
+
         System.out.println("START jobAdminPurger");
         
         List<String> jobIdListToCancel = new ArrayList<String>(0);
@@ -179,7 +187,6 @@ public class JobDBAdminPurger {
                 jobIdListToCancel.addAll(jobIdListQuery);
                 }
               } catch (SQLException de){
-                 //logger.error("Problem to retrieve jobIds from cream database!");
                  throw new CommandException("Problem to retrieve jobIds from cream database! " + de.getMessage());
                }
             }
@@ -193,7 +200,6 @@ public class JobDBAdminPurger {
             for (Iterator<String> i = jobIdListToCancel.iterator(); i.hasNext();){
                 jobId = i.next();
                 System.out.println("-----------------------------------------------------------");
-                //logger.info("Job " + jobId + " is going to be purged ...");
                 System.out.println("Job " + jobId + " is going to be purged ...");
                 try{
                     try{
@@ -202,10 +208,8 @@ public class JobDBAdminPurger {
                         throw new CommandException(de.getMessage());
                     }
                   this.purge(job);
-                  //logger.info(jobId + " has been purged!");
                   System.out.println(jobId + " has been purged!");
                 } catch (CommandException ce){
-                    //logger.error("Job " + jobId + ": ERROR -> " + ce.getMessage());
                     System.err.println("Job " + jobId + ": ERROR -> " + ce.getMessage());
                 }
                 System.out.println("-----------------------------------------------------------");
@@ -390,7 +394,7 @@ public class JobDBAdminPurger {
               try{
                 br.close();
               } catch (IOException ioe){
-                 //do nothing.   
+                 logger.error(ioe.getMessage(), ioe);
               }
           }
         }
@@ -400,7 +404,6 @@ public class JobDBAdminPurger {
     
     private void printUsage() {
         System.err.println("JobDBAdminPurger\n\n");
-        //System.err.println("Usage: JobDBAdminPurger.sh  [-c|--conf CREAMConfPath] [-d|--nameDB creamDB] -u|--userDB userDB -p|--pswDB pswDB [-j|--jobIds jobId1:jobId2:...] | [-f|--filejobIds filenameJobIds] | [-s|--status statusType0,deltaTime:statusType1:...] [-h|--help]");
         System.err.println("Usage: JobDBAdminPurger.sh  [-c|--conf CREAMConfPath] [-j|--jobIds jobId1:jobId2:...] | [-f|--filejobIds filenameJobIds] | [-s|--status statusType0,deltaTime:statusType1:...] [-h|--help]");
         System.err.println(); 
         System.err.println("Examples:");
@@ -417,7 +420,6 @@ public class JobDBAdminPurger {
         System.err.println();
         System.err.println("Status types:");
         for (int i=0; i<JobStatus.statusName.length; i++){
-            //System.err.println(i + " --> " + JobStatus.statusName[i]);
             System.err.println(JobStatus.statusName[i]);
         }
         System.err.println(); 
@@ -441,7 +443,8 @@ public class JobDBAdminPurger {
             result = (ServiceConfig) configuratorClass.newInstance();
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+
+            logger.error(ex.getMessage(), ex);
             throw new NamingException("Problem to retrieve service configuration!");
 
         }
@@ -502,7 +505,6 @@ public class JobDBAdminPurger {
              proc = Runtime.getRuntime().exec(cmd);
            } catch (Throwable e) {
              System.err.println(e.getMessage());
-             //logger.error(e.getMessage());
            } finally {
              if (proc != null) {
                try {
@@ -523,7 +525,6 @@ public class JobDBAdminPurger {
                    }
                  } catch (IOException ioe) {
                    System.err.println(ioe.getMessage());
-                   //logger.error(ioe.getMessage());
                  } finally {
                      try {
                        readErr.close();
@@ -576,7 +577,7 @@ public class JobDBAdminPurger {
             jobStatusTable.executeDelete(jobId, connection);
             jobTable.executeDelete(jobId, connection);
             connection.commit();
-            //logger.debug("job deleted");
+            logger.debug("job deleted");
         } catch (SQLException e) {
             try {
                 connection.rollback();
@@ -594,7 +595,7 @@ public class JobDBAdminPurger {
           try {
              connection.close();
           } catch (SQLException sqle) {
-           //logger.error(sqle);
+             logger.error(sqle);
           }
         }
     }
