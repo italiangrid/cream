@@ -422,22 +422,43 @@ public class JobDBAdminPurger {
         }
         System.err.println(); 
         System.exit(-1);
-    }        
+    }
+    
+    /*
+     * TODO use a simple xpath query for retrieving the configuration
+     * instead of the common configuration system
+     */
+    private ServiceConfig getConfiguration(String confPath) throws NamingException {
+        
+        ServiceConfig result = null;
+                
+        System.setProperty("cream.configuration.path", confPath);
+        
+        try {
+            
+            String confClassname = "org.glite.ce.cream.configuration.ServiceConfig";
+            Class<?> configuratorClass = Class.forName(confClassname);
+            result = (ServiceConfig) configuratorClass.newInstance();
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new NamingException("Problem to retrieve service configuration!");
+
+        }
+        
+        return result;
+    }
     
     private void init() throws Exception {
-        //String confProvider = "org.glite.ce.cream.configuration.basic.CREAMConfigContextFactory";
-        String confPath = "/etc/glite-ce-cream/cream-config.xml";
-        if (confPathFromCommandLine != null){
-            confPath = confPathFromCommandLine;
-        }
-
-        System.setProperty("cream.configuration.path", confPath);
-        ServiceConfig serviceConfiguration = ServiceConfig.getConfiguration();
         
-        if (serviceConfiguration == null){
-            throw new NamingException("Problem to retrieve service configuration!");
+        String confPath = confPathFromCommandLine;
+        
+        if (confPath == null) {
+            confPath = "/etc/glite-ce-cream/cream-config.xml";
         }
-
+        
+        ServiceConfig serviceConfiguration = getConfiguration(confPath);
+        
         Iterator<CommandExecutorConfig> executorIterator = serviceConfiguration.getCommandExecutorList().iterator();
         boolean executorFound = false;
         CommandExecutorConfig executor = null;
