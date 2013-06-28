@@ -363,7 +363,7 @@ fi
 
 
 %changelog
-* Fri Aug 31 2012 CREAM group <cream-support@lists.infn.it> - @PKGVERSION@-@PKGRELEASE@
+* Fri Jun 28 2013 CREAM group <cream-support@lists.infn.it> - @PKGVERSION@-@PKGRELEASE@
 - New major release
 
 
