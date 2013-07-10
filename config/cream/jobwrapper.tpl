@@ -1023,7 +1023,7 @@ if [ -n "${__epilogue}" ]; then
     fatal_error "Epilogue ${__epilogue} not found"
   fi
   chmod +x "${__epilogue}" 2>/dev/null
-  ${__epilogue} "${__epilogue_arguments}"
+  ${__epilogue} ${__epilogue_arguments}
   epilogue_status=$?
   if [ ${epilogue_status} -ne 0 ]; then
     fatal_error "Epilogue failed with error ${epilogue_status}"

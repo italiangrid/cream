@@ -496,7 +496,7 @@ if [ -n "${__epilogue}" ]; then
     log_and_exit 1 "Epilogue script does not exist"
   fi
   chmod +x "${__epilogue}" 2>/dev/null
-  ${__epilogue} "${__epilogue_arguments}"
+  ${__epilogue} ${__epilogue_arguments}
   epilogue_status=$?
   if [ ${epilogue_status} -ne 0 ]; then
     log_and_exit 1 "Epilogue failed with error ${epilogue_status}"
