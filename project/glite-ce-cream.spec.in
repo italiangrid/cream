@@ -1,7 +1,7 @@
 Summary: Computing Resource Execution And Management service
 Name: @PKGNAME@
 Version: @PKGVERSION@
-Release: @PKGRELEASE@
+Release: @PKGRELEASE@%{?dist}%{!?dist:.el5}
 License: Apache Software License
 Vendor: EMI
 URL: http://glite.cern.ch/
@@ -45,12 +45,13 @@ cp %{_builddir}/%{name}-%{version}/target/cream-authorization.jar %{buildroot}/u
 mkdir -p %{buildroot}/etc/glite-ce-cream
 cp %{_builddir}/%{name}-%{version}/config/cream/db/*.sql %{buildroot}/etc/glite-ce-cream
 cp %{_builddir}/%{name}-%{version}/config/cream/log4j.properties %{buildroot}/etc/glite-ce-cream
-cp %{_builddir}/%{name}-%{version}/target/cream-defs/services.properties %{buildroot}/etc/glite-ce-cream
+cp %{_builddir}/%{name}-%{version}/target/cream-defs/services.properties %{buildroot}/etc/glite-ce-cream/service.properties
 cp %{_builddir}/%{name}-%{version}/config/cream/*.template %{buildroot}/etc/glite-ce-cream
 cp %{_builddir}/%{name}-%{version}/config/cream/*.tpl %{buildroot}/etc/glite-ce-cream
 mkdir -p %{buildroot}/etc/glite-ce-cream-es
 cp %{_builddir}/%{name}-%{version}/config/cream-es/db/*.sql %{buildroot}/etc/glite-ce-cream-es
-cp %{_builddir}/%{name}-%{version}/config/cream-es/*.properties %{buildroot}/etc/glite-ce-cream-es
+cp %{_builddir}/%{name}-%{version}/config/cream-es/log4j.properties %{buildroot}/etc/glite-ce-cream-es
+cp %{_builddir}/%{name}-%{version}/config/cream-es/services.properties %{buildroot}/etc/glite-ce-cream-es/service.properties
 cp %{_builddir}/%{name}-%{version}/config/cream-es/*.template %{buildroot}/etc/glite-ce-cream-es
 cp %{_builddir}/%{name}-%{version}/config/cream-es/*.tpl %{buildroot}/etc/glite-ce-cream-es
 mkdir -p %{buildroot}/etc/glite-ce-cream-es/storedprocedures
