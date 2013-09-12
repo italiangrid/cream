@@ -801,11 +801,11 @@ public class DelegationManager implements DelegationManagerInterface {
         logger.debug("END getDelegationRequests");
         return result;
     }
-   
+
     public List<Delegation> getDelegations(Calendar expirationTime) throws DelegationException, DelegationManagerException {
         return getDelegations(expirationTime, true);
     }
- 
+
     public List<Delegation> getDelegations(Calendar expirationTime, boolean includeCertificate) throws DelegationException, DelegationManagerException {
         if (expirationTime == null) {
             throw new IllegalArgumentException("expirationTime not specified!");
@@ -880,7 +880,7 @@ public class DelegationManager implements DelegationManagerInterface {
         logger.debug("END getDelegations");
         return result;
     }
-   
+
     public List<Delegation> getDelegations(String dn, String localUser) throws DelegationException, DelegationManagerException {
         return getDelegations(dn, localUser, true);
     }

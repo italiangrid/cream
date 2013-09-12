@@ -26,10 +26,7 @@ package org.glite.ce.cream.jobmanagement.db.table;
 
 public class JobStatusTypeDescriptionTable {
 
-	public final static String NAME_TABLE    = "job_status_type_description";
-	
-	public final static String TYPE_FIELD = "type";
-	public final static String NAME_FIELD = "name";
-	
+    public final static String NAME_TABLE = "job_status_type_description";
+    public final static String TYPE_FIELD = "type";
+    public final static String NAME_FIELD = "name";
 }
-

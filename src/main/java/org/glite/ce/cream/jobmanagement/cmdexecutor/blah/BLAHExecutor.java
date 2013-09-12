@@ -376,6 +376,8 @@ public class BLAHExecutor extends AbstractJobExecutor {
         if (eventsListener != null) {
             eventsListener.stopListener();
             // eventsListener.interrupt();
+
+            eventsListener = null;
             logger.info("LRMSEventsListener stopped!");
         }
 
@@ -383,6 +385,14 @@ public class BLAHExecutor extends AbstractJobExecutor {
             BLParserClient client = (BLParserClient) e.nextElement();
             client.terminate();
             //logger.info("BLParserClient " + client.getBlParserHost() + ":" + client.getBlParserPort() + " terminated!");
+        }
+
+        blParserClientTable = null;
+        lrmsEventsProcessor = null;
+
+        if (blahProcess != null) {
+            blahProcess.remove();
+            blahProcess = null;
         }
 
         super.destroy();

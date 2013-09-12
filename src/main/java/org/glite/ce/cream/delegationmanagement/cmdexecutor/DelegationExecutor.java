@@ -452,13 +452,11 @@ public class DelegationExecutor
         return version;
     }
 
-    private Delegation getDelegation(Command command)
-        throws CommandException {
+    private Delegation getDelegation(Command command) throws CommandException {
         return getDelegation(command, false);
     }
 
-    private Delegation getDelegation(Command command, boolean includeCertificate)
-        throws CommandException {
+    private Delegation getDelegation(Command command, boolean includeCertificate) throws CommandException {
         logger.debug("BEGIN getDelegation");
 
         String delegationId = getParameterValueAsString(command, DelegationCommand.DELEGATION_ID);
@@ -469,8 +467,7 @@ public class DelegationExecutor
 
         try {
             // Search for an existing entry in storage for this delegation ID
-            delegation = DelegationManager.getInstance().getDelegation(delegationId, userDN, localUser,
-                    includeCertificate);
+            delegation = DelegationManager.getInstance().getDelegation(delegationId, userDN, localUser, includeCertificate);
         } catch (Exception e) {
             throw new CommandException("Failure on storage interaction [delegId=" + delegationId + "; dn=" + userDN
                     + "; localUser=" + localUser + "]: " + e.getMessage());
@@ -982,8 +979,7 @@ public class DelegationExecutor
 
         buff.append("]");
 
-        // Save the delegation into the storage (copying the rest from the info
-        // taken from the cache)
+        // Save the delegation into the storage (copying the rest from the info taken from the cache)
         Delegation delegation = null;
 
         try {

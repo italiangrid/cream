@@ -43,10 +43,10 @@ public class JobTableJobStatusTableJobCommandTable implements JobTableJobStatusJ
     public JobTableJobStatusTableJobCommandTable() throws SQLException {
         logger.debug("Call JobTableJobStatusTableJobCommandTable constructor");
     }
-    
+
     public void executeInsert(JobCommand jobCommand, String delegationId, int[] jobStatusType, Connection connection) throws SQLException {
         logger.debug("Begin executeInsert");
-        
+
         StringBuffer insertQuery = new StringBuffer("insert into ");
         insertQuery.append(JobCommandTable.NAME_TABLE).append(" (");
         insertQuery.append(JobCommandTable.JOB_ID_FIELD).append(", ");
@@ -59,51 +59,52 @@ public class JobTableJobStatusTableJobCommandTable implements JobTableJobStatusJ
         insertQuery.append(JobCommandTable.START_PROCESSING_TIME_FIELD).append(", ");
         insertQuery.append(JobCommandTable.EXECUTION_COMPLETED_TIME_FIELD).append(", ");
         insertQuery.append(JobCommandTable.CREATION_TIME_FIELD).append(", ");
-        insertQuery.append(JobCommandTable.USER_ID_FIELD).append(") select js.jobId, '").append(jobCommand.getStatus()).append("', '");
+        insertQuery.append(JobCommandTable.USER_ID_FIELD).append(") select js.jobId, '");
+        insertQuery.append(jobCommand.getStatus()).append("', '");
         insertQuery.append(jobCommand.getType()).append("', ");
-        
-        if(jobCommand.getDescription() != null) {
+
+        if (jobCommand.getDescription() != null) {
             insertQuery.append("'").append(jobCommand.getDescription()).append("', ");
         } else {
             insertQuery.append(" null, ");
         }
-        
+
         if (jobCommand.getFailureReason() != null) {
             insertQuery.append("'").append(jobCommand.getFailureReason()).append("', ");
         } else {
             insertQuery.append(" null, ");
         }
-        
+
         if (jobCommand.getCommandExecutorName() != null) {
             insertQuery.append("'").append(jobCommand.getCommandExecutorName()).append("', ");
         } else {
             insertQuery.append(" null, ");
         }
-        
+
         if (jobCommand.getStartSchedulingTime() != null) {
             insertQuery.append("'").append(new java.sql.Timestamp(jobCommand.getStartSchedulingTime().getTimeInMillis())).append("', ");
         } else {
             insertQuery.append(" null, ");
         }
-        
+
         if (jobCommand.getStartProcessingTime() != null) {
             insertQuery.append("'").append(new java.sql.Timestamp(jobCommand.getStartProcessingTime().getTimeInMillis())).append("', ");
         } else {
             insertQuery.append(" null, ");
         }
-        
+
         if (jobCommand.getExecutionCompletedTime() != null) {
             insertQuery.append("'").append(new java.sql.Timestamp(jobCommand.getExecutionCompletedTime().getTimeInMillis())).append("', ");
         } else {
             insertQuery.append(" null, ");
         }
-        
+
         if (jobCommand.getCreationTime() != null) {
             insertQuery.append("'").append(new java.sql.Timestamp(jobCommand.getCreationTime().getTimeInMillis())).append("', ");
         } else {
             insertQuery.append(" null, ");
         }
-        
+
         String userId = jobCommand.getUserId();
         if (userId == null) {
             userId = JobCommandTable.USERID_ADMINISTRATOR;
@@ -114,20 +115,20 @@ public class JobTableJobStatusTableJobCommandTable implements JobTableJobStatusJ
         insertQuery.append(JobStatusTable.NAME_TABLE).append(" as jslatest) on jslatest.").append(JobStatusTable.JOB_ID_FIELD).append(" = js.").append(JobStatusTable.JOB_ID_FIELD);
         insertQuery.append(" and js.").append(JobStatusTable.ID_FIELD).append(" < jslatest.").append(JobStatusTable.ID_FIELD);
         insertQuery.append(" where jslatest.").append(JobStatusTable.ID_FIELD).append(" is null");
-        
+
         if ((jobStatusType != null) && (jobStatusType.length > 0)) {
             insertQuery.append(" and js.").append(JobStatusTable.TYPE_FIELD).append(" in (");
             for (int i = 0; i < jobStatusType.length; i++) {
                 insertQuery.append("'" + jobStatusType[i] + "', ");
             }
-            insertQuery.replace(insertQuery.length()-2, insertQuery.length(), ")");
+            insertQuery.replace(insertQuery.length() - 2, insertQuery.length(), ")");
         }
-        
+
         insertQuery.append(" and js.").append(JobStatusTable.JOB_ID_FIELD).append(" in (select ");
         insertQuery.append(JobTable.NAME_TABLE).append(".").append(JobTable.ID_FIELD).append(" from ").append(JobTable.NAME_TABLE);
         insertQuery.append(" where ").append(JobTable.NAME_TABLE).append(".").append(JobTable.DELEGATION_PROXY_ID_FIELD).append(" = '").append(delegationId).append("' and ");
         insertQuery.append(JobTable.NAME_TABLE).append(".").append(JobTable.USER_ID_FIELD).append(" = '").append(userId).append("')");
-        
+
         logger.debug("insertQuery = " + insertQuery.toString());
 
         PreparedStatement st = null;
@@ -135,7 +136,7 @@ public class JobTableJobStatusTableJobCommandTable implements JobTableJobStatusJ
             st = connection.prepareStatement(insertQuery.toString());
             // execute query, and return number of rows created
             int rowCount = st.executeUpdate();
-            logger.debug("" + rowCount + " jobCommand items inserted!"); 
+            logger.debug("" + rowCount + " jobCommand items inserted!");
         } catch (SQLException sqle) {
             throw sqle;
         } finally {
@@ -150,9 +151,8 @@ public class JobTableJobStatusTableJobCommandTable implements JobTableJobStatusJ
 
         logger.debug("End executeInsert");
     }
-    
-    public List<String> executeSelectToRetrieveJobId(String userId, String delegationId, int[] jobStatusType, String leaseId, Calendar startStatusDate, Calendar endStatusDate, Calendar startRegisterCommandDate,
-            Calendar endRegisterCommandDate, Connection connection) throws SQLException {
+
+    public List<String> executeSelectToRetrieveJobId(String userId, String delegationId, int[] jobStatusType, String leaseId, Calendar startStatusDate, Calendar endStatusDate, Calendar startRegisterCommandDate, Calendar endRegisterCommandDate, Connection connection) throws SQLException {
         logger.debug("Begin executeSelectToRetrieveJobId");
 
         List<String> jobIdList = new ArrayList<String>(0);
@@ -161,6 +161,37 @@ public class JobTableJobStatusTableJobCommandTable implements JobTableJobStatusJ
         logger.debug("selectQuery = " + selectQuery);
 
         PreparedStatement selectToRetrieveJobIdPreparedStatement = connection.prepareStatement(selectQuery);
+        int index = 0;
+
+        if (userId != null) {
+            selectToRetrieveJobIdPreparedStatement.setString(++index, userId);
+        }
+
+        if (delegationId != null) {
+            selectToRetrieveJobIdPreparedStatement.setString(++index, delegationId);
+        }
+
+        if (leaseId != null) {
+            selectToRetrieveJobIdPreparedStatement.setString(++index, leaseId);
+        }
+
+        if (startRegisterCommandDate != null) {
+            selectToRetrieveJobIdPreparedStatement.setTimestamp(++index, new java.sql.Timestamp(startRegisterCommandDate.getTimeInMillis()));
+        }
+
+        if (endRegisterCommandDate != null) {
+            selectToRetrieveJobIdPreparedStatement.setTimestamp(++index, new java.sql.Timestamp(endRegisterCommandDate.getTimeInMillis()));
+        }
+
+        if ((jobStatusType != null) && (jobStatusType.length > 0)) {
+            if (startStatusDate != null) {
+                selectToRetrieveJobIdPreparedStatement.setTimestamp(++index, new java.sql.Timestamp(startStatusDate.getTimeInMillis()));
+            }
+
+            if (endStatusDate != null) {
+                selectToRetrieveJobIdPreparedStatement.setTimestamp(++index, new java.sql.Timestamp(endStatusDate.getTimeInMillis()));
+            }
+        }
 
         // execute query, and return number of rows created
         ResultSet rs = selectToRetrieveJobIdPreparedStatement.executeQuery();
@@ -169,12 +200,12 @@ public class JobTableJobStatusTableJobCommandTable implements JobTableJobStatusJ
                 jobIdList.add(rs.getString(JobTable.ID_FIELD));
             }
         }
+
         logger.debug("End executeSelectToRetrieveJobId");
         return jobIdList;
     }
 
-    private static String getSelectToRetrieveJobIdQuery(String userId, String delegationId, int[] jobStatusType, String leaseId, Calendar startStatusDate, Calendar endStatusDate, Calendar startRegisterCommandDate,
-            Calendar endRegisterCommandDate) {
+    private static String getSelectToRetrieveJobIdQuery(String userId, String delegationId, int[] jobStatusType, String leaseId, Calendar startStatusDate, Calendar endStatusDate, Calendar startRegisterCommandDate, Calendar endRegisterCommandDate) {
         StringBuffer selectToRetrieveJobIdQuery = new StringBuffer();
         selectToRetrieveJobIdQuery.append("select distinct ");
         selectToRetrieveJobIdQuery.append(JobTable.NAME_TABLE + "." + JobTable.ID_FIELD + " AS " + JobTable.ID_FIELD);
@@ -182,9 +213,9 @@ public class JobTableJobStatusTableJobCommandTable implements JobTableJobStatusJ
         selectToRetrieveJobIdQuery.append(", " + JobCommandTable.NAME_TABLE);
 
         if ((jobStatusType != null) && (jobStatusType.length > 0)) {
-            selectToRetrieveJobIdQuery.append(", " +JobStatusTable.NAME_TABLE + " AS " + JobStatusTable.NAME_TABLE + " LEFT OUTER JOIN " + JobStatusTable.NAME_TABLE + " AS jslatest ");          
-            selectToRetrieveJobIdQuery.append("ON jslatest." + JobStatusTable.JOB_ID_FIELD +  " = " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD); 
-            selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " < jslatest." + JobStatusTable.ID_FIELD); 
+            selectToRetrieveJobIdQuery.append(", " + JobStatusTable.NAME_TABLE + " AS " + JobStatusTable.NAME_TABLE + " LEFT OUTER JOIN " + JobStatusTable.NAME_TABLE + " AS jslatest ");
+            selectToRetrieveJobIdQuery.append("ON jslatest." + JobStatusTable.JOB_ID_FIELD + " = " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD);
+            selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " < jslatest." + JobStatusTable.ID_FIELD);
         }
 
         // trick
@@ -199,43 +230,44 @@ public class JobTableJobStatusTableJobCommandTable implements JobTableJobStatusJ
         }
 
         if (userId != null) {
-            selectToRetrieveJobIdQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.USER_ID_FIELD + " = " + "'" + userId + "'");
+            selectToRetrieveJobIdQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.USER_ID_FIELD + "=?");
         }
 
         if (delegationId != null) {
-            selectToRetrieveJobIdQuery.append(" and " + JobTable.DELEGATION_PROXY_ID_FIELD + " = " + "'" + delegationId + "'");
+            selectToRetrieveJobIdQuery.append(" and " + JobTable.DELEGATION_PROXY_ID_FIELD + "=?");
         }
 
         if (leaseId != null) {
-            selectToRetrieveJobIdQuery.append(" and " + JobTable.LEASE_ID_FIELD + " = " + "'" + leaseId + "'");
+            selectToRetrieveJobIdQuery.append(" and " + JobTable.LEASE_ID_FIELD + "=?");
         }
 
-        selectToRetrieveJobIdQuery.append(" and " + JobCommandTable.NAME_TABLE + "." + JobCommandTable.TYPE_FIELD + " = 0 ");
+        selectToRetrieveJobIdQuery.append(" and " + JobCommandTable.NAME_TABLE + "." + JobCommandTable.TYPE_FIELD + "=0 ");
+
         if (startRegisterCommandDate != null) {
-            Timestamp startDateTimestampField = new java.sql.Timestamp(startRegisterCommandDate.getTimeInMillis());
-            selectToRetrieveJobIdQuery.append(" and " + JobCommandTable.NAME_TABLE + "." + JobCommandTable.CREATION_TIME_FIELD + " >= '" + startDateTimestampField.toString() + "'");
+            selectToRetrieveJobIdQuery.append(" and " + JobCommandTable.NAME_TABLE + "." + JobCommandTable.CREATION_TIME_FIELD + " >= ?");
         }
+
         if (endRegisterCommandDate != null) {
-            Timestamp endDateTimestampField = new java.sql.Timestamp(endRegisterCommandDate.getTimeInMillis());
-            selectToRetrieveJobIdQuery.append(" and " + JobCommandTable.NAME_TABLE + "." + JobCommandTable.CREATION_TIME_FIELD + " <= '" + endDateTimestampField.toString() + "'");
+            selectToRetrieveJobIdQuery.append(" and " + JobCommandTable.NAME_TABLE + "." + JobCommandTable.CREATION_TIME_FIELD + " <= ?");
         }
+
         selectToRetrieveJobIdQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.ID_FIELD + " = " + JobCommandTable.NAME_TABLE + "." + JobCommandTable.JOB_ID_FIELD);
 
         if ((jobStatusType != null) && (jobStatusType.length > 0)) {
-        	selectToRetrieveJobIdQuery.append(" and jslatest." + JobStatusTable.ID_FIELD + " IS NULL");
-        	StringBuffer jobStatusTypeList = new StringBuffer();
+            selectToRetrieveJobIdQuery.append(" and jslatest." + JobStatusTable.ID_FIELD + " IS NULL");
+            StringBuffer jobStatusTypeList = new StringBuffer();
             for (int i = 0; i < jobStatusType.length; i++) {
                 jobStatusTypeList.append(", " + "'" + jobStatusType[i] + "'");
             }
+
             jobStatusTypeList.deleteCharAt(0);
 
             if (startStatusDate != null) {
-                Timestamp startStatusDateTimestampField = new java.sql.Timestamp(startStatusDate.getTimeInMillis());
-                selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TIMESTAMP_FIELD + " > '" + startStatusDateTimestampField.toString() + "'");
+                selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TIMESTAMP_FIELD + " > ?");
             }
+
             if (endStatusDate != null) {
-                Timestamp endStatusDateTimestampField = new java.sql.Timestamp(endStatusDate.getTimeInMillis());
-                selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TIMESTAMP_FIELD + " <= '" + endStatusDateTimestampField.toString() + "'");
+                selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TIMESTAMP_FIELD + " <= ?");
             }
             selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TYPE_FIELD + " IN (" + jobStatusTypeList.toString() + ")");
             selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD + " = " + JobTable.NAME_TABLE + "." + JobTable.ID_FIELD);
@@ -244,99 +276,4 @@ public class JobTableJobStatusTableJobCommandTable implements JobTableJobStatusJ
         logger.debug("selectToRetrieveJobIdQuery = " + selectToRetrieveJobIdQuery.toString());
         return selectToRetrieveJobIdQuery.toString();
     }
-    
-//    public static void main (String[]  args) {
-//        JobCommand jobCommand = new JobCommand();
-//        jobCommand.setCommandExecutorName("blah");
-//        jobCommand.setStatus(1);
-//        jobCommand.setCreationTime(Calendar.getInstance());
-//        
-//        int[] jobStatusType = null; //{JobStatus.REGISTERED, JobStatus.IDLE, JobStatus.PENDING, JobStatus.REALLY_RUNNING, JobStatus.RUNNING};
-//        String userId = "Lisa";
-//        String delegationId = "deleg";
-//        
-//        
-//        StringBuffer insertQuery = new StringBuffer("insert into ");
-//        insertQuery.append(JobCommandTable.NAME_TABLE).append(" (");
-//        insertQuery.append(JobCommandTable.JOB_ID_FIELD).append(", ");
-//        insertQuery.append(JobCommandTable.STATUS_TYPE_FIELD).append(", ");
-//        insertQuery.append(JobCommandTable.TYPE_FIELD).append(", ");
-//        insertQuery.append(JobCommandTable.DESCRIPTION_FIELD).append(", ");
-//        insertQuery.append(JobCommandTable.FAILURE_REASON_FIELD).append(", ");
-//        insertQuery.append(JobCommandTable.CMD_EXECUTOR_NAME_FIELD).append(", ");
-//        insertQuery.append(JobCommandTable.START_SCHEDULING_TIME_FIELD).append(", ");
-//        insertQuery.append(JobCommandTable.START_PROCESSING_TIME_FIELD).append(", ");
-//        insertQuery.append(JobCommandTable.EXECUTION_COMPLETED_TIME_FIELD).append(", ");
-//        insertQuery.append(JobCommandTable.CREATION_TIME_FIELD).append(", ");
-//        insertQuery.append(JobCommandTable.USER_ID_FIELD).append(") select js.jobId, '").append(jobCommand.getStatus()).append("', '");
-//        insertQuery.append(jobCommand.getType()).append("', ");
-//        
-//        if(jobCommand.getDescription() != null) {
-//            insertQuery.append("'").append(jobCommand.getDescription()).append("', ");
-//        } else {
-//            insertQuery.append(" null, ");
-//        }
-//        
-//        if (jobCommand.getFailureReason() != null) {
-//            insertQuery.append("'").append(jobCommand.getFailureReason()).append("', ");
-//        } else {
-//            insertQuery.append(" null, ");
-//        }
-//        
-//        if (jobCommand.getCommandExecutorName() != null) {
-//            insertQuery.append("'").append(jobCommand.getCommandExecutorName()).append("', ");
-//        } else {
-//            insertQuery.append(" null, ");
-//        }
-//        
-//        if (jobCommand.getStartSchedulingTime() != null) {
-//            insertQuery.append("'").append(new java.sql.Timestamp(jobCommand.getStartSchedulingTime().getTimeInMillis())).append("', ");
-//        } else {
-//            insertQuery.append(" null, ");
-//        }
-//        
-//        if (jobCommand.getStartProcessingTime() != null) {
-//            insertQuery.append("'").append(new java.sql.Timestamp(jobCommand.getStartProcessingTime().getTimeInMillis())).append("', ");
-//        } else {
-//            insertQuery.append(" null, ");
-//        }
-//        
-//        if (jobCommand.getExecutionCompletedTime() != null) {
-//            insertQuery.append("'").append(new java.sql.Timestamp(jobCommand.getExecutionCompletedTime().getTimeInMillis())).append("', ");
-//        } else {
-//            insertQuery.append(" null, ");
-//        }
-//        
-//        if (jobCommand.getCreationTime() != null) {
-//            insertQuery.append("'").append(new java.sql.Timestamp(jobCommand.getCreationTime().getTimeInMillis())).append("', ");
-//        } else {
-//            insertQuery.append(" null, ");
-//        }
-//        
-//        if (jobCommand.getUserId() != null) {
-//            insertQuery.append("'").append(new java.sql.Timestamp(jobCommand.getCreationTime().getTimeInMillis())).append("'");
-//        } else {
-//            insertQuery.append("'").append(userId).append("'");
-//        }
-//        
-//        insertQuery.append(" from ").append(JobStatusTable.NAME_TABLE).append(" as js left outer join (");
-//        insertQuery.append(JobStatusTable.NAME_TABLE).append(" as jslatest) on jslatest.").append(JobStatusTable.JOB_ID_FIELD).append(" = js.").append(JobStatusTable.JOB_ID_FIELD);
-//        insertQuery.append(" and js.").append(JobStatusTable.ID_FIELD).append(" < jslatest.").append(JobStatusTable.ID_FIELD);
-//        insertQuery.append(" where jslatest.").append(JobStatusTable.ID_FIELD).append(" is null");
-//        
-//        if ((jobStatusType != null) && (jobStatusType.length > 0)) {
-//            insertQuery.append(" and js.").append(JobStatusTable.TYPE_FIELD).append(" in (");
-//            for (int i = 0; i < jobStatusType.length; i++) {
-//                insertQuery.append("'" + jobStatusType[i] + "', ");
-//            }
-//            insertQuery.replace(insertQuery.length()-2, insertQuery.length(), ")");
-//        }
-//        
-//        insertQuery.append(" and js.").append(JobStatusTable.JOB_ID_FIELD).append(" in (select ");
-//        insertQuery.append(JobTable.NAME_TABLE).append(".").append(JobTable.ID_FIELD).append(" from ").append(JobTable.NAME_TABLE);
-//        insertQuery.append(" where ").append(JobTable.NAME_TABLE).append(".").append(JobTable.DELEGATION_PROXY_ID_FIELD).append(" = '").append(delegationId).append("')");
-//        
-//        
-//        System.out.println(insertQuery.toString());
-//    }
 }

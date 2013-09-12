@@ -37,7 +37,6 @@ import org.glite.ce.creamapi.jobmanagement.db.table.ArgumentTableInterface;
 public class ArgumentTable implements ArgumentTableInterface {
 
     public final static String NAME_TABLE = "argument";
-
     public final static String VALUE_FIELD = "value";
     public final static String JOB_ID_FIELD = "jobId";
 
@@ -159,8 +158,7 @@ public class ArgumentTable implements ArgumentTableInterface {
         insertQuery.append(" ( ");
         insertQuery.append(ArgumentTable.VALUE_FIELD + ", ");
         insertQuery.append(ArgumentTable.JOB_ID_FIELD);
-        insertQuery.append(" ) ");
-        insertQuery.append("values(?, ?)");
+        insertQuery.append(" ) values(?, ?)");
         return insertQuery.toString();
     }
 
@@ -169,7 +167,7 @@ public class ArgumentTable implements ArgumentTableInterface {
         deleteQuery.append("delete from ");
         deleteQuery.append(ArgumentTable.NAME_TABLE);
         deleteQuery.append(" where ");
-        deleteQuery.append(ArgumentTable.JOB_ID_FIELD + " = ?");
+        deleteQuery.append(ArgumentTable.JOB_ID_FIELD + "=?");
         return deleteQuery.toString();
     }
 
@@ -179,7 +177,7 @@ public class ArgumentTable implements ArgumentTableInterface {
         selectQuery.append(ArgumentTable.VALUE_FIELD);
         selectQuery.append(" from " + ArgumentTable.NAME_TABLE);
         selectQuery.append(" where ");
-        selectQuery.append(ArgumentTable.JOB_ID_FIELD + " = ?");
+        selectQuery.append(ArgumentTable.JOB_ID_FIELD + "=?");
         return selectQuery.toString();
     }
 }
