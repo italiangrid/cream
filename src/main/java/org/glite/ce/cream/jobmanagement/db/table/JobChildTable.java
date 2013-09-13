@@ -37,7 +37,6 @@ import org.glite.ce.creamapi.jobmanagement.db.table.JobChildTableInterface;
 public class JobChildTable implements JobChildTableInterface {
 
     public final static String NAME_TABLE = "job_child";
-
     public final static String ID_FIELD = "id";
     public final static String FATHER_JOB_ID_FIELD = "fatherJobId";
 
@@ -161,8 +160,7 @@ public class JobChildTable implements JobChildTableInterface {
         insertQuery.append(" ( ");
         insertQuery.append(JobChildTable.ID_FIELD + ", ");
         insertQuery.append(JobChildTable.FATHER_JOB_ID_FIELD);
-        insertQuery.append(" ) ");
-        insertQuery.append("values(?, ?)");
+        insertQuery.append(" ) values(?, ?)");
         return insertQuery.toString();
     }
 
@@ -171,7 +169,7 @@ public class JobChildTable implements JobChildTableInterface {
         deleteQuery.append("delete from ");
         deleteQuery.append(JobChildTable.NAME_TABLE);
         deleteQuery.append(" where ");
-        deleteQuery.append(JobChildTable.FATHER_JOB_ID_FIELD + " = ?");
+        deleteQuery.append(JobChildTable.FATHER_JOB_ID_FIELD + "=?");
         return deleteQuery.toString();
     }
 
@@ -181,7 +179,7 @@ public class JobChildTable implements JobChildTableInterface {
         selectQuery.append(JobChildTable.ID_FIELD);
         selectQuery.append(" from " + JobChildTable.NAME_TABLE);
         selectQuery.append(" where ");
-        selectQuery.append(JobChildTable.FATHER_JOB_ID_FIELD + " = ?");
+        selectQuery.append(JobChildTable.FATHER_JOB_ID_FIELD + "=?");
         return selectQuery.toString();
     }
 }

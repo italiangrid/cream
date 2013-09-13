@@ -37,7 +37,6 @@ import org.glite.ce.creamapi.jobmanagement.db.table.OutputFileTableInterface;
 public class OutputFileTable implements OutputFileTableInterface {
 
     public final static String NAME_TABLE = "output_file";
-
     public final static String VALUE_FIELD = "value";
     public final static String JOB_ID_FIELD = "JobId";
 
@@ -117,6 +116,7 @@ public class OutputFileTable implements OutputFileTableInterface {
         // logger.debug("deleteQuery (OutputFileTable)= " + deleteQuery);
         PreparedStatement deletePreparedStatement = null;
         int rowCount = 0;
+        
         try {
             deletePreparedStatement = connection.prepareStatement(deleteQuery);
             deletePreparedStatement = fillDeletePreparedStatement(jobId, deletePreparedStatement);
@@ -160,8 +160,7 @@ public class OutputFileTable implements OutputFileTableInterface {
         insertQuery.append(" ( ");
         insertQuery.append(OutputFileTable.VALUE_FIELD + ", ");
         insertQuery.append(OutputFileTable.JOB_ID_FIELD);
-        insertQuery.append(" ) ");
-        insertQuery.append("values(?, ?)");
+        insertQuery.append(" ) values(?, ?)");
         return insertQuery.toString();
     }
 
@@ -170,7 +169,7 @@ public class OutputFileTable implements OutputFileTableInterface {
         deleteQuery.append("delete from ");
         deleteQuery.append(OutputFileTable.NAME_TABLE);
         deleteQuery.append(" where ");
-        deleteQuery.append(OutputFileTable.JOB_ID_FIELD + " = ?");
+        deleteQuery.append(OutputFileTable.JOB_ID_FIELD + "=?");
         return deleteQuery.toString();
     }
 
@@ -180,8 +179,7 @@ public class OutputFileTable implements OutputFileTableInterface {
         selectQuery.append(OutputFileTable.VALUE_FIELD);
         selectQuery.append(" from " + OutputFileTable.NAME_TABLE);
         selectQuery.append(" where ");
-        selectQuery.append(OutputFileTable.JOB_ID_FIELD + " = ?");
+        selectQuery.append(OutputFileTable.JOB_ID_FIELD + "=?");
         return selectQuery.toString();
     }
-
 }

@@ -46,8 +46,7 @@ public class JobTableJobStatusTable implements JobTableJobStatusInterface {
         logger.debug("Call JobTableJobStatusTable constructor");
     }
 
-    public List<String> executeSelectToRetrieveJobId(String userId, List<String> jobId, String delegationId, int[] jobStatusType, String leaseId, Calendar startStatusDate, Calendar endStatusDate, String queueName, String batchSystem, Connection connection)
-            throws SQLException {
+    public List<String> executeSelectToRetrieveJobId(String userId, List<String> jobId, String delegationId, int[] jobStatusType, String leaseId, Calendar startStatusDate, Calendar endStatusDate, String queueName, String batchSystem, Connection connection) throws SQLException {
         logger.debug("Begin executeSelectToRetrieveJobId");
 
         List<String> jobIdList = new ArrayList<String>(0);
@@ -56,7 +55,39 @@ public class JobTableJobStatusTable implements JobTableJobStatusInterface {
         logger.debug("selectQuery = " + selectQuery);
 
         PreparedStatement selectToRetrieveJobIdPreparedStatement = connection.prepareStatement(selectQuery);
+        
+        int index = 0;
+        
+        if (userId != null) {
+            selectToRetrieveJobIdPreparedStatement.setString(++index, userId);
+        }
 
+        if (delegationId != null) {
+            selectToRetrieveJobIdPreparedStatement.setString(++index, delegationId);
+        }
+
+        if (leaseId != null) {
+            selectToRetrieveJobIdPreparedStatement.setString(++index, leaseId);
+        }
+
+        if ((jobStatusType != null) && (jobStatusType.length > 0)) {
+            if (startStatusDate != null) {
+                selectToRetrieveJobIdPreparedStatement.setTimestamp(++index, new java.sql.Timestamp(startStatusDate.getTimeInMillis()));
+            }
+        
+            if (endStatusDate != null) {
+                selectToRetrieveJobIdPreparedStatement.setTimestamp(++index, new java.sql.Timestamp(endStatusDate.getTimeInMillis()));
+            }
+        }
+
+        if (queueName != null) {
+            selectToRetrieveJobIdPreparedStatement.setString(++index, queueName);
+        }
+
+        if (batchSystem != null) {
+            selectToRetrieveJobIdPreparedStatement.setString(++index, batchSystem);
+        }
+        
         // execute query, and return number of rows created
         ResultSet rs = selectToRetrieveJobIdPreparedStatement.executeQuery();
         if (rs != null) {
@@ -75,33 +106,31 @@ public class JobTableJobStatusTable implements JobTableJobStatusInterface {
         selectToRetrieveJobIdQuery.append(" from " + JobTable.NAME_TABLE);
 
         if ((jobStatusType != null) && (jobStatusType.length > 0)) {
-            selectToRetrieveJobIdQuery.append(", " +JobStatusTable.NAME_TABLE + " AS " + JobStatusTable.NAME_TABLE + " LEFT OUTER JOIN " + JobStatusTable.NAME_TABLE + " AS jslatest ");          
-            selectToRetrieveJobIdQuery.append("ON jslatest." + JobStatusTable.JOB_ID_FIELD +  " = " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD); 
-            selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " < jslatest." + JobStatusTable.ID_FIELD); 
+            selectToRetrieveJobIdQuery.append(", " + JobStatusTable.NAME_TABLE + " AS " + JobStatusTable.NAME_TABLE + " LEFT OUTER JOIN " + JobStatusTable.NAME_TABLE + " AS jslatest ");
+            selectToRetrieveJobIdQuery.append("ON jslatest." + JobStatusTable.JOB_ID_FIELD + " = " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD);
+            selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " < jslatest." + JobStatusTable.ID_FIELD);
         }
 
         // trick
         selectToRetrieveJobIdQuery.append(" where true ");
 
         if ((userId != null) && (delegationId != null)) {
-            selectToRetrieveJobIdQuery.append(" and (");
-            selectToRetrieveJobIdQuery.append("(" + JobTable.ICE_ID_FIELD + " IS NOT NULL ");
-            selectToRetrieveJobIdQuery.append(" and " + JobTable.MY_PROXY_SERVER_FIELD + " IS NOT NULL " + ") ");
-            selectToRetrieveJobIdQuery.append(" or (");
-            selectToRetrieveJobIdQuery.append(JobTable.ICE_ID_FIELD + " IS  NULL " + ")");
-            selectToRetrieveJobIdQuery.append(")");
+            selectToRetrieveJobIdQuery.append(" and ((");
+            selectToRetrieveJobIdQuery.append(JobTable.ICE_ID_FIELD + " IS NOT NULL and ");
+            selectToRetrieveJobIdQuery.append(JobTable.MY_PROXY_SERVER_FIELD + " IS NOT NULL) or (");
+            selectToRetrieveJobIdQuery.append(JobTable.ICE_ID_FIELD + " IS NULL))");
         }
 
         if (userId != null) {
-            selectToRetrieveJobIdQuery.append(" and " + JobTable.USER_ID_FIELD + " = " + "'" + userId + "'");
+            selectToRetrieveJobIdQuery.append(" and " + JobTable.USER_ID_FIELD + "=?");
         }
 
         if (delegationId != null) {
-            selectToRetrieveJobIdQuery.append(" and " + JobTable.DELEGATION_PROXY_ID_FIELD + " = " + "'" + delegationId + "'");
+            selectToRetrieveJobIdQuery.append(" and " + JobTable.DELEGATION_PROXY_ID_FIELD + "=?");
         }
 
         if (leaseId != null) {
-            selectToRetrieveJobIdQuery.append(" and " + JobTable.LEASE_ID_FIELD + " = " + "'" + leaseId + "'");
+            selectToRetrieveJobIdQuery.append(" and " + JobTable.LEASE_ID_FIELD + "=?");
         }
 
         if ((jobId != null) && (jobId.size() > 0)) {
@@ -115,30 +144,29 @@ public class JobTableJobStatusTable implements JobTableJobStatusInterface {
 
         if ((jobStatusType != null) && (jobStatusType.length > 0)) {
             selectToRetrieveJobIdQuery.append(" and jslatest." + JobStatusTable.ID_FIELD + " IS NULL");
-        	StringBuffer jobStatusTypeList = new StringBuffer();
+            StringBuffer jobStatusTypeList = new StringBuffer();
             for (int i = 0; i < jobStatusType.length; i++) {
                 jobStatusTypeList.append(", " + "'" + jobStatusType[i] + "'");
             }
             jobStatusTypeList.deleteCharAt(0);
-            
+
             if (startStatusDate != null) {
-                Timestamp startStatusDateTimestampField = new java.sql.Timestamp(startStatusDate.getTimeInMillis());
-                selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TIMESTAMP_FIELD + " >= '" + startStatusDateTimestampField.toString() + "'");
+                selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TIMESTAMP_FIELD + " >= ?");
             }
+            
             if (endStatusDate != null) {
-                Timestamp endStatusDateTimestampField = new java.sql.Timestamp(endStatusDate.getTimeInMillis());
-                selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TIMESTAMP_FIELD + " <= '" + endStatusDateTimestampField.toString() + "'");
+                selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TIMESTAMP_FIELD + " <= ?");
             }
             selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TYPE_FIELD + " IN (" + jobStatusTypeList.toString() + ")");
             selectToRetrieveJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD + " = " + JobTable.NAME_TABLE + "." + JobTable.ID_FIELD);
         }
-        
+
         if (queueName != null) {
-            selectToRetrieveJobIdQuery.append(" and " + JobTable.QUEUE_FIELD + " = " + "'" + queueName + "'");
+            selectToRetrieveJobIdQuery.append(" and " + JobTable.QUEUE_FIELD + "=?");
         }
-        
+
         if (batchSystem != null) {
-            selectToRetrieveJobIdQuery.append(" and " + JobTable.BATCH_SYSTEM_FIELD + " = " + "'" + batchSystem + "'");
+            selectToRetrieveJobIdQuery.append(" and " + JobTable.BATCH_SYSTEM_FIELD + "=?");
         }
 
         logger.debug("selectToRetrieveJobIdQuery = " + selectToRetrieveJobIdQuery.toString());
@@ -153,6 +181,16 @@ public class JobTableJobStatusTable implements JobTableJobStatusInterface {
 
         PreparedStatement ps = connection.prepareStatement(selectToRetrieveOlderJobIdQuery);
 
+        int index = 0;
+        
+        if (userId != null) {
+            ps.setString(++index, userId);
+        }
+
+        if (batchSystem != null) {
+            ps.setString(++index, batchSystem);
+        }
+        
         // execute query.
         ResultSet rs = ps.executeQuery();
         if ((rs != null) && rs.next()) {
@@ -161,37 +199,40 @@ public class JobTableJobStatusTable implements JobTableJobStatusInterface {
 
         return jobId;
     }
-//select jobId from (select job_status.jobId, max(job_status.type) as type, job_status.time_stamp from job_status group by job_status.jobId) as tbl where type in (1,2,3,4) order by time_stamp;
-    
+
+    // select jobId from (select job_status.jobId, max(job_status.type) as type,
+    // job_status.time_stamp from job_status group by job_status.jobId) as tbl
+    // where type in (1,2,3,4) order by time_stamp;
+
     private static String getSelectToRetrieveOlderJobIdQuery(String userId, int[] jobStatusType, String batchSystem) {
         StringBuffer selectToRetrieveOlderJobIdQuery = new StringBuffer();
         selectToRetrieveOlderJobIdQuery.append("select ");
         selectToRetrieveOlderJobIdQuery.append(JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD);
         selectToRetrieveOlderJobIdQuery.append(" from  ");
         selectToRetrieveOlderJobIdQuery.append(JobTable.NAME_TABLE);
-        selectToRetrieveOlderJobIdQuery.append(", " +JobStatusTable.NAME_TABLE + " AS " + JobStatusTable.NAME_TABLE + " LEFT OUTER JOIN " + JobStatusTable.NAME_TABLE + " AS jslatest ");          
-        selectToRetrieveOlderJobIdQuery.append("ON jslatest." + JobStatusTable.JOB_ID_FIELD +  " = " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD); 
-        selectToRetrieveOlderJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " < jslatest." + JobStatusTable.ID_FIELD); 
-        
+        selectToRetrieveOlderJobIdQuery.append(", " + JobStatusTable.NAME_TABLE + " AS " + JobStatusTable.NAME_TABLE + " LEFT OUTER JOIN " + JobStatusTable.NAME_TABLE + " AS jslatest ");
+        selectToRetrieveOlderJobIdQuery.append("ON jslatest." + JobStatusTable.JOB_ID_FIELD + " = " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD);
+        selectToRetrieveOlderJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " < jslatest." + JobStatusTable.ID_FIELD);
+
         selectToRetrieveOlderJobIdQuery.append(" where ");
         selectToRetrieveOlderJobIdQuery.append(JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD + " = " + JobTable.NAME_TABLE + "." + JobTable.ID_FIELD);
-        
+
         if (userId != null) {
-        	selectToRetrieveOlderJobIdQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.USER_ID_FIELD + " = '" + userId + "'");
+            selectToRetrieveOlderJobIdQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.USER_ID_FIELD + "=?");
         }
-        
+
         if (batchSystem != null) {
-        	selectToRetrieveOlderJobIdQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.BATCH_SYSTEM_FIELD + " = '" + batchSystem + "'");
+            selectToRetrieveOlderJobIdQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.BATCH_SYSTEM_FIELD + "=?");
         }
-            
+
         if (jobStatusType != null && jobStatusType.length > 0) {
-        	selectToRetrieveOlderJobIdQuery.append(" and jslatest." + JobStatusTable.ID_FIELD + " IS NULL");
+            selectToRetrieveOlderJobIdQuery.append(" and jslatest." + JobStatusTable.ID_FIELD + " IS NULL");
             StringBuffer jobStatusTypeList = new StringBuffer();
             for (int i = 0; i < jobStatusType.length; i++) {
                 jobStatusTypeList.append(", " + "'" + jobStatusType[i] + "'");
             }
             jobStatusTypeList.deleteCharAt(0);
-            
+
             selectToRetrieveOlderJobIdQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TYPE_FIELD + " IN (" + jobStatusTypeList.toString() + ")");
         }
         selectToRetrieveOlderJobIdQuery.append(" order by ");
@@ -205,8 +246,20 @@ public class JobTableJobStatusTable implements JobTableJobStatusInterface {
         logger.debug("Begin executeSelectToRetrieveJobIdByLeaseTimeExpiredQuery");
         List<String> jobIdList = new ArrayList<String>();
         String selectQuery = getSelectToRetrieveJobIdByLeaseTimeExpiredQuery(userId, delegationId, jobStatusType);
+
         logger.debug("selectQuery = " + selectQuery);
         PreparedStatement selectToRetrieveJobIdByLeaseTimeExpiredPreparedStatement = connection.prepareStatement(selectQuery);
+
+        int index = 0;
+        
+        if (userId != null) {
+            selectToRetrieveJobIdByLeaseTimeExpiredPreparedStatement.setString(++index, userId);
+        }
+
+        if (delegationId != null) {
+            selectToRetrieveJobIdByLeaseTimeExpiredPreparedStatement.setString(++index, delegationId);
+        }
+        
         // execute query.
         ResultSet rs = selectToRetrieveJobIdByLeaseTimeExpiredPreparedStatement.executeQuery();
         if (rs != null) {
@@ -225,35 +278,33 @@ public class JobTableJobStatusTable implements JobTableJobStatusInterface {
         selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" from " + JobTable.NAME_TABLE);
 
         if ((jobStatusType != null) && (jobStatusType.length > 0)) {
-            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(", " +JobStatusTable.NAME_TABLE + " AS " + JobStatusTable.NAME_TABLE + " LEFT OUTER JOIN " + JobStatusTable.NAME_TABLE + " AS jslatest ");          
-            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append("ON jslatest." + JobStatusTable.JOB_ID_FIELD +  " = " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD); 
-            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " < jslatest." + JobStatusTable.ID_FIELD); 
+            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(", " + JobStatusTable.NAME_TABLE + " AS " + JobStatusTable.NAME_TABLE + " LEFT OUTER JOIN " + JobStatusTable.NAME_TABLE + " AS jslatest ");
+            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append("ON jslatest." + JobStatusTable.JOB_ID_FIELD + " = " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD);
+            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " < jslatest." + JobStatusTable.ID_FIELD);
         }
 
         // trick
         selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" where true ");
 
         if (userId != null) {
-            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" and " + JobTable.USER_ID_FIELD + " = " + "'" + userId + "'");
+            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" and " + JobTable.USER_ID_FIELD + "=?");
         }
 
         if (delegationId != null) {
-            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" and " + JobTable.DELEGATION_PROXY_ID_FIELD + " = " + "'" + delegationId + "'");
+            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" and " + JobTable.DELEGATION_PROXY_ID_FIELD + "=?");
         }
 
         selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" and " + JobTable.LEASE_TIME_FIELD + " IS NOT NULL");
 
         if ((jobStatusType != null) && (jobStatusType.length > 0)) {
             selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" and jslatest." + JobStatusTable.ID_FIELD + " IS NULL");
-        	StringBuffer jobStatusTypeList = new StringBuffer();
+            StringBuffer jobStatusTypeList = new StringBuffer();
             for (int i = 0; i < jobStatusType.length; i++) {
                 jobStatusTypeList.append(", " + "'" + jobStatusType[i] + "'");
             }
             jobStatusTypeList.deleteCharAt(0);
-            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TYPE_FIELD + " IN (" + jobStatusTypeList.toString()
-                    + ")");
-            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD + " = " + JobTable.NAME_TABLE + "."
-                    + JobTable.ID_FIELD);
+            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TYPE_FIELD + " IN (" + jobStatusTypeList.toString() + ")");
+            selectToRetrieveJobIdByLeaseTimeExpiredQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD + " = " + JobTable.NAME_TABLE + "." + JobTable.ID_FIELD);
         }
         logger.debug("selectToRetrieveJobIdByLeaseTimeExpiredQuery = " + selectToRetrieveJobIdByLeaseTimeExpiredQuery.toString());
         return selectToRetrieveJobIdByLeaseTimeExpiredQuery.toString();
@@ -261,9 +312,26 @@ public class JobTableJobStatusTable implements JobTableJobStatusInterface {
 
     public long executeSelectToJobCountByStatus(int[] jobStatusType, String userId, Connection connection) throws SQLException {
         long jobCountByStatus = 0;
-        String selectToJobCountByStatusQuery = getSelectToJobCountByStatusQuery(jobStatusType, userId);
+        int jobStatusTypeListSize = 0;
+        
+        if (jobStatusType != null) {
+            jobStatusTypeListSize = jobStatusType.length;
+        }
+        
+        String selectToJobCountByStatusQuery = getSelectToJobCountByStatusQuery(jobStatusTypeListSize, userId);
+                
         logger.debug("selectToJobCountByStatusQuery = " + selectToJobCountByStatusQuery);
         PreparedStatement selectToJobCountByStatusPreparedStatement = connection.prepareStatement(selectToJobCountByStatusQuery);
+
+        int index = 0;
+        if (userId != null) {
+            selectToJobCountByStatusPreparedStatement.setString(++index, userId);
+        }
+
+        for (int i=0; i < jobStatusTypeListSize; i++) {
+            selectToJobCountByStatusPreparedStatement.setInt(++index, jobStatusType[i]);
+        }
+        
         // execute query.
         ResultSet rs = selectToJobCountByStatusPreparedStatement.executeQuery();
         if ((rs != null) && rs.next()) {
@@ -277,22 +345,22 @@ public class JobTableJobStatusTable implements JobTableJobStatusInterface {
             logger.error("delegationId not specified!");
             throw new IllegalArgumentException("delegationId not specified!");
         }
-        
+
         if (delegationProxyInfo == null || "".equals(delegationProxyInfo)) {
             logger.error("delegationProxyInfo not specified!");
             throw new IllegalArgumentException("delegationProxyInfo not specified!");
         }
-        
+
         if (userId == null || "".equals(userId)) {
             logger.error("userId not specified!");
             throw new IllegalArgumentException("userId not specified!");
         }
-        
+
         if (connection == null) {
             logger.error("connection not specified!");
             throw new IllegalArgumentException("connection not specified!");
         }
-        
+
         final String jobTableJobId = JobTable.NAME_TABLE + "." + JobTable.ID_FIELD;
         final String jobTableUserId = JobTable.NAME_TABLE + "." + JobTable.USER_ID_FIELD;
         final String jobTableDelegationProxyId = JobTable.NAME_TABLE + "." + JobTable.DELEGATION_PROXY_ID_FIELD;
@@ -302,27 +370,34 @@ public class JobTableJobStatusTable implements JobTableJobStatusInterface {
         final String jslatestId = "jslatest." + JobStatusTable.ID_FIELD;
 
         StringBuffer updateDelegationProxyInfoQuery = new StringBuffer("update ");
-        updateDelegationProxyInfoQuery.append(JobTable.NAME_TABLE).append(" set ").append(JobTable.DELEGATION_PROXY_INFO_FIELD);
-        updateDelegationProxyInfoQuery.append(" = '").append(delegationProxyInfo).append("' where ").append(JobTable.ID_FIELD).append(" = (select ");
+        updateDelegationProxyInfoQuery.append(JobTable.NAME_TABLE).append(" set ");
+        updateDelegationProxyInfoQuery.append(JobTable.DELEGATION_PROXY_INFO_FIELD).append(" =? where ");
+        updateDelegationProxyInfoQuery.append(JobTable.ID_FIELD).append(" = (select ");
         updateDelegationProxyInfoQuery.append(jobStatusTableJobId).append(" from ").append(JobStatusTable.NAME_TABLE).append(" AS ");
         updateDelegationProxyInfoQuery.append(JobStatusTable.NAME_TABLE).append(" LEFT OUTER JOIN ").append(JobStatusTable.NAME_TABLE).append(" AS jslatest ON jslatest.");
         updateDelegationProxyInfoQuery.append(JobStatusTable.JOB_ID_FIELD).append(" = ").append(jobStatusTableJobId);
         updateDelegationProxyInfoQuery.append(" and ").append(jobStatusTableId).append(" < ").append(jslatestId);
         updateDelegationProxyInfoQuery.append(" where ").append(jslatestId).append(" IS NULL and ").append(jobStatusTableType);
         updateDelegationProxyInfoQuery.append(" IN ('").append(JobStatus.REGISTERED).append("', '");
-        updateDelegationProxyInfoQuery.append(JobStatus.HELD).append("', '").append(JobStatus.IDLE).append("', '");
-        updateDelegationProxyInfoQuery.append(JobStatus.PENDING).append("', '").append(JobStatus.REALLY_RUNNING).append("', '");
-        updateDelegationProxyInfoQuery.append(JobStatus.RUNNING).append("') and ").append(jobStatusTableJobId).append(" = ");
-        updateDelegationProxyInfoQuery.append(jobTableJobId).append(" and ").append(jobTableDelegationProxyId);
-        updateDelegationProxyInfoQuery.append(" = '").append(delegationId).append("' and ");
-        updateDelegationProxyInfoQuery.append(jobTableUserId).append(" = '").append(userId).append("')");
+        updateDelegationProxyInfoQuery.append(JobStatus.HELD).append("', '");
+        updateDelegationProxyInfoQuery.append(JobStatus.IDLE).append("', '");
+        updateDelegationProxyInfoQuery.append(JobStatus.PENDING).append("', '");
+        updateDelegationProxyInfoQuery.append(JobStatus.REALLY_RUNNING).append("', '");
+        updateDelegationProxyInfoQuery.append(JobStatus.RUNNING).append("') and ");
+        updateDelegationProxyInfoQuery.append(jobStatusTableJobId).append(" = ").append(jobTableJobId).append(" and ");
+        updateDelegationProxyInfoQuery.append(jobTableDelegationProxyId).append("=? and ");
+        updateDelegationProxyInfoQuery.append(jobTableUserId).append("=?)");
 
         logger.debug("updateDelegationProxyInfoQuery = " + updateDelegationProxyInfoQuery.toString());
 
         PreparedStatement updateDelegationProxyInfoPreparedStatement = null;
 
         try {
-            updateDelegationProxyInfoPreparedStatement = connection.prepareStatement(updateDelegationProxyInfoQuery.toString());
+            updateDelegationProxyInfoPreparedStatement = connection.prepareStatement(updateDelegationProxyInfoQuery.toString());            
+            updateDelegationProxyInfoPreparedStatement.setString(1, delegationProxyInfo);
+            updateDelegationProxyInfoPreparedStatement.setString(2, delegationId);
+            updateDelegationProxyInfoPreparedStatement.setString(3, userId);
+            
             updateDelegationProxyInfoPreparedStatement.executeUpdate();
         } catch (SQLException sqle) {
             throw sqle;
@@ -336,30 +411,30 @@ public class JobTableJobStatusTable implements JobTableJobStatusInterface {
             }
         }
     }
-    
-    private static String getSelectToJobCountByStatusQuery(int[] jobStatusType, String userId) {
+
+    private static String getSelectToJobCountByStatusQuery(int jobStatusTypeListSize, String userId) {
         StringBuffer selectToJobCountByStatusQuery = new StringBuffer();
         selectToJobCountByStatusQuery.append("select count(*) AS " + JobTableJobStatusTable.COUNT_JOB);
         selectToJobCountByStatusQuery.append(" from " + JobTable.NAME_TABLE);
 
-        if ((jobStatusType != null) && (jobStatusType.length > 0)) {
-            selectToJobCountByStatusQuery.append(", " +JobStatusTable.NAME_TABLE + " AS " + JobStatusTable.NAME_TABLE + " LEFT OUTER JOIN " + JobStatusTable.NAME_TABLE + " AS jslatest ");          
-            selectToJobCountByStatusQuery.append("ON jslatest." + JobStatusTable.JOB_ID_FIELD +  " = " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD); 
-            selectToJobCountByStatusQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " < jslatest." + JobStatusTable.ID_FIELD); 
+        if (jobStatusTypeListSize > 0) {
+            selectToJobCountByStatusQuery.append(", " + JobStatusTable.NAME_TABLE + " AS " + JobStatusTable.NAME_TABLE + " LEFT OUTER JOIN " + JobStatusTable.NAME_TABLE + " AS jslatest ");
+            selectToJobCountByStatusQuery.append("ON jslatest." + JobStatusTable.JOB_ID_FIELD + " = " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD);
+            selectToJobCountByStatusQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " < jslatest." + JobStatusTable.ID_FIELD);
         }
 
         // trick
-        selectToJobCountByStatusQuery.append(" where true ");
+        selectToJobCountByStatusQuery.append(" where true");
 
         if (userId != null) {
-            selectToJobCountByStatusQuery.append(" and " + JobTable.USER_ID_FIELD + " = " + "'" + userId + "'");
+            selectToJobCountByStatusQuery.append(" and " + JobTable.USER_ID_FIELD + "=?");
         }
 
-        if ((jobStatusType != null) && (jobStatusType.length > 0)) {
-        	selectToJobCountByStatusQuery.append(" and jslatest." + JobStatusTable.ID_FIELD + " IS NULL");
+        if (jobStatusTypeListSize > 0) {
+            selectToJobCountByStatusQuery.append(" and jslatest." + JobStatusTable.ID_FIELD + " IS NULL");
             StringBuffer jobStatusTypeList = new StringBuffer();
-            for (int i = 0; i < jobStatusType.length; i++) {
-                jobStatusTypeList.append(", " + "'" + jobStatusType[i] + "'");
+            for (int i = 0; i < jobStatusTypeListSize; i++) {
+                jobStatusTypeList.append(", ?");
             }
             jobStatusTypeList.deleteCharAt(0);
             selectToJobCountByStatusQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TYPE_FIELD + " IN (" + jobStatusTypeList.toString() + ")");
@@ -368,5 +443,4 @@ public class JobTableJobStatusTable implements JobTableJobStatusInterface {
 
         return selectToJobCountByStatusQuery.toString();
     }
-       
 }

@@ -43,7 +43,6 @@ import org.glite.ce.creamapi.jobmanagement.db.table.JobStatusTableInterface;
 public class JobStatusTable implements JobStatusTableInterface {
 
     public final static String NAME_TABLE = "job_status";
-
     public final static String TYPE_FIELD = "type";
     public final static String EXIT_CODE_FIELD = "exitCode";
     public final static String FAILURE_REASON_FIELD = "failureReason";
@@ -75,7 +74,7 @@ public class JobStatusTable implements JobStatusTableInterface {
 
         try {
             insertPreparedStatement = connection.prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
-            
+
             int rowCount = 0;
             for (int index = 0; index < jobStatusList.size(); index++) {
                 insertPreparedStatement = fillInsertPreparedStatement(jobStatusList.get(index), insertPreparedStatement);
@@ -300,8 +299,7 @@ public class JobStatusTable implements JobStatusTableInterface {
         queryInsertJobStatusTable.append(JobStatusTable.DESCRIPTION_FIELD + ", ");
         queryInsertJobStatusTable.append(JobStatusTable.TIMESTAMP_FIELD + ", ");
         queryInsertJobStatusTable.append(JobStatusTable.JOB_ID_FIELD);
-        queryInsertJobStatusTable.append(") ");
-        queryInsertJobStatusTable.append("values(?, ?, ?, ?, ?, ?)");
+        queryInsertJobStatusTable.append(") values(?, ?, ?, ?, ?, ?)");
         return queryInsertJobStatusTable.toString();
     }
 
@@ -317,7 +315,7 @@ public class JobStatusTable implements JobStatusTableInterface {
         selectLastJobStatusQuery.append(ID_FIELD + " AS " + ID_FIELD);
         selectLastJobStatusQuery.append(" from " + JobStatusTable.NAME_TABLE);
         selectLastJobStatusQuery.append(" where ");
-        selectLastJobStatusQuery.append(JobStatusTable.JOB_ID_FIELD + " = ? ORDER BY ");
+        selectLastJobStatusQuery.append(JobStatusTable.JOB_ID_FIELD + "=? ORDER BY ");
         selectLastJobStatusQuery.append(JobStatusTable.ID_FIELD);
         return selectLastJobStatusQuery.toString();
     }
@@ -337,28 +335,29 @@ public class JobStatusTable implements JobStatusTableInterface {
         selectToRetrieveJobStatusQuery.append(" where " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.JOB_ID_FIELD + " = " + JobTable.NAME_TABLE + "." + JobTable.ID_FIELD);
 
         if (!isEmptyField(userId)) {
-            selectToRetrieveJobStatusQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.USER_ID_FIELD + " = '" + userId + "'");
+            selectToRetrieveJobStatusQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.USER_ID_FIELD + "=?");
         }
 
         if (!isEmptyField(iceId)) {
-            selectToRetrieveJobStatusQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.ICE_ID_FIELD + " = '" + iceId + "'");
+            selectToRetrieveJobStatusQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.ICE_ID_FIELD + "=?");
         }
 
         if (!isEmptyField(fromJobStatusId)) {
-            selectToRetrieveJobStatusQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " >= " + fromJobStatusId);
+            selectToRetrieveJobStatusQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " >= ?");
         }
+        
         if (!isEmptyField(toJobStatusId)) {
-            selectToRetrieveJobStatusQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " <= " + toJobStatusId);
+            selectToRetrieveJobStatusQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " <= ?");
         }
 
         if (fromDate != null) {
-            Timestamp fromDateTimestampField = new java.sql.Timestamp(fromDate.getTimeInMillis());
-            selectToRetrieveJobStatusQuery.append(" and " + JobStatusTable.TIMESTAMP_FIELD + " >= '" + fromDateTimestampField.toString() + "'");
+            selectToRetrieveJobStatusQuery.append(" and " + JobStatusTable.TIMESTAMP_FIELD + " >= ?");
         }
+        
         if (toDate != null) {
-            Timestamp toDateTimestampField = new java.sql.Timestamp(toDate.getTimeInMillis());
-            selectToRetrieveJobStatusQuery.append(" and " + JobStatusTable.TIMESTAMP_FIELD + " <= '" + toDateTimestampField.toString() + "'");
+            selectToRetrieveJobStatusQuery.append(" and " + JobStatusTable.TIMESTAMP_FIELD + " <= ?");
         }
+        
         selectToRetrieveJobStatusQuery.append(" ORDER BY " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD);
         selectToRetrieveJobStatusQuery.append(" limit " + maxEvents);
         logger.debug("selectToRetrieveJobStatusQuery = " + selectToRetrieveJobStatusQuery.toString());
@@ -382,44 +381,42 @@ public class JobStatusTable implements JobStatusTableInterface {
 
         if ((jobStatusType != null) && (jobStatusType.length > 0)) {
             StringBuffer jobStatusTypeList = new StringBuffer();
-            
+
             for (int i = 0; i < jobStatusType.length; i++) {
                 jobStatusTypeList.append(", '" + jobStatusType[i] + "'");
             }
-            
+
             jobStatusTypeList.deleteCharAt(0);
             selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.TYPE_FIELD + " IN (" + jobStatusTypeList.toString() + ")");
         }
-        
+
         if (!isEmptyField(userId)) {
-            selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.USER_ID_FIELD + " = '" + userId + "'");
+            selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.USER_ID_FIELD + "=?");
         }
 
         if (!isEmptyField(iceId)) {
-            selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.ICE_ID_FIELD + " = '" + iceId + "'");
+            selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.ICE_ID_FIELD + "=?");
         }
 
         if (!isEmptyField(fromJobStatusId)) {
-            selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " >= " + fromJobStatusId);
+            selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " >= ?");
         }
-        
+
         if (!isEmptyField(toJobStatusId)) {
-            selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " <= " + toJobStatusId);
+            selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" and " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD + " <= ?");
         }
 
         if (fromDate != null) {
-            Timestamp fromDateTimestampField = new java.sql.Timestamp(fromDate.getTimeInMillis());
-            selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" and " + JobStatusTable.TIMESTAMP_FIELD + " >= '" + fromDateTimestampField.toString() + "'");
+            selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" and " + JobStatusTable.TIMESTAMP_FIELD + " >= ?");
         }
-        
+
         if (toDate != null) {
-            Timestamp toDateTimestampField = new java.sql.Timestamp(toDate.getTimeInMillis());
-            selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" and " + JobStatusTable.TIMESTAMP_FIELD + " <= '" + toDateTimestampField.toString() + "'");
+            selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" and " + JobStatusTable.TIMESTAMP_FIELD + " <= ?");
         }
-        
+
         selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" ORDER BY " + JobStatusTable.NAME_TABLE + "." + JobStatusTable.ID_FIELD);
         selectToRetrieveJobStatusTableJobTableAsEventQuery.append(" limit " + maxEvents);
-        
+
         logger.debug("selectToRetrieveJobStatusQuery = " + selectToRetrieveJobStatusTableJobTableAsEventQuery.toString());
 
         return selectToRetrieveJobStatusTableJobTableAsEventQuery.toString();
@@ -470,14 +467,39 @@ public class JobStatusTable implements JobStatusTableInterface {
         logger.debug("End executeUpdateStatusHistory for jobid = " + jobId);
     }
 
-    public List<JobStatus> executeSelectToRetrieveJobStatus(String fromJobStatusId, String toJobStatusId, Calendar fromDate, Calendar toDate, int maxElements, String iceId, String userId, Connection connection)
-            throws SQLException {
+    public List<JobStatus> executeSelectToRetrieveJobStatus(String fromJobStatusId, String toJobStatusId, Calendar fromDate, Calendar toDate, int maxElements, String iceId, String userId, Connection connection) throws SQLException {
         logger.debug("Begin executeSelectToRetrieveJobStatus");
         List<JobStatus> jobStatusDBList = null;
         PreparedStatement selectToRetrieveJobStatusPreparedStatement = null;
         try {
+            int index = 0;
+            
             selectToRetrieveJobStatusPreparedStatement = connection.prepareStatement(getSelectToRetrieveJobStatusQuery(fromJobStatusId, toJobStatusId, fromDate, toDate, maxElements, iceId, userId));
 
+            if (!isEmptyField(userId)) {
+                selectToRetrieveJobStatusPreparedStatement.setString(++index, userId);
+            }
+
+            if (!isEmptyField(iceId)) {
+                selectToRetrieveJobStatusPreparedStatement.setString(++index, iceId);
+            }
+
+            if (!isEmptyField(fromJobStatusId)) {
+                selectToRetrieveJobStatusPreparedStatement.setString(++index, fromJobStatusId);
+            }
+            
+            if (!isEmptyField(toJobStatusId)) {
+                selectToRetrieveJobStatusPreparedStatement.setString(++index, toJobStatusId);
+            }
+
+            if (fromDate != null) {
+                selectToRetrieveJobStatusPreparedStatement.setTimestamp(++index, new java.sql.Timestamp(fromDate.getTimeInMillis()));
+            }
+            
+            if (toDate != null) {
+                selectToRetrieveJobStatusPreparedStatement.setTimestamp(++index, new java.sql.Timestamp(toDate.getTimeInMillis()));
+            }
+                        
             // execute query, and return number of rows created
             ResultSet rs = selectToRetrieveJobStatusPreparedStatement.executeQuery();
             if ((rs != null)) {
@@ -498,15 +520,39 @@ public class JobStatusTable implements JobStatusTableInterface {
         return jobStatusDBList;
     }
 
-    public List<Event> executeSelectToRetrieveJobStatusAsEvent(String fromJobStatusId, String toJobStatusId, Calendar fromDate, Calendar toDate, int[] jobStatusType, int maxElements, String iceId, String userId,
-            Connection connection) throws SQLException {
+    public List<Event> executeSelectToRetrieveJobStatusAsEvent(String fromJobStatusId, String toJobStatusId, Calendar fromDate, Calendar toDate, int[] jobStatusType, int maxElements, String iceId, String userId, Connection connection) throws SQLException {
         logger.debug("Begin executeSelectToRetrieveJobStatusAsEvent");
         List<Event> eventList = null;
         PreparedStatement selectToRetrieveJobStatusAsEventPreparedStatement = null;
         try {
-            selectToRetrieveJobStatusAsEventPreparedStatement = connection.prepareStatement(getSelectToRetrieveJobStatusAsEventQuery(fromJobStatusId, toJobStatusId, fromDate, toDate, jobStatusType, maxElements, iceId,
-                    userId));
+            int index = 0;
+            
+            selectToRetrieveJobStatusAsEventPreparedStatement = connection.prepareStatement(getSelectToRetrieveJobStatusAsEventQuery(fromJobStatusId, toJobStatusId, fromDate, toDate, jobStatusType, maxElements, iceId, userId));
 
+            if (!isEmptyField(userId)) {
+                selectToRetrieveJobStatusAsEventPreparedStatement.setString(++index, userId);
+            }
+
+            if (!isEmptyField(iceId)) {
+                selectToRetrieveJobStatusAsEventPreparedStatement.setString(++index, iceId);
+            }
+
+            if (!isEmptyField(fromJobStatusId)) {
+                selectToRetrieveJobStatusAsEventPreparedStatement.setString(++index, fromJobStatusId);
+            }
+
+            if (!isEmptyField(toJobStatusId)) {
+                selectToRetrieveJobStatusAsEventPreparedStatement.setString(++index, toJobStatusId);
+            }
+
+            if (fromDate != null) {
+                selectToRetrieveJobStatusAsEventPreparedStatement.setTimestamp(++index, new java.sql.Timestamp(fromDate.getTimeInMillis()));
+            }
+
+            if (toDate != null) {
+                selectToRetrieveJobStatusAsEventPreparedStatement.setTimestamp(++index, new java.sql.Timestamp(toDate.getTimeInMillis()));
+            }
+            
             // execute query, and return number of rows created
             ResultSet rs = selectToRetrieveJobStatusAsEventPreparedStatement.executeQuery();
             if ((rs != null)) {

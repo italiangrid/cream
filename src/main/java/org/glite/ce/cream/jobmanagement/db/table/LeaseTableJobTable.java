@@ -31,63 +31,85 @@ import java.sql.SQLException;
 import org.apache.log4j.Logger;
 import org.glite.ce.creamapi.jobmanagement.db.table.LeaseTableJobTableInterface;
 
-public class LeaseTableJobTable implements LeaseTableJobTableInterface{
+public class LeaseTableJobTable implements LeaseTableJobTableInterface {
 
-	private final static Logger logger = Logger.getLogger(LeaseTableJobTable.class);
+    private final static Logger logger = Logger.getLogger(LeaseTableJobTable.class);
 
-	public LeaseTableJobTable() throws SQLException {
-		logger.debug("Call LeaseTableJobTable constructor");
-	}
-	
-	public int setLeaseId(String leaseId, String jobId, String userId, Connection connection) throws SQLException {
-		logger.debug("Begin setLease");
-		int rowCount  = 0;
-		/*
-		if (!JobTable.isLeaseIdAllowed(leaseId)){
-			throw new IllegalArgumentException("LeaseId is invalid. It mustn't contain " + JobTable.UNDERSCORE +
-					                            " and the '" + JobTable.EXPIRED_STRING + "' string.");
-		}
-		*/
-		PreparedStatement updateLeasePreparedStatement = null;
-		try{
-		  updateLeasePreparedStatement = connection.prepareStatement(getUpdateLeaseIdQuery(leaseId, jobId, userId));
-		  // execute query, and return number of rows created
-		  rowCount = updateLeasePreparedStatement.executeUpdate();
-		  logger.debug("Lease updated: " + rowCount); 
+    public LeaseTableJobTable() throws SQLException {
+        logger.debug("Call LeaseTableJobTable constructor");
+    }
+
+    public int setLeaseId(String leaseId, String jobId, String userId, Connection connection) throws SQLException {
+        logger.debug("Begin setLease");
+        int rowCount = 0;
+        /*
+         * if (!JobTable.isLeaseIdAllowed(leaseId)){ throw new
+         * IllegalArgumentException("LeaseId is invalid. It mustn't contain " +
+         * JobTable.UNDERSCORE + " and the '" + JobTable.EXPIRED_STRING +
+         * "' string."); }
+         */
+        PreparedStatement updateLeasePreparedStatement = null;
+        try {
+            int index = 0;
+            updateLeasePreparedStatement = connection.prepareStatement(getUpdateLeaseIdQuery(leaseId, jobId, userId));
+
+            if (leaseId != null) {
+                updateLeasePreparedStatement.setString(++index, leaseId);
+            }
+
+            if (userId != null) {
+                updateLeasePreparedStatement.setString(++index, userId);
+            }
+
+            if (jobId != null) {
+                updateLeasePreparedStatement.setString(++index, jobId);
+            }
+
+            // execute query, and return number of rows created
+            rowCount = updateLeasePreparedStatement.executeUpdate();
+            logger.debug("Lease updated: " + rowCount);
         } catch (SQLException sqle) {
-          throw sqle;
+            throw sqle;
         } finally {
-          if (updateLeasePreparedStatement != null) {
-            try {
-            	updateLeasePreparedStatement.close();
-            } catch (SQLException sqle1) {
-              logger.error(sqle1);
-            } 
-          }
+            if (updateLeasePreparedStatement != null) {
+                try {
+                    updateLeasePreparedStatement.close();
+                } catch (SQLException sqle1) {
+                    logger.error(sqle1);
+                }
+            }
         }
-		logger.debug("End setLease");
-		return rowCount;
-	}
-	
-	private static String getUpdateLeaseIdQuery(String leaseId, String jobId, String userId) {
-		StringBuffer updateQuery = new StringBuffer();
-		updateQuery.append("update  ");
-		updateQuery.append(JobTable.NAME_TABLE);		
-		if (leaseId != null){
-			updateQuery.append(", " + LeaseTable.NAME_TABLE);
-			updateQuery.append(" set " + JobTable.NAME_TABLE + "." + JobTable.LEASE_ID_FIELD + " = '" + leaseId + "'");
-		} else {
-			updateQuery.append(" set " + JobTable.NAME_TABLE + "." + JobTable.LEASE_ID_FIELD + " = " + leaseId);
-		}
-		updateQuery.append(" where ");
-		updateQuery.append(JobTable.NAME_TABLE + "." + JobTable.USER_ID_FIELD      + " = '" + userId + "'");
-		updateQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.ID_FIELD + " = '" + jobId  + "'");
-		updateQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.LEASE_TIME_FIELD  + " IS NULL");
-		if (leaseId != null){
-			updateQuery.append(" and " + LeaseTable.NAME_TABLE + "." + LeaseTable.LEASE_ID_FIELD + " = '"  + leaseId + "'");
-			updateQuery.append(" and " + LeaseTable.NAME_TABLE + "." + LeaseTable.USER_ID_FIELD  + " = "  + 
-					           JobTable.NAME_TABLE + "." + JobTable.USER_ID_FIELD);              
-		}
-		return updateQuery.toString();
-	}
+        logger.debug("End setLease");
+        return rowCount;
+    }
+
+    private static String getUpdateLeaseIdQuery(String leaseId, String jobId, String userId) {
+        StringBuffer updateQuery = new StringBuffer();
+        updateQuery.append("update  ");
+        updateQuery.append(JobTable.NAME_TABLE);
+
+        if (leaseId != null) {
+            updateQuery.append(", " + LeaseTable.NAME_TABLE);
+            updateQuery.append(" set " + JobTable.NAME_TABLE + "." + JobTable.LEASE_ID_FIELD + "=?");
+        } else {
+            updateQuery.append(" set " + JobTable.NAME_TABLE + "." + JobTable.LEASE_ID_FIELD + "=" + leaseId);
+        }
+
+        updateQuery.append(" where true");
+
+        if (userId != null) {
+            updateQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.USER_ID_FIELD + "=?");
+        }
+
+        if (jobId != null) {
+            updateQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.ID_FIELD + "=?");
+        }
+
+        updateQuery.append(" and " + JobTable.NAME_TABLE + "." + JobTable.LEASE_TIME_FIELD + " IS NULL");
+        if (leaseId != null) {
+            updateQuery.append(" and " + LeaseTable.NAME_TABLE + "." + LeaseTable.LEASE_ID_FIELD + "=?");
+            updateQuery.append(" and " + LeaseTable.NAME_TABLE + "." + LeaseTable.USER_ID_FIELD + " = " + JobTable.NAME_TABLE + "." + JobTable.USER_ID_FIELD);
+        }
+        return updateQuery.toString();
+    }
 }

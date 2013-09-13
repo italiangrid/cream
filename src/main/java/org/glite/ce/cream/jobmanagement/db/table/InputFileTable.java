@@ -37,7 +37,6 @@ import org.glite.ce.creamapi.jobmanagement.db.table.InputFileTableInterface;
 public class InputFileTable implements InputFileTableInterface {
 
     public final static String NAME_TABLE = "input_file";
-
     public final static String VALUE_FIELD = "value";
     public final static String JOB_ID_FIELD = "jobId";
 
@@ -159,8 +158,7 @@ public class InputFileTable implements InputFileTableInterface {
         insertQuery.append(" ( ");
         insertQuery.append(InputFileTable.VALUE_FIELD + ", ");
         insertQuery.append(InputFileTable.JOB_ID_FIELD);
-        insertQuery.append(" ) ");
-        insertQuery.append("values(?, ?)");
+        insertQuery.append(" ) values(?, ?)");
         return insertQuery.toString();
     }
 
@@ -169,7 +167,7 @@ public class InputFileTable implements InputFileTableInterface {
         deleteQuery.append("delete from ");
         deleteQuery.append(InputFileTable.NAME_TABLE);
         deleteQuery.append(" where ");
-        deleteQuery.append(InputFileTable.JOB_ID_FIELD + " = ?");
+        deleteQuery.append(InputFileTable.JOB_ID_FIELD + "=?");
         return deleteQuery.toString();
     }
 
@@ -179,7 +177,7 @@ public class InputFileTable implements InputFileTableInterface {
         selectQuery.append(InputFileTable.VALUE_FIELD);
         selectQuery.append(" from " + InputFileTable.NAME_TABLE);
         selectQuery.append(" where ");
-        selectQuery.append(InputFileTable.JOB_ID_FIELD + " = ?");
+        selectQuery.append(InputFileTable.JOB_ID_FIELD + "=?");
         return selectQuery.toString();
     }
 

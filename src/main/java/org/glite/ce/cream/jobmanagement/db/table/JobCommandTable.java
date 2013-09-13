@@ -39,7 +39,7 @@ import org.glite.ce.creamapi.jobmanagement.db.table.JobCommandTableInterface;
 
 public class JobCommandTable implements JobCommandTableInterface {
     private final static Logger logger = Logger.getLogger(JobCommandTable.class.getName());
-    
+
     public final static String NAME_TABLE = "job_command";
     public final static String ID_FIELD = "id";
     public final static String DESCRIPTION_FIELD = "description";
@@ -70,7 +70,7 @@ public class JobCommandTable implements JobCommandTableInterface {
         queryInsertJobStatusTable.append("delete from ");
         queryInsertJobStatusTable.append(JobCommandTable.NAME_TABLE);
         queryInsertJobStatusTable.append(" where ");
-        queryInsertJobStatusTable.append(JobCommandTable.JOB_ID_FIELD + " = ? ");
+        queryInsertJobStatusTable.append(JobCommandTable.JOB_ID_FIELD + "=?");
         return queryInsertJobStatusTable.toString();
     }
 
@@ -90,8 +90,7 @@ public class JobCommandTable implements JobCommandTableInterface {
         queryInsertJobCommandQuery.append(JobCommandTable.EXECUTION_COMPLETED_TIME_FIELD + ", ");
         queryInsertJobCommandQuery.append(JobCommandTable.CREATION_TIME_FIELD + ", ");
         queryInsertJobCommandQuery.append(JobCommandTable.TYPE_FIELD);
-        queryInsertJobCommandQuery.append(" ) ");
-        queryInsertJobCommandQuery.append("values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        queryInsertJobCommandQuery.append(" ) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         return queryInsertJobCommandQuery.toString();
     }
 
@@ -112,7 +111,7 @@ public class JobCommandTable implements JobCommandTableInterface {
         selectLastJobCommandQuery.append(ID_FIELD + " AS " + ID_FIELD);
         selectLastJobCommandQuery.append(" from " + JobCommandTable.NAME_TABLE);
         selectLastJobCommandQuery.append(" where ");
-        selectLastJobCommandQuery.append(JobCommandTable.JOB_ID_FIELD + " = ? ");
+        selectLastJobCommandQuery.append(JobCommandTable.JOB_ID_FIELD + "=?");
         selectLastJobCommandQuery.append(" ORDER BY " + JobCommandTable.ID_FIELD);
         return selectLastJobCommandQuery.toString();
     }
@@ -123,24 +122,24 @@ public class JobCommandTable implements JobCommandTableInterface {
         selectJobCommandQuery.append(JOB_ID_FIELD + " AS " + JOB_ID_FIELD);
         selectJobCommandQuery.append(" from " + JobCommandTable.NAME_TABLE);
         selectJobCommandQuery.append(" where ");
-        selectJobCommandQuery.append(JobCommandTable.TYPE_FIELD + " = 0 ");
+        selectJobCommandQuery.append(JobCommandTable.TYPE_FIELD + "=0");
+        
         if (startDate != null) {
-            Timestamp startDateTimestampField = new java.sql.Timestamp(startDate.getTimeInMillis());
-            selectJobCommandQuery.append(" and " + JobCommandTable.CREATION_TIME_FIELD + " >= '" + startDateTimestampField.toString() + "'");
+            selectJobCommandQuery.append(" and " + JobCommandTable.CREATION_TIME_FIELD + " >= ?");
         }
+        
         if (endDate != null) {
-            Timestamp endDateTimestampField = new java.sql.Timestamp(endDate.getTimeInMillis());
-            selectJobCommandQuery.append(" and " + JobCommandTable.CREATION_TIME_FIELD + " <= '" + endDateTimestampField.toString() + "'");
+            selectJobCommandQuery.append(" and " + JobCommandTable.CREATION_TIME_FIELD + " <= ?");
         }
 
         if (userId != null) {
-            selectJobCommandQuery.append(" and " + JobCommandTable.USER_ID_FIELD + " = '" + userId + "' ");
+            selectJobCommandQuery.append(" and " + JobCommandTable.USER_ID_FIELD + "=?");
         }
 
         if ((jobId != null) && (jobId.size() > 0)) {
             StringBuffer jobIdList = new StringBuffer();
             for (int i = 0; i < jobId.size(); i++) {
-                jobIdList.append(", " + "'" + jobId.get(i) + "'");
+                jobIdList.append(", '" + jobId.get(i) + "'");
             }
             jobIdList.deleteCharAt(0);
             selectJobCommandQuery.append(" and " + JobCommandTable.JOB_ID_FIELD + " IN (" + jobIdList.toString() + ")");
@@ -157,18 +156,18 @@ public class JobCommandTable implements JobCommandTableInterface {
         StringBuffer updateQuery = new StringBuffer();
         updateQuery.append("update ");
         updateQuery.append(JobCommandTable.NAME_TABLE);
-        updateQuery.append(" set " + JobCommandTable.DESCRIPTION_FIELD + " = ? " + ", ");
-        updateQuery.append(JobCommandTable.STATUS_TYPE_FIELD + " = ? " + ", ");
-        updateQuery.append(JobCommandTable.FAILURE_REASON_FIELD + " = ? " + ", ");
-        updateQuery.append(JobCommandTable.CMD_EXECUTOR_NAME_FIELD + " = ? " + ", ");
-        updateQuery.append(JobCommandTable.START_SCHEDULING_TIME_FIELD + " = ? " + ", ");
-        updateQuery.append(JobCommandTable.START_PROCESSING_TIME_FIELD + " = ? " + ", ");
-        updateQuery.append(JobCommandTable.EXECUTION_COMPLETED_TIME_FIELD + " = ? " + ", ");
-        updateQuery.append(JobCommandTable.CREATION_TIME_FIELD + " = ? " + ", ");
-        updateQuery.append(JobCommandTable.TYPE_FIELD + " = ? ");
-        updateQuery.append("where ");
-        updateQuery.append(JobCommandTable.ID_FIELD + " = ? ");
-        updateQuery.append(" and " + JobCommandTable.JOB_ID_FIELD + " = ? ");
+        updateQuery.append(" set " + JobCommandTable.DESCRIPTION_FIELD + "=?, ");
+        updateQuery.append(JobCommandTable.STATUS_TYPE_FIELD + "=?, ");
+        updateQuery.append(JobCommandTable.FAILURE_REASON_FIELD + "=?, ");
+        updateQuery.append(JobCommandTable.CMD_EXECUTOR_NAME_FIELD + "=?, ");
+        updateQuery.append(JobCommandTable.START_SCHEDULING_TIME_FIELD + "=?, ");
+        updateQuery.append(JobCommandTable.START_PROCESSING_TIME_FIELD + "=?, ");
+        updateQuery.append(JobCommandTable.EXECUTION_COMPLETED_TIME_FIELD + "=?, ");
+        updateQuery.append(JobCommandTable.CREATION_TIME_FIELD + "=?, ");
+        updateQuery.append(JobCommandTable.TYPE_FIELD + "=?");
+        updateQuery.append(" where ");
+        updateQuery.append(JobCommandTable.ID_FIELD + "=?");
+        updateQuery.append(" and " + JobCommandTable.JOB_ID_FIELD + "=?");
         return updateQuery.toString();
     }
 
@@ -195,24 +194,28 @@ public class JobCommandTable implements JobCommandTableInterface {
             calendar.setTimeInMillis(timeStampField.getTime());
             jobCommand.setStartSchedulingTime(calendar);
         }
+        
         timeStampField = rs.getTimestamp(START_PROCESSING_TIME_FIELD);
         if (timeStampField != null) {
             calendar = Calendar.getInstance();
             calendar.setTimeInMillis(timeStampField.getTime());
             jobCommand.setStartProcessingTime(calendar);
         }
+        
         timeStampField = rs.getTimestamp(EXECUTION_COMPLETED_TIME_FIELD);
         if (timeStampField != null) {
             calendar = Calendar.getInstance();
             calendar.setTimeInMillis(timeStampField.getTime());
             jobCommand.setExecutionCompletedTime(calendar);
         }
+        
         timeStampField = rs.getTimestamp(CREATION_TIME_FIELD);
         if (timeStampField != null) {
             calendar = Calendar.getInstance();
             calendar.setTimeInMillis(timeStampField.getTime());
             jobCommand.setCreationTime(calendar);
         }
+        
         int id = rs.getInt(ID_FIELD);
         jobCommand.setId(id);
 
@@ -259,7 +262,7 @@ public class JobCommandTable implements JobCommandTableInterface {
         ResultSet rset = null;
         int rowCountTot = 0;
         try {
-            insertPreparedStatement = connection.prepareStatement(insertQuery,  PreparedStatement.RETURN_GENERATED_KEYS);
+            insertPreparedStatement = connection.prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
 
             int rowCount = 0;
             for (int index = 0; index < jobCommandList.size(); index++) {
@@ -298,7 +301,7 @@ public class JobCommandTable implements JobCommandTableInterface {
         logger.debug("End executeInsert");
         return rowCountTot;
     }
-    
+
     public List<JobCommand> executeSelectJobCommandHistory(String jobId, Connection connection) throws SQLException {
         return this.selectJobCommandHistory(jobId, connection);
     }
@@ -320,10 +323,26 @@ public class JobCommandTable implements JobCommandTableInterface {
         logger.debug("Begin executeSelectToRetrieveJobIdByDate");
         List<String> jobIdList = new ArrayList<String>();
         String selectQuery = getSelectQuery(jobId, userId, startDate, endDate);
+                
         logger.debug("selectQuery (JobCommandTable)= " + selectQuery);
         PreparedStatement selectPreparedStatement = null;
+        
         try {
+            int index = 0;
             selectPreparedStatement = connection.prepareStatement(selectQuery);
+            
+            if (startDate != null) {
+                selectPreparedStatement.setTimestamp(++index, new java.sql.Timestamp(startDate.getTimeInMillis()));
+            }
+            
+            if (endDate != null) {
+                selectPreparedStatement.setTimestamp(++index, new java.sql.Timestamp(endDate.getTimeInMillis()));
+            }
+
+            if (userId != null) {
+                selectPreparedStatement.setString(++index, userId);
+            }
+            
             // execute query, and return number of rows created
             ResultSet rs = selectPreparedStatement.executeQuery();
             if ((rs != null)) {
@@ -350,8 +369,7 @@ public class JobCommandTable implements JobCommandTableInterface {
         logger.debug("Begin executeUpdateCommandHistory for jobid = " + jobId);
         List<JobCommand> jobCommandDBList = selectJobCommandHistory(jobId, connection);
         if (jobCommandList.size() != jobCommandDBList.size()) {
-            String errorMsg = "Error updating CommandHistory for jobid = " + jobId + ". Num Commands in db = " + jobCommandDBList.size() + " Num Commands in updating = "
-                    + jobCommandList.size();
+            String errorMsg = "Error updating CommandHistory for jobid = " + jobId + ". Num Commands in db = " + jobCommandDBList.size() + " Num Commands in updating = " + jobCommandList.size();
             logger.error(errorMsg);
             throw new SQLException(errorMsg);
         }
@@ -379,10 +397,12 @@ public class JobCommandTable implements JobCommandTableInterface {
         insertPreparedStatement.setString(4, jobCommand.getJobId());
         insertPreparedStatement.setString(5, jobCommand.getCommandExecutorName());
         String userId = jobCommand.getUserId();
+        
         if (userId == null) {
             userId = JobCommandTable.USERID_ADMINISTRATOR;
         }
         insertPreparedStatement.setString(6, userId);
+        
         if (jobCommand.getStartSchedulingTime() != null) {
             insertPreparedStatement.setTimestamp(7, new java.sql.Timestamp(jobCommand.getStartSchedulingTime().getTimeInMillis()));
         } else {
@@ -394,16 +414,19 @@ public class JobCommandTable implements JobCommandTableInterface {
         } else {
             insertPreparedStatement.setTimestamp(8, null);
         }
+        
         if (jobCommand.getExecutionCompletedTime() != null) {
             insertPreparedStatement.setTimestamp(9, new java.sql.Timestamp(jobCommand.getExecutionCompletedTime().getTimeInMillis()));
         } else {
             insertPreparedStatement.setTimestamp(9, null);
         }
+        
         if (jobCommand.getCreationTime() != null) {
             insertPreparedStatement.setTimestamp(10, new java.sql.Timestamp(jobCommand.getCreationTime().getTimeInMillis()));
         } else {
             insertPreparedStatement.setTimestamp(10, null);
         }
+        
         insertPreparedStatement.setInt(11, jobCommand.getType());
         return insertPreparedStatement;
     }
@@ -424,21 +447,25 @@ public class JobCommandTable implements JobCommandTableInterface {
         } else {
             updatePreparedStatement.setTimestamp(5, null);
         }
+        
         if (jobCommand.getStartProcessingTime() != null) {
             updatePreparedStatement.setTimestamp(6, new java.sql.Timestamp(jobCommand.getStartProcessingTime().getTimeInMillis()));
         } else {
             updatePreparedStatement.setTimestamp(6, null);
         }
+        
         if (jobCommand.getExecutionCompletedTime() != null) {
             updatePreparedStatement.setTimestamp(7, new java.sql.Timestamp(jobCommand.getExecutionCompletedTime().getTimeInMillis()));
         } else {
             updatePreparedStatement.setTimestamp(7, null);
         }
+        
         if (jobCommand.getCreationTime() != null) {
             updatePreparedStatement.setTimestamp(8, new java.sql.Timestamp(jobCommand.getCreationTime().getTimeInMillis()));
         } else {
             updatePreparedStatement.setTimestamp(8, null);
         }
+        
         updatePreparedStatement.setInt(9, jobCommand.getType());
         updatePreparedStatement.setLong(10, jobCommand.getId());
         updatePreparedStatement.setString(11, jobCommand.getJobId());
@@ -536,20 +563,19 @@ public class JobCommandTable implements JobCommandTableInterface {
         logger.debug("End updateJobCommand");
     }
 
-    public int executeUpdateAllUnterminatedJobCommandQuery(int newStatus, int[] oldStatus, String failureReason, Calendar executionCompletedTime, Connection connection)
-            throws SQLException {
+    public int executeUpdateAllUnterminatedJobCommandQuery(int newStatus, int[] oldStatus, String failureReason, Calendar executionCompletedTime, Connection connection) throws SQLException {
         logger.debug("Begin executeUpdateAllUnterminatedJobCommandQuery");
         StringBuffer updateQuery = new StringBuffer();
         updateQuery.append("update ");
         updateQuery.append(JobCommandTable.NAME_TABLE);
-        updateQuery.append(" set " + JobCommandTable.STATUS_TYPE_FIELD + " = '" + newStatus + "'");
-        
+        updateQuery.append(" set " + JobCommandTable.STATUS_TYPE_FIELD + "=?");
+
         if (failureReason != null) {
-            updateQuery.append(", " + JobCommandTable.FAILURE_REASON_FIELD + " = '" + failureReason + "'");
+            updateQuery.append(", " + JobCommandTable.FAILURE_REASON_FIELD + "=?");
         }
 
         if (executionCompletedTime != null) {
-            updateQuery.append(", " + JobCommandTable.EXECUTION_COMPLETED_TIME_FIELD + " = '" + new Timestamp(executionCompletedTime.getTimeInMillis()).toString() + "'");
+            updateQuery.append(", " + JobCommandTable.EXECUTION_COMPLETED_TIME_FIELD + "=?");
         }
 
         updateQuery.append(" where ");
@@ -566,7 +592,19 @@ public class JobCommandTable implements JobCommandTableInterface {
         PreparedStatement updatePreparedStatement = null;
         int result;
         try {
+            int index = 0;
+            
             updatePreparedStatement = connection.prepareStatement(updateQuery.toString());
+            updatePreparedStatement.setInt(++index, newStatus);
+            
+            if (failureReason != null) {
+                updatePreparedStatement.setString(++index, failureReason);
+            }
+
+            if (executionCompletedTime != null) {
+                updatePreparedStatement.setTimestamp(++index, new Timestamp(executionCompletedTime.getTimeInMillis()));
+            }
+            
             result = updatePreparedStatement.executeUpdate();
         } catch (SQLException sqle) {
             throw sqle;

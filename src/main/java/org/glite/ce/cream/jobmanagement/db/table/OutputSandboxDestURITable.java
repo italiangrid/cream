@@ -37,7 +37,6 @@ import org.glite.ce.creamapi.jobmanagement.db.table.OutputSandboxDestURITableInt
 public class OutputSandboxDestURITable implements OutputSandboxDestURITableInterface {
 
     public final static String NAME_TABLE = "output_sandbox_dest_URI";
-
     public final static String VALUE_FIELD = "value";
     public final static String JOB_ID_FIELD = "jobId";
 
@@ -163,8 +162,7 @@ public class OutputSandboxDestURITable implements OutputSandboxDestURITableInter
         insertQuery.append(" ( ");
         insertQuery.append(OutputSandboxDestURITable.VALUE_FIELD + ", ");
         insertQuery.append(OutputSandboxDestURITable.JOB_ID_FIELD);
-        insertQuery.append(" ) ");
-        insertQuery.append("values(?, ?)");
+        insertQuery.append(" ) values(?, ?)");
         return insertQuery.toString();
     }
 
@@ -173,7 +171,7 @@ public class OutputSandboxDestURITable implements OutputSandboxDestURITableInter
         deleteQuery.append("delete from ");
         deleteQuery.append(OutputSandboxDestURITable.NAME_TABLE);
         deleteQuery.append(" where ");
-        deleteQuery.append(OutputSandboxDestURITable.JOB_ID_FIELD + " = ?");
+        deleteQuery.append(OutputSandboxDestURITable.JOB_ID_FIELD + "=?");
         return deleteQuery.toString();
     }
 
@@ -183,7 +181,7 @@ public class OutputSandboxDestURITable implements OutputSandboxDestURITableInter
         selectQuery.append(OutputSandboxDestURITable.VALUE_FIELD);
         selectQuery.append(" from " + OutputSandboxDestURITable.NAME_TABLE);
         selectQuery.append(" where ");
-        selectQuery.append(OutputSandboxDestURITable.JOB_ID_FIELD + " = ?");
+        selectQuery.append(OutputSandboxDestURITable.JOB_ID_FIELD + "=?");
         return selectQuery.toString();
     }
 
