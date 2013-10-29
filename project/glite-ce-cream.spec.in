@@ -13,7 +13,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 AutoReqProv: yes
 Source: %{name}.tar.gz
 
-%global _tomcat @TOMCATPKG@
+%global _tomcat %{?el6:tomcat6}%{!?el6:tomcat5}
 %global _creamlibdir /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
 %global _eslibdir /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
 
