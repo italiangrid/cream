@@ -14,7 +14,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 AutoReqProv: yes
 Source: %{name}.tar.gz
 
-%global _tomcat @TOMCATPKG@
+%global _tomcat %{?el6:tomcat6}%{!?el6:tomcat5}
 
 %description
 The Computing Resource Execution And Management service is a web application

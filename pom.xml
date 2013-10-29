@@ -292,7 +292,6 @@
                       <replacefilter token="@PKGVERSION@" value="${project.version}"/>
                       <replacefilter token="@PKGRELEASE@" value="${rpm.release}"/>
                       <replacefilter token="@MVNOPTS@" value="-Drpm.repackaging=false -DskipTests"/>
-                      <replacefilter token="@TOMCATPKG@" value="${tomcat.pkg.name}"/>
                     </replace>
                     <exec executable="/usr/bin/rpmbuild">
                       <arg line="-ba --define '_topdir ${project.build.directory}/rpmbuild' ${project.build.directory}/rpmbuild/SPECS/${rpm.pkgname}.spec"/>
