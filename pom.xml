@@ -15,7 +15,7 @@
   <parent>
     <groupId>org.glite</groupId>
     <artifactId>cream-parent</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.2-SNAPSHOT</version>
   </parent>
 
   <scm>
