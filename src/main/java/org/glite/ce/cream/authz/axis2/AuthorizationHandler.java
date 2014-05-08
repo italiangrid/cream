@@ -155,7 +155,11 @@ public class AuthorizationHandler
             return new AxisFault(faultCode, faultReason, null, null, faultDetail);
 
         } catch (Exception ex) {
-            logger.error(ex.getMessage());
+            if (logger.isDebugEnabled()) {
+                logger.error(ex.getMessage(), ex);
+            } else {
+                logger.error(ex.getMessage());
+            }
         }
 
         return new AxisFault(faultReason);

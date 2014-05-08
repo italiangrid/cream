@@ -123,7 +123,11 @@ public class DlgProxyChecker
                 msgContext.setProperty(AuthZConstants.DLG_PROXY_CERT_LIST, delegProxyChain);
 
             } catch (Throwable th) {
-                logger.error(("Error checking delegated proxy: " + th.getMessage());
+                if (logger.isDebugEnabled()) {
+                    logger.error("Error checking delegated proxy", th);
+                } else {
+                    logger.error("Error checking delegated proxy: " + th.getMessage());
+                }
                 throw getDelegationFault("Error checking delegated proxy: " + th.getMessage(), msgContext);
             }
 
@@ -152,7 +156,11 @@ public class DlgProxyChecker
             return new AxisFault(faultCode, faultReason, null, null, faultDetail);
 
         } catch (Throwable th) {
-            logger.error(th.getMessage());
+            if (logger.isDebugEnabled()) {
+                logger.error(th.getMessage(), th);
+            } else {
+                logger.error(th.getMessage());
+            }
         }
 
         return new AxisFault(faultReason);
