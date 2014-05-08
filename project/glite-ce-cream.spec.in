@@ -363,11 +363,15 @@ fi
 
 
 %changelog
-* Mon Sep 30 2013 CREAM group <cream-support@lists.infn.it> - @PKGVERSION@-@PKGRELEASE@
+* Fri May 30 2014 CREAM group <cream-support@lists.infn.it> - @PKGVERSION@-@PKGRELEASE@
+- Fix for bug https://issues.infn.it/jira/browse/CREAM-134
+- Fix for bug https://issues.infn.it/jira/browse/CREAM-145
+
+* Mon Sep 30 2013 CREAM group <cream-support@lists.infn.it> - 1.16.2-1
 - Fix for bug https://issues.infn.it/jira/browse/CREAM-111
 - Fix for bug https://issues.infn.it/jira/browse/CREAM-113
 
-* Fri Jun 28 2013 CREAM group <cream-support@lists.infn.it> - 1.16.2-1
+* Fri Jun 28 2013 CREAM group <cream-support@lists.infn.it> - 1.16.1-2
 - New major release
 
 

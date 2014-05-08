@@ -4,7 +4,7 @@
 
   <groupId>org.glite.ce</groupId>
   <artifactId>cream</artifactId>
-  <version>1.16.2</version>
+  <version>1.16.3</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -15,7 +15,7 @@
   <parent>
     <groupId>org.glite</groupId>
     <artifactId>cream-parent</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
   </parent>
 
   <scm>
