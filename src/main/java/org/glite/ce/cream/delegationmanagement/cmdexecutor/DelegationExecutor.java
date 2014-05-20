@@ -1098,7 +1098,14 @@ public class DelegationExecutor
                 proxyOptions.setLimited(true);
                 proxyOptions.setLifetime(lifeTime, TimeUnit.MILLISECONDS);
                 proxyOptions.setKeyLength(keySize);
-                proxyOptions.setType(pChainInfo.getProxyType().toProxyType());
+                if (pChainInfo.getProxyType() == ProxyChainType.MIXED) {
+                    /*
+                     * TODO raise an exception
+                     */
+                    proxyOptions.setType(ProxyType.LEGACY);
+                } else {
+                    proxyOptions.setType(pChainInfo.getProxyType().toProxyType());
+                }
 
                 ProxyCertificate proxy = ProxyGenerator.generate(proxyOptions, delegKey);
                 CredentialsUtils.saveProxyCredentials(os, proxy.getCredential(), CredentialsUtils.DEFAULT_ENCONDING);
