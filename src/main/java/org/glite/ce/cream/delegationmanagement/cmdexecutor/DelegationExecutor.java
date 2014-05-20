@@ -90,6 +90,7 @@ import eu.emi.security.authn.x509.proxy.ProxyCertificateOptions;
 import eu.emi.security.authn.x509.proxy.ProxyChainInfo;
 import eu.emi.security.authn.x509.proxy.ProxyChainType;
 import eu.emi.security.authn.x509.proxy.ProxyGenerator;
+import eu.emi.security.authn.x509.proxy.ProxyType;
 import eu.emi.security.authn.x509.proxy.ProxyUtils;
 
 public class DelegationExecutor
@@ -889,24 +890,16 @@ public class DelegationExecutor
         // the public key of the cached certificate request has to
         // match the public key of the proxy certificate, otherwise
         // this is an answer to a different request
+        PublicKey publicKey = null;
         PEMReader pemReader = new PEMReader(new StringReader(delegationRequest.getCertificateRequest()));
-        PKCS10CertificationRequest req;
         try {
-            req = (PKCS10CertificationRequest) pemReader.readObject();
+            PKCS10CertificationRequest req = (PKCS10CertificationRequest) pemReader.readObject();
+            publicKey = req.getPublicKey();
         } catch (IOException e1) {
             throw new CommandException("Could not load the original certificate request from cache " + delegInfoStr
                     + ": " + e1.getMessage());
-        }
-
-        if (req == null) {
-            throw new CommandException("Could not load the original certificate request from cache " + delegInfoStr);
-        }
-
-        PublicKey publicKey = null;
-        try {
-            publicKey = req.getPublicKey();
-        } catch (Exception e) {
-            throw new CommandException("cannot get the public key " + delegInfoStr + ": " + e.getMessage());
+        } catch (Throwable th) {
+            throw new CommandException("cannot get the public key " + delegInfoStr + ": " + th.getMessage());
         }
 
         if (!publicKey.equals(certChain[0].getPublicKey())) {
