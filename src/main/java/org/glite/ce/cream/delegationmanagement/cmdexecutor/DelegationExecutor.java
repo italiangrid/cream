@@ -36,6 +36,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -48,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import javax.sql.DataSource;
 
@@ -60,8 +62,8 @@ import org.glite.ce.commonj.authz.VOMSResultCollector;
 import org.glite.ce.commonj.authz.axis2.AuthorizationModule;
 import org.glite.ce.commonj.db.DatasourceManager;
 import org.glite.ce.commonj.utils.CEUtils;
-import org.glite.ce.cream.configuration.ServiceConfig;
 import org.glite.ce.cream.cmdmanagement.CommandManager;
+import org.glite.ce.cream.configuration.ServiceConfig;
 import org.glite.ce.cream.delegationmanagement.DelegationManager;
 import org.glite.ce.cream.delegationmanagement.DelegationPurger;
 import org.glite.ce.creamapi.cmdmanagement.AbstractCommandExecutor;
@@ -76,15 +78,18 @@ import org.glite.ce.creamapi.jobmanagement.db.DBInfoManager;
 import org.italiangrid.voms.VOMSAttribute;
 import org.italiangrid.voms.VOMSValidators;
 import org.italiangrid.voms.ac.VOMSACValidator;
+import org.italiangrid.voms.util.CredentialsUtils;
 
 import eu.emi.security.authn.x509.ValidationError;
 import eu.emi.security.authn.x509.ValidationResult;
 import eu.emi.security.authn.x509.impl.CertificateUtils;
 import eu.emi.security.authn.x509.proxy.ProxyCSR;
 import eu.emi.security.authn.x509.proxy.ProxyCSRGenerator;
+import eu.emi.security.authn.x509.proxy.ProxyCertificate;
 import eu.emi.security.authn.x509.proxy.ProxyCertificateOptions;
 import eu.emi.security.authn.x509.proxy.ProxyChainInfo;
 import eu.emi.security.authn.x509.proxy.ProxyChainType;
+import eu.emi.security.authn.x509.proxy.ProxyGenerator;
 import eu.emi.security.authn.x509.proxy.ProxyUtils;
 
 public class DelegationExecutor
@@ -330,7 +335,8 @@ public class DelegationExecutor
         try {
             DelegationManager.getInstance().delete(delegation);
         } catch (Throwable t) {
-            throw new CommandException("Failure on deleting the delegation " + delegation.toString() + ": " + t.getMessage());
+            throw new CommandException("Failure on deleting the delegation " + delegation.toString() + ": "
+                    + t.getMessage());
         }
 
         try {
@@ -452,11 +458,13 @@ public class DelegationExecutor
         return version;
     }
 
-    private Delegation getDelegation(Command command) throws CommandException {
+    private Delegation getDelegation(Command command)
+        throws CommandException {
         return getDelegation(command, false);
     }
 
-    private Delegation getDelegation(Command command, boolean includeCertificate) throws CommandException {
+    private Delegation getDelegation(Command command, boolean includeCertificate)
+        throws CommandException {
         logger.debug("BEGIN getDelegation");
 
         String delegationId = getParameterValueAsString(command, DelegationCommand.DELEGATION_ID);
@@ -467,7 +475,8 @@ public class DelegationExecutor
 
         try {
             // Search for an existing entry in storage for this delegation ID
-            delegation = DelegationManager.getInstance().getDelegation(delegationId, userDN, localUser, includeCertificate);
+            delegation = DelegationManager.getInstance().getDelegation(delegationId, userDN, localUser,
+                    includeCertificate);
         } catch (Exception e) {
             throw new CommandException("Failure on storage interaction [delegId=" + delegationId + "; dn=" + userDN
                     + "; localUser=" + localUser + "]: " + e.getMessage());
@@ -868,6 +877,15 @@ public class DelegationExecutor
         }
         logger.debug("Got delegation request from cache " + delegInfoStr);
 
+        PrivateKey delegPKey = null;
+        try {
+            ByteArrayInputStream bIn = new ByteArrayInputStream(delegationRequest.getPrivateKey().getBytes());
+            delegPKey = CertificateUtils.loadPEMPrivateKey(bIn, null);
+        } catch (Exception ex) {
+            logger.error(ex.getMessage(), ex);
+            throw new CommandException("Cannot load delegated private key");
+        }
+
         // the public key of the cached certificate request has to
         // match the public key of the proxy certificate, otherwise
         // this is an answer to a different request
@@ -896,43 +914,6 @@ public class DelegationExecutor
                     + certChain[0].getPublicKey() + "'; request public key: '" + publicKey + "']");
             throw new CommandException("The delegation and the original request's public key do not match "
                     + delegInfoStr);
-        }
-
-        // Add the private key to the proxy certificate chain and check it was
-        // ok
-        // Don't use the CertUtil routines as single writer is faster.
-        String completeProxy = null;
-        StringWriter writer = new StringWriter();
-        PEMWriter pemWriter = new PEMWriter(writer);
-
-        try {
-            pemWriter.writeObject(certChain[0]);
-            // make sure the writers are in sync.
-            pemWriter.flush();
-            // write the private key string.
-            writer.write(delegationRequest.getPrivateKey());
-            // make sure the writers are still in sync.
-            writer.flush();
-            // pemWriter.writeObject(PrivateKeyReader.read(new
-            // BufferedReader(new
-            // StringReader(delegationRequest.getPrivateKey()))));
-            // pemWriter.flush();
-
-            // add rest of the certs.
-            for (int i = 1; i < certChain.length; i++) {
-                pemWriter.writeObject(certChain[i]);
-            }
-
-            pemWriter.flush();
-            completeProxy = writer.toString();
-            pemWriter.close();
-        } catch (IOException e) {
-            throw new CommandException("Could not properly process given delegation " + delegInfoStr + ": "
-                    + e.getMessage());
-        }
-
-        if (completeProxy == null) {
-            throw new CommandException("Could not properly process given delegation " + delegInfoStr);
         }
 
         SimpleDateFormat dateFormat = new SimpleDateFormat();
@@ -979,7 +960,8 @@ public class DelegationExecutor
 
         buff.append("]");
 
-        // Save the delegation into the storage (copying the rest from the info taken from the cache)
+        // Save the delegation into the storage (copying the rest from the info
+        // taken from the cache)
         Delegation delegation = null;
 
         try {
@@ -1012,7 +994,7 @@ public class DelegationExecutor
 
         delegation.setRFC(isRFCproxy);
         delegation.setDN(userDN);
-        delegation.setCertificate(completeProxy);
+        delegation.setCertificate(insertKeyIntoChain(delegationRequest.getPrivateKey(), deleg));
         delegation.setStartTime(certChain[0].getNotBefore());
         delegation.setExpirationTime(certChain[0].getNotAfter());
         delegation.setLastUpdateTime(Calendar.getInstance().getTime());
@@ -1023,7 +1005,7 @@ public class DelegationExecutor
         delegation.setPath(makeDelegationPath(delegation));
 
         try {
-            storeLimitedDelegationProxy(delegation);
+            storeLimitedDelegationProxy(delegation, pChainInfo, certChain, delegPKey);
 
             logger.info("New delegation created " + delegation.toString());
         } catch (CommandException e) {
@@ -1086,7 +1068,8 @@ public class DelegationExecutor
         return certificateRequest;
     }
 
-    private String storeLimitedDelegationProxy(Delegation delegation)
+    private String storeLimitedDelegationProxy(Delegation delegation, ProxyChainInfo pChainInfo,
+            X509Certificate[] certChain, PrivateKey delegKey)
         throws CommandException {
         logger.debug("BEGIN storeLimitedDelegationProxy " + delegation.toString());
 
@@ -1100,7 +1083,34 @@ public class DelegationExecutor
         try {
             proc = Runtime.getRuntime().exec(cmd);
             os = new BufferedOutputStream(proc.getOutputStream());
-            os.write(delegation.getCertificate().getBytes());
+
+            if (pChainInfo.isLimited() || pChainInfo.getRemainingPathLimit() == 0) {
+
+                os.write(delegation.getCertificate().getBytes());
+
+            } else {
+                /*
+                 * See method createProxy in
+                 * org.italiangrid.voms.clients.impl.DefaultVOMSProxyInitBehaviour
+                 */
+
+                /*
+                 * TODO check UTC
+                 */
+                long lifeTime = certChain[0].getNotAfter().getTime();
+                lifeTime -= System.currentTimeMillis();
+
+                ProxyCertificateOptions proxyOptions = new ProxyCertificateOptions(certChain);
+                proxyOptions.setProxyPathLimit(0);
+                proxyOptions.setLimited(true);
+                proxyOptions.setLifetime(lifeTime, TimeUnit.MILLISECONDS);
+                proxyOptions.setKeyLength(keySize);
+                proxyOptions.setType(pChainInfo.getProxyType().toProxyType());
+
+                ProxyCertificate proxy = ProxyGenerator.generate(proxyOptions, delegKey);
+                CredentialsUtils.saveProxyCredentials(os, proxy.getCredential(), CredentialsUtils.DEFAULT_ENCONDING);
+            }
+
             os.flush();
             os.close();
             os = null;
@@ -1111,6 +1121,7 @@ public class DelegationExecutor
             }
             throw new CommandException(e.getMessage());
         } catch (Throwable e) {
+            logger.error(e.getMessage(), e);
             if (proc != null) {
                 proc.destroy();
             }
@@ -1190,6 +1201,32 @@ public class DelegationExecutor
             newDigest[i] = oldDigest[i];
         }
         return new String(Hex.encode(newDigest));
+    }
+
+    private String insertKeyIntoChain(String pKey, String certChain)
+        throws CommandException {
+
+        String delimit = "-----BEGIN CERTIFICATE-----";
+        String lineSep = System.getProperty("line.separator", "\n");
+
+        int idx = certChain.indexOf(delimit);
+        if (idx < 0) {
+            throw new CommandException("Corrupted certChain: missing certificate");
+        }
+
+        idx = certChain.indexOf(delimit, idx + 27);
+        if (idx < 0) {
+            if (certChain.endsWith(lineSep)) {
+                return certChain + pKey;
+            }
+            return certChain + lineSep + pKey;
+        }
+
+        if (!pKey.endsWith(lineSep)) {
+            pKey += lineSep;
+        }
+
+        return certChain.substring(0, idx) + pKey + certChain.substring(idx);
     }
 
 }
