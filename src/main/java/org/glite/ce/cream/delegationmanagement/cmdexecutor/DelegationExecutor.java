@@ -767,7 +767,6 @@ public class DelegationExecutor
 
     private void putDelegation(Command command)
         throws CommandException {
-        logger.debug("BEGIN putDelegation");
 
         String delegationId = getParameterValueAsString(command, DelegationCommand.DELEGATION_ID);
         String deleg = getParameterValueAsString(command, DelegationCommand.DELEGATION);
@@ -776,6 +775,8 @@ public class DelegationExecutor
         String localUserGroup = getParameterValueAsString(command, DelegationCommand.LOCAL_USER_GROUP);
 
         String delegInfoStr = "[delegId=" + delegationId + "; dn=" + userDN + "; localUser=" + localUser + "]";
+
+        logger.debug("BEGIN putDelegation" + delegInfoStr);
 
         X509Certificate[] certChain = null;
         try {
@@ -1028,7 +1029,7 @@ public class DelegationExecutor
         }
 
         command.getResult().addParameter(DelegationCommand.DELEGATION, delegation);
-        logger.debug("END putDelegation");
+        logger.debug("END putDelegation" + delegInfoStr);
     }
 
     private String renewDelegationRequest(Command command)
@@ -1071,30 +1072,39 @@ public class DelegationExecutor
                 delegation.getPath(), delegation.isRFC() ? "1" : "0" };
 
         Process proc = null;
-        BufferedOutputStream os = null;
+        BufferedOutputStream outStr = null;
+        BufferedReader errReader = null;
+        String errorMessage = null;
 
         try {
-            proc = Runtime.getRuntime().exec(cmd);
-            os = new BufferedOutputStream(proc.getOutputStream());
 
-            if (pChainInfo.isLimited() || pChainInfo.getRemainingPathLimit() == 0) {
+            if (!pChainInfo.isLimited() && pChainInfo.getRemainingPathLimit() < 1) {
+                throw new CommandException("Cannot limit proxy: wrong path limit");
+            }
 
-                os.write(delegation.getCertificate().getBytes());
+            ProcessBuilder procBuilder = new ProcessBuilder(cmd);
+            procBuilder.redirectErrorStream(true);
+            proc = procBuilder.start();
+            outStr = new BufferedOutputStream(proc.getOutputStream());
+            errReader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+
+            if (pChainInfo.isLimited()) {
+
+                logger.debug("Proxy already limited for " + delegation.getDN());
+                outStr.write(delegation.getCertificate().getBytes());
 
             } else {
                 /*
                  * See method createProxy in
                  * org.italiangrid.voms.clients.impl.DefaultVOMSProxyInitBehaviour
                  */
+                logger.debug("Proxy limitation for " + delegation.getDN());
 
-                /*
-                 * TODO check UTC
-                 */
                 long lifeTime = certChain[0].getNotAfter().getTime();
                 lifeTime -= System.currentTimeMillis();
 
                 ProxyCertificateOptions proxyOptions = new ProxyCertificateOptions(certChain);
-                proxyOptions.setProxyPathLimit(0);
+                proxyOptions.setProxyPathLimit(pChainInfo.getRemainingPathLimit());
                 proxyOptions.setLimited(true);
                 proxyOptions.setLifetime(lifeTime, TimeUnit.MILLISECONDS);
                 proxyOptions.setKeyLength(keySize);
@@ -1107,79 +1117,71 @@ public class DelegationExecutor
                     proxyOptions.setType(pChainInfo.getProxyType().toProxyType());
                 }
 
+                logger.debug("Creating proxy for " + delegation.getDN());
                 ProxyCertificate proxy = ProxyGenerator.generate(proxyOptions, delegKey);
-                CredentialsUtils.saveProxyCredentials(os, proxy.getCredential(), CredentialsUtils.DEFAULT_ENCONDING);
+                CredentialsUtils
+                        .saveProxyCredentials(outStr, proxy.getCredential(), CredentialsUtils.DEFAULT_ENCONDING);
             }
 
-            os.flush();
-            os.close();
-            os = null;
+            outStr.flush();
+            outStr.close();
+            outStr = null;
+
+            if (proc.waitFor() != 0) {
+                logger.error("proc.exitValue() != 0");
+                StringBuffer tmpbuff = new StringBuffer();
+                String inputLine = null;
+
+                try {
+                    while ((inputLine = errReader.readLine()) != null) {
+                        tmpbuff.append(inputLine);
+                    }
+                } catch (IOException ioe) {
+                    logger.error(ioe.getMessage());
+                }
+
+                if (tmpbuff.length() > 0) {
+                    tmpbuff.append("\n");
+                }
+
+                errorMessage = tmpbuff.toString();
+            }
+
         } catch (IOException e) {
+
             logger.error("IOException caught: " + e.getMessage());
-            if (proc != null) {
-                proc.destroy();
-            }
-            throw new CommandException(e.getMessage());
+            errorMessage = e.getMessage();
+
         } catch (Throwable e) {
+
             logger.error(e.getMessage(), e);
+            errorMessage = e.getMessage();
+
+        } finally {
+
             if (proc != null) {
                 proc.destroy();
             }
-        } finally {
-            if (proc != null) {
+
+            if (outStr != null) {
                 try {
-                    proc.waitFor();
-                } catch (InterruptedException ioe) {
-                    throw new CommandException(ioe.getMessage());
-                }
-
-                StringBuffer errorMessage = null;
-
-                if (proc.exitValue() != 0) {
-                    logger.error("proc.exitValue() != 0");
-                    BufferedReader readErr = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-
-                    errorMessage = new StringBuffer();
-                    String inputLine = null;
-
-                    try {
-                        while ((inputLine = readErr.readLine()) != null) {
-                            errorMessage.append(inputLine);
-                        }
-                    } catch (IOException ioe) {
-                        logger.error(ioe.getMessage());
-                    } finally {
-                        try {
-                            readErr.close();
-                        } catch (IOException e) {
-                        }
-                    }
-
-                    if (errorMessage.length() > 0) {
-                        errorMessage.append("\n");
-                    }
-                }
-
-                try {
-                    proc.getInputStream().close();
-                } catch (IOException ioe) {
-                }
-
-                try {
-                    proc.getErrorStream().close();
-                } catch (IOException ioe) {
-                }
-
-                try {
-                    proc.getOutputStream().close();
-                } catch (IOException ioe) {
-                }
-
-                if (errorMessage != null && errorMessage.length() > 0) {
-                    throw new CommandException("storeLimitedDelegationProxy error " + delegation.toString() + ": "
-                            + errorMessage);
+                    outStr.close();
+                } catch (IOException ioEx) {
+                    logger.error(ioEx.getMessage(), ioEx);
                 }
             }
+
+            if (errReader != null) {
+                try {
+                    errReader.close();
+                } catch (IOException ioEx) {
+                    logger.error(ioEx.getMessage(), ioEx);
+                }
+            }
+        }
+
+        if (errorMessage != null && errorMessage.length() > 0) {
+            throw new CommandException("Cannot store proxy " + delegation.toString() + ": " + errorMessage);
         }
 
         logger.debug("END storeLimitedDelegationProxy " + delegation.toString());
