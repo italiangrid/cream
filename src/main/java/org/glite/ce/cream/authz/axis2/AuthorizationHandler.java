@@ -18,6 +18,7 @@
 
 package org.glite.ce.cream.authz.axis2;
 
+import java.security.cert.X509Certificate;
 import java.util.Calendar;
 
 import javax.xml.namespace.QName;
@@ -32,10 +33,13 @@ import org.apache.axis2.context.MessageContext;
 import org.apache.axis2.context.OperationContext;
 import org.apache.axis2.description.AxisOperation;
 import org.apache.log4j.Logger;
+import org.glite.ce.commonj.authz.AuthZConstants;
 import org.glite.ce.commonj.configuration.CommonServiceConfig;
 import org.glite.ce.cream.configuration.ServiceConfig;
 import org.glite.ce.creamapi.ws.cream2.types.AuthorizationFault;
 import org.glite.ce.security.delegation.DelegationException;
+
+import eu.emi.security.authn.x509.proxy.ProxyChainInfo;
 
 public class AuthorizationHandler
     extends org.glite.ce.commonj.authz.axis2.AuthorizationHandler {
@@ -51,8 +55,6 @@ public class AuthorizationHandler
     private static final String ES_ACTIVITY_MANAGE_NS = "http://www.eu-emi.eu/es/2010/12/activitymanagement";
 
     private static final String ES_CREATE_NS = "http://www.eu-emi.eu/es/2010/12/creation";
-
-    private static final String ES_DELEGATION_NS = "http://www.gridsite.org/namespaces/delegation-2";
 
     private static final String ES_RESOURCES_NS = "http://www.eu-emi.eu/es/2010/12/resourceinfo";
 
@@ -132,12 +134,6 @@ public class AuthorizationHandler
 
                 faultDetail = accessFault.getOMElement(null, soapFactory);
 
-/*            } else if (operation.getNamespaceURI().startsWith(ES_DELEGATION_NS)) {
-                org.glite.ce.creamapi.ws.es.delegation.DelegationException accessFault = new org.glite.ce.creamapi.ws.es.delegation.DelegationException();
-                accessFault.setMsg(message);
-
-                faultDetail = accessFault.getOMElement(null, soapFactory);
-*/
             } else if (operation.getNamespaceURI().startsWith(ES_RESOURCES_NS)) {
 
                 org.glite.ce.creamapi.ws.es.resourceinfo.types.AccessControlFault accessFault = new org.glite.ce.creamapi.ws.es.resourceinfo.types.AccessControlFault();
@@ -149,7 +145,8 @@ public class AuthorizationHandler
                 faultDetail = accessFault.getOMElement(null, soapFactory);
 
             } else {
-                logger.error("Unreachable condition for " + operation.toString() + " operation.getNamespaceURI() = " + operation.getNamespaceURI());
+                logger.error("Unreachable condition for " + operation.toString() + " operation.getNamespaceURI() = "
+                        + operation.getNamespaceURI());
             }
 
             return new AxisFault(faultCode, faultReason, null, null, faultDetail);
@@ -197,6 +194,27 @@ public class AuthorizationHandler
         }
 
         return result;
+    }
+
+    protected void checkOperation(QName operation, MessageContext context)
+        throws AxisFault {
+
+        logger.debug("Checking operation: " + operation.getLocalPart());
+        if (operation.getLocalPart().equals("JobRegister")) {
+            try {
+                X509Certificate[] certChain = (X509Certificate[]) context
+                        .getProperty(AuthZConstants.USER_CERTCHAIN_LABEL);
+                ProxyChainInfo pChainInfo = new ProxyChainInfo(certChain);
+                if (pChainInfo.isLimited()) {
+                    throw getAuthorizationFault("Cannot submit job: proxy is limited", context);
+                }
+            } catch (AxisFault fault) {
+                throw fault;
+            } catch (Exception ex) {
+                throw getAuthorizationFault("Cannot check operation: " + ex.getMessage(), context);
+            }
+        }
+
     }
 
 }
