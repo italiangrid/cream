@@ -78,6 +78,8 @@ public abstract class JobCommand {
     public static final String ACCEPT_NEW_JOBS = "acceptNewJobs";
     public static final String NEW_LEASE_ID = "newLeaseId";
     public static final String RENEW = "renew";
+    public static final String LIMITED = "limited";
+    public static final String CPATHLEN = "pathlen";
 
     private String proxy = null;
     private String epr = null;
@@ -94,6 +96,8 @@ public abstract class JobCommand {
     private boolean acceptNewJobs = true;
     private boolean delegate = false;
     private boolean renew = false;
+    private boolean limited = false;
+    private int cPathLen = -1;
     private JobId[] jobIdList = null;
     private List<String> options = null;
 
@@ -205,6 +209,14 @@ public abstract class JobCommand {
     public boolean isRenew() {
         return renew;
     }
+    
+    public boolean isLimited() {
+        return limited;
+    }
+    
+    public int getCPathLen() {
+        return cPathLen;
+    }
 
     private void parseArguments(String[] args, List<String> options) {
         CmdLineParser parser = new CmdLineParser();
@@ -223,6 +235,8 @@ public abstract class JobCommand {
         CmdLineParser.Option renewOpt = null;
         CmdLineParser.Option acceptNewJobsOpt = null;
         CmdLineParser.Option proxyOpt = null;
+        CmdLineParser.Option limitedOpt = null;
+        CmdLineParser.Option cPathLenOpt = null;
         
         if (options.contains(PROXY)) {
             proxyOpt = parser.addStringOption('p', "proxy");
@@ -278,6 +292,14 @@ public abstract class JobCommand {
 
         if (options.contains(RENEW)) {
             renewOpt = parser.addBooleanOption("renew");
+        }
+
+        if (options.contains(LIMITED)) {
+            limitedOpt = parser.addBooleanOption("limited");
+        }
+
+        if (options.contains(CPATHLEN)) {
+            cPathLenOpt = parser.addIntegerOption("pathlen");
         }
 
         try {
@@ -396,6 +418,14 @@ public abstract class JobCommand {
 
         if (renewOpt != null) {
             renew = ((Boolean) parser.getOptionValue(renewOpt, Boolean.FALSE)).booleanValue();
+        }
+
+        if (limitedOpt != null) {
+            limited = ((Boolean) parser.getOptionValue(limitedOpt, Boolean.FALSE)).booleanValue();
+        }
+
+        if (cPathLenOpt != null) {
+            cPathLen = ((Integer) parser.getOptionValue(cPathLenOpt, Integer.valueOf(-1))).intValue();
         }
 
         String[] opt = parser.getRemainingArgs();
@@ -625,6 +655,10 @@ public abstract class JobCommand {
                     System.err.print(" [--delegate]");
                 } else if (options.get(i).equals(RENEW)) {
                     System.err.print(" [--renew]");
+                } else if (options.get(i).equals(LIMITED)) {
+                    System.err.print(" [--limited]");
+                } else if (options.get(i).equals(CPATHLEN)) {
+                    System.err.print(" [--pathlen]");
                 }
             }
             System.err.println();
@@ -691,6 +725,14 @@ public abstract class JobCommand {
 
     public void setRenew(boolean renew) {
         this.renew = renew;
+    }
+    
+    public void setLimited(boolean limited) {
+        this.limited = limited;
+    }
+    
+    public void setCPathLen(int cPathLen) {
+        this.cPathLen = cPathLen;
     }
 
     public void setStatus(String[] status) {
@@ -820,6 +862,8 @@ public abstract class JobCommand {
         PEMReader pemReader = new PEMReader(new StringReader(certReq));
         PKCS10CertificationRequest proxytReq = (PKCS10CertificationRequest) pemReader.readObject();
         ProxyRequestOptions csrOpt = new ProxyRequestOptions(parentChain, proxytReq);
+        csrOpt.setProxyPathLimit(cPathLen);
+        csrOpt.setLimited(limited);
         
         X509Certificate[] certChain = ProxyGenerator.generate(csrOpt, pKey);
         

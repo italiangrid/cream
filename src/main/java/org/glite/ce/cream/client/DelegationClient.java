@@ -18,7 +18,6 @@
 
 package org.glite.ce.cream.client;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +71,8 @@ public class DelegationClient extends JobCommand {
         options.add(PROXY);
         options.add(DELEGATION_ID);
         options.add(RENEW);
+        options.add(LIMITED);
+        options.add(CPATHLEN);
 
         new DelegationClient(args, options);
     }
