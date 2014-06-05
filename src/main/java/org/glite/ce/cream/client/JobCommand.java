@@ -58,6 +58,7 @@ import org.glite.ce.security.delegation.DelegationServiceStub;
 
 import eu.emi.security.authn.x509.impl.CertificateUtils;
 import eu.emi.security.authn.x509.impl.PEMCredential;
+import eu.emi.security.authn.x509.proxy.ProxyChainInfo;
 import eu.emi.security.authn.x509.proxy.ProxyGenerator;
 import eu.emi.security.authn.x509.proxy.ProxyRequestOptions;
 import eu.emi.security.canl.axis2.CANLAXIS2SocketFactory;
@@ -862,8 +863,27 @@ public abstract class JobCommand {
         PEMReader pemReader = new PEMReader(new StringReader(certReq));
         PKCS10CertificationRequest proxytReq = (PKCS10CertificationRequest) pemReader.readObject();
         ProxyRequestOptions csrOpt = new ProxyRequestOptions(parentChain, proxytReq);
-        csrOpt.setProxyPathLimit(cPathLen);
-        csrOpt.setLimited(limited);
+        
+        ProxyChainInfo pChainInfo = new ProxyChainInfo(parentChain);
+        int remainChainLen = pChainInfo.getRemainingPathLimit();
+        /*
+         * workaround for API mismatch
+         */
+        if (remainChainLen >= Integer.MAX_VALUE - 1) {
+            remainChainLen = -1;
+        }
+        if (cPathLen >= 0 && remainChainLen >=0) {
+            remainChainLen = cPathLen > remainChainLen ? remainChainLen : cPathLen;
+        } else if (cPathLen >= 0 && remainChainLen < 0) {
+            remainChainLen = cPathLen;
+        }
+        if (remainChainLen >= 0) {
+            csrOpt.setProxyPathLimit(remainChainLen); 
+        } else {
+            csrOpt.setProxyPathLimit(Integer.MAX_VALUE);
+        }
+
+        csrOpt.setLimited(limited || pChainInfo.isLimited());
         
         X509Certificate[] certChain = ProxyGenerator.generate(csrOpt, pKey);
         
