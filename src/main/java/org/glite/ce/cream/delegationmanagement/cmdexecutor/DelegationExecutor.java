@@ -1078,7 +1078,7 @@ public class DelegationExecutor
 
         try {
 
-            if (!pChainInfo.isLimited() && pChainInfo.getRemainingPathLimit() < 1) {
+            if (!pChainInfo.isLimited() && pChainInfo.getRemainingPathLimit() <= 0) {
                 throw new CommandException("Cannot limit proxy: wrong path limit");
             }
 
