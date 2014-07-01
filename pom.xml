@@ -4,7 +4,7 @@
 
   <groupId>org.glite.ce</groupId>
   <artifactId>cream</artifactId>
-  <version>1.16.4-SNAPSHOT</version>
+  <version>1.16.4</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -340,35 +340,35 @@
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>cream-common</artifactId>
-      <version>1.16.3-SNAPSHOT</version>
+      <version>1.16.3</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>cream-api-java</artifactId>
-      <version>1.16.3</version>
+      <version>1.16.4</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>cream-skeleton</artifactId>
-      <version>1.16.3</version>
+      <version>1.16.4</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>ce-delegation-skeleton</artifactId>
-      <version>1.16.3</version>
+      <version>1.16.4</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>cream-es-skeleton</artifactId>
-      <version>1.16.3</version>
+      <version>1.16.4</version>
       <scope>compile</scope>
     </dependency>
 

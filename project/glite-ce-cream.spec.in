@@ -371,7 +371,10 @@ fi
 
 
 %changelog
-* Fri May 30 2014 CREAM group <cream-support@lists.infn.it> - @PKGVERSION@-@PKGRELEASE@
+* Fri Jul 04 2014 CREAM group <cream-support@lists.infn.it> - @PKGVERSION@-@PKGRELEASE@
+- Replaced C-based voms-client call with java-based one
+
+* Fri May 30 2014 CREAM group <cream-support@lists.infn.it> - 1.16.3-1
 - Fix for bug https://issues.infn.it/jira/browse/CREAM-134
 - Fix for bug https://issues.infn.it/jira/browse/CREAM-145
 
