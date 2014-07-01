@@ -82,6 +82,7 @@ import org.italiangrid.voms.util.CredentialsUtils;
 
 import eu.emi.security.authn.x509.ValidationError;
 import eu.emi.security.authn.x509.ValidationResult;
+import eu.emi.security.authn.x509.helpers.proxy.ProxyHelper;
 import eu.emi.security.authn.x509.impl.CertificateUtils;
 import eu.emi.security.authn.x509.proxy.ProxyCSR;
 import eu.emi.security.authn.x509.proxy.ProxyCSRGenerator;
@@ -1078,7 +1079,9 @@ public class DelegationExecutor
 
         try {
 
-            if (!pChainInfo.isLimited() && pChainInfo.getRemainingPathLimit() <= 0) {
+            int remainPathLimit = this.getRemainingPathLimit(certChain, pChainInfo);
+
+            if (!pChainInfo.isLimited() && remainPathLimit <= 0) {
                 throw new CommandException("Cannot limit proxy: wrong path limit");
             }
 
@@ -1104,7 +1107,7 @@ public class DelegationExecutor
                 lifeTime -= System.currentTimeMillis();
 
                 ProxyCertificateOptions proxyOptions = new ProxyCertificateOptions(certChain);
-                proxyOptions.setProxyPathLimit(pChainInfo.getRemainingPathLimit());
+                proxyOptions.setProxyPathLimit(remainPathLimit);
                 proxyOptions.setLimited(true);
                 proxyOptions.setLifetime(lifeTime, TimeUnit.MILLISECONDS);
                 proxyOptions.setKeyLength(keySize);
@@ -1203,6 +1206,29 @@ public class DelegationExecutor
             newDigest[i] = oldDigest[i];
         }
         return new String(Hex.encode(newDigest));
+    }
+
+    /*
+     * This workaround fixes the remaining path length in case of unlimited
+     * proxy chains
+     */
+    private int getRemainingPathLimit(X509Certificate[] certChain, ProxyChainInfo pChainInfo)
+        throws IOException {
+
+        int remainingLen = Integer.MAX_VALUE;
+        for (int i = pChainInfo.getFirstProxyPosition(); i >= 0; i--) {
+            int lenRestriction = ProxyHelper.getProxyPathLimit(certChain[i]);
+
+            if (lenRestriction == remainingLen && remainingLen == Integer.MAX_VALUE) {
+                continue;
+            }
+
+            if (lenRestriction < remainingLen)
+                remainingLen = lenRestriction;
+            else
+                remainingLen--;
+        }
+        return remainingLen;
     }
 
     private String insertKeyIntoChain(String pKey, String certChain)
