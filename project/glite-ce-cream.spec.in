@@ -13,7 +13,15 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 AutoReqProv: yes
 Source: %{name}.tar.gz
 
-%global _tomcat %{?el6:tomcat6}%{!?el6:tomcat5}
+%if 0%{?el6}
+%global _tomcat tomcat6
+%else
+%if 0%{?el5}
+%global _tomcat tomcat5
+%else
+%global _tomcat tomcat
+%endif
+%endif
 %global _creamlibdir /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
 %global _eslibdir /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
 
@@ -101,7 +109,11 @@ find -L %{_creamlibdir} -type l -exec rm -f '{}' \;
 [ -h %{_creamlibdir}/classad.jar ] || ln -s /usr/share/java/jclassads/classad.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/argus-pep-api-java.jar ] || ln -s /usr/share/java/argus-pep-api-java.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/argus-pep-common.jar ] || ln -s /usr/share/java/argus-pep-common.jar %{_creamlibdir}
-[ -h %{_creamlibdir}/canl.jar ] || ln -s /usr/share/java/canl.jar %{_creamlibdir}
+if [ -e /usr/share/java/canl-java/canl.jar ] ; then
+    [ -h %{_creamlibdir}/canl.jar ] || ln -s /usr/share/java/canl-java/canl.jar %{_creamlibdir}
+else
+    [ -h %{_creamlibdir}/canl.jar ] || ln -s /usr/share/java/canl.jar %{_creamlibdir}
+fi
 [ -h %{_creamlibdir}/voms-api-java3.jar ] || ln -s /usr/share/java/voms-api-java3.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/glite-jobid-api-java.jar ] || ln -s /usr/share/java/glite-jobid-api-java.jar %{_creamlibdir}
 if [ -e /usr/lib/java/glite-lb-client-java.jar ] ; then
@@ -280,7 +292,12 @@ find -L %{_eslibdir} -type l -exec rm -f '{}' \;
 [ -h %{_eslibdir}/classad.jar ] || ln -s /usr/share/java/jclassads/classad.jar %{_eslibdir}
 [ -h %{_eslibdir}/argus-pep-api-java.jar ] || ln -s /usr/share/java/argus-pep-api-java.jar %{_eslibdir}
 [ -h %{_eslibdir}/argus-pep-common.jar ] || ln -s /usr/share/java/argus-pep-common.jar %{_eslibdir}
-[ -h %{_eslibdir}/canl.jar ] || ln -s /usr/share/java/canl.jar %{_eslibdir}
+if [ -e /usr/share/java/canl-java/canl.jar ] ; then
+    [ -h %{_eslibdir}/canl.jar ] || ln -s /usr/share/java/canl-java/canl.jar %{_eslibdir}
+else
+    [ -h %{_eslibdir}/canl.jar ] || ln -s /usr/share/java/canl.jar %{_eslibdir}
+fi
+
 [ -h %{_eslibdir}/voms-api-java3.jar ] || ln -s /usr/share/java/voms-api-java3.jar %{_eslibdir}
 [ -h %{_eslibdir}/glite-jobid-api-java.jar ] || ln -s /usr/share/java/glite-jobid-api-java.jar %{_eslibdir}
 if [ -e /usr/lib/java/glite-lb-client-java.jar ] ; then
