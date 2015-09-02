@@ -130,18 +130,8 @@ fi
 [ -h %{_creamlibdir}/glite-ce-delegation-skeleton.jar ] || ln -s /usr/share/java/glite-ce-delegation-skeleton.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/glite-jdl-api-java.jar ] || ln -s /usr/share/java/glite-jdl-api-java.jar %{_creamlibdir}
 
-#removing EMI-2 symlinks
-[ -h %{_creamlibdir}/delegation-java.jar ] && rm -f %{_creamlibdir}/delegation-java.jar
-[ -h %{_creamlibdir}/trustmanager.jar ] && rm -f %{_creamlibdir}/trustmanager.jar
-[ -h %{_creamlibdir}/voms-api-java.jar ] && rm -f %{_creamlibdir}/voms-api-java.jar
-
-#removing EMI-3 compat symlinks
-[ -h %{_creamlibdir}/argus-pep-api-java-compat.jar ] && rm -f %{_creamlibdir}/argus-pep-api-java-compat.jar
-[ -h %{_creamlibdir}/argus-pep-common-compat.jar ] && rm -f %{_creamlibdir}/argus-pep-common-compat.jar
-[ -h %{_creamlibdir}/delegation-java-compat.jar ] && rm -f %{_creamlibdir}/delegation-java-compat.jar
-
-%if 0%{?el6}
-# set allowLinking option for tomcat6
+%if ! 0%{?el5}
+# set allowLinking option for tomcat
 if [ ! -d /var/lib/%{_tomcat}/webapps/ce-cream/META-INF ] ; then
   mkdir /var/lib/%{_tomcat}/webapps/ce-cream/META-INF
   echo '<Context override="true" allowLinking="true"></Context>' > /var/lib/%{_tomcat}/webapps/ce-cream/META-INF/context.xml
@@ -314,18 +304,8 @@ fi
 [ -h %{_eslibdir}/glite-ce-delegation-skeleton.jar ] || ln -s /usr/share/java/glite-ce-delegation-skeleton.jar %{_eslibdir}
 [ -h %{_eslibdir}/glite-jdl-api-java.jar ] || ln -s /usr/share/java/glite-jdl-api-java.jar %{_eslibdir}
 
-#removing EMI-2 symlinks
-[ -h %{_eslibdir}/delegation-java.jar ] && rm -f %{_eslibdir}/delegation-java.jar
-[ -h %{_eslibdir}/trustmanager.jar ] && rm -f %{_eslibdir}/trustmanager.jar
-[ -h %{_eslibdir}/voms-api-java.jar ] && rm -f %{_eslibdir}/voms-api-java.jar
-
-#removing EMI-3 compat symlinks
-[ -h %{_eslibdir}/argus-pep-api-java-compat.jar ] && rm -f %{_eslibdir}/argus-pep-api-java-compat.jar
-[ -h %{_eslibdir}/argus-pep-common-compat.jar ] && rm -f %{_eslibdir}/argus-pep-common-compat.jar
-[ -h %{_eslibdir}/delegation-java-compat.jar ] && rm -f %{_eslibdir}/delegation-java-compat.jar
-
-%if 0%{?el6}
-# set allowLinking option for tomcat6
+%if ! 0%{?el5}
+# set allowLinking option for tomcat
 if [ ! -d /var/lib/%{_tomcat}/webapps/ce-cream-es/META-INF ] ; then
   mkdir /var/lib/%{_tomcat}/webapps/ce-cream-es/META-INF
   echo '<Context override="true" allowLinking="true"></Context>' > /var/lib/%{_tomcat}/webapps/ce-cream-es/META-INF/context.xml
