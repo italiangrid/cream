@@ -41,8 +41,8 @@ import java.util.StringTokenizer;
 
 import org.apache.axis2.AxisFault;
 import org.apache.commons.httpclient.protocol.Protocol;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.openssl.PEMReader;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.glite.ce.cream.client.CmdLineParser;
 import org.glite.ce.creamapi.ws.es.activityinfo.ActivityInfoServiceStub;
 import org.glite.ce.creamapi.ws.es.activitymanagement.ActivityManagementServiceStub;

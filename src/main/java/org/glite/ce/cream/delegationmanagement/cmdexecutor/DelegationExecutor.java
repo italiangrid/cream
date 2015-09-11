@@ -35,11 +35,13 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.X509EncodedKeySpec;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -54,9 +56,9 @@ import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.openssl.PEMReader;
 import org.bouncycastle.openssl.PEMWriter;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.glite.ce.commonj.authz.VOMSResultCollector;
 import org.glite.ce.commonj.authz.axis2.AuthorizationModule;
@@ -106,6 +108,8 @@ public class DelegationExecutor
 
     private boolean initialized = false;
 
+    private KeyFactory keyFactory;
+
     /** Key size being used. */
     private int keySize = 2048;
 
@@ -139,6 +143,12 @@ public class DelegationExecutor
         addParameter(DELEGATION_PURGE_RATE, "720");
 
         dataSourceName = DelegationManagerInterface.DELEGATION_DATASOURCE_NAME;
+        
+        try {
+            keyFactory = KeyFactory.getInstance("RSA", "BC");
+        }catch(Exception ex){
+            throw new CommandExecutorException(ex.getMessage(), ex);
+        }
     }
 
     private String createAndStoreCertificateRequest(X509Certificate parentCert, String delegationId, String dn,
@@ -157,7 +167,8 @@ public class DelegationExecutor
 
             pCSRContainer = ProxyCSRGenerator.generate(prOpts);
             PKCS10CertificationRequest pRequest = pCSRContainer.getCSR();
-            publicKey = pRequest.getPublicKey();
+            X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(pRequest.getSubjectPublicKeyInfo().getEncoded());
+            publicKey = keyFactory.generatePublic(pubKeySpec);
 
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             CertificateUtils.savePrivateKey(outStream, pCSRContainer.getPrivateKey(), CertificateUtils.Encoding.PEM,
@@ -896,7 +907,8 @@ public class DelegationExecutor
         PEMReader pemReader = new PEMReader(new StringReader(delegationRequest.getCertificateRequest()));
         try {
             PKCS10CertificationRequest req = (PKCS10CertificationRequest) pemReader.readObject();
-            publicKey = req.getPublicKey();
+            X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(req.getSubjectPublicKeyInfo().getEncoded());
+            publicKey = keyFactory.generatePublic(pubKeySpec);
         } catch (IOException e1) {
             throw new CommandException("Could not load the original certificate request from cache " + delegInfoStr
                     + ": " + e1.getMessage());
