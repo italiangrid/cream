@@ -14,7 +14,7 @@ USE creamdb;
 CREATE TABLE db_info
 (
     version       VARCHAR(5) NOT NULL,
-    creationTime  TIMESTAMP  NOT NULL,
+    creationTime  TIMESTAMP  NOT NULL DEFAULT CURRENT_TIMESTAMP
     startUpTime   TIMESTAMP  NULL,
     submissionEnabled INTEGER NOT NULL 
 ) ENGINE=InnoDB;
