@@ -41,7 +41,7 @@ import java.util.StringTokenizer;
 
 import org.apache.axis2.AxisFault;
 import org.apache.commons.httpclient.protocol.Protocol;
-import org.bouncycastle.openssl.PEMReader;
+import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.glite.ce.cream.client.CmdLineParser;
 import org.glite.ce.creamapi.ws.es.activityinfo.ActivityInfoServiceStub;
@@ -827,8 +827,8 @@ public abstract class ActivityCommand {
         }
             
         
-        PEMReader pemReader = new PEMReader(new StringReader(certReq));
-        PKCS10CertificationRequest proxytReq = (PKCS10CertificationRequest) pemReader.readObject();
+        PEMParser pemParser = new PEMParser(new StringReader(certReq));
+        PKCS10CertificationRequest proxytReq = (PKCS10CertificationRequest) pemParser.readObject();
         ProxyRequestOptions csrOpt = new ProxyRequestOptions(parentChain, proxytReq);
         
         X509Certificate[] certChain = ProxyGenerator.generate(csrOpt, pKey);

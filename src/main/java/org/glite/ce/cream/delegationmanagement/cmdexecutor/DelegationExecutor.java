@@ -56,7 +56,7 @@ import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.openssl.PEMReader;
+import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
@@ -904,9 +904,9 @@ public class DelegationExecutor
         // match the public key of the proxy certificate, otherwise
         // this is an answer to a different request
         PublicKey publicKey = null;
-        PEMReader pemReader = new PEMReader(new StringReader(delegationRequest.getCertificateRequest()));
+        PEMParser pemParser = new PEMParser(new StringReader(delegationRequest.getCertificateRequest()));
         try {
-            PKCS10CertificationRequest req = (PKCS10CertificationRequest) pemReader.readObject();
+            PKCS10CertificationRequest req = (PKCS10CertificationRequest) pemParser.readObject();
             X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(req.getSubjectPublicKeyInfo().getEncoded());
             publicKey = keyFactory.generatePublic(pubKeySpec);
         } catch (IOException e1) {
