@@ -342,35 +342,35 @@
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>cream-common</artifactId>
-      <version>1.16.4</version>
+      <version>1.16.5</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>cream-api-java</artifactId>
-      <version>1.16.5</version>
+      <version>1.16.6</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>cream-skeleton</artifactId>
-      <version>1.16.5</version>
+      <version>1.16.6</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>ce-delegation-skeleton</artifactId>
-      <version>1.16.5</version>
+      <version>1.16.6</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>cream-es-skeleton</artifactId>
-      <version>1.16.5</version>
+      <version>1.16.6</version>
       <scope>compile</scope>
     </dependency>
 
@@ -406,7 +406,12 @@
 
     <dependency>
       <groupId>org.apache.axis2</groupId>
-      <artifactId>axis2</artifactId>
+      <artifactId>axis2-kernel</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.apache.axis2</groupId>
+      <artifactId>axis2-adb</artifactId>
     </dependency>
     
     <dependency>
