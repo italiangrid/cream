@@ -104,6 +104,7 @@ public class AuthorizationHandler
 
                 faultDetail = authzFault.getOMElement(null, soapFactory);
 
+            /*
             } else if (operation.getNamespaceURI().startsWith(ES_CREATE_NS)) {
 
                 org.glite.ce.creamapi.ws.es.creation.types.AccessControlFault accessFault = new org.glite.ce.creamapi.ws.es.creation.types.AccessControlFault();
@@ -143,7 +144,7 @@ public class AuthorizationHandler
                 accessFault.setTimestamp(Calendar.getInstance());
 
                 faultDetail = accessFault.getOMElement(null, soapFactory);
-
+            */
             } else {
                 logger.error("Unreachable condition for " + operation.toString() + " operation.getNamespaceURI() = "
                         + operation.getNamespaceURI());

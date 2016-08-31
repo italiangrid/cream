@@ -35,6 +35,11 @@
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
+          <excludes>
+            <exclude>org/glite/ce/cream/activitymanagement/**/*.java</exclude>
+            <exclude>org/glite/ce/cream/ws/es/*.java</exclude>
+            <exclude>org/glite/ce/cream/client/es/*.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
       
@@ -102,7 +107,7 @@
             </configuration>
           </execution>
 
-          <execution>
+          <!-- execution>
             <id>activityExecutor</id>
             <phase>package</phase>
             <goals><goal>jar</goal></goals>
@@ -121,7 +126,7 @@
                 </manifest>
               </archive>
             </configuration>
-          </execution>
+          </execution -->
 
           <execution>
             <id>authorization</id>
@@ -160,7 +165,7 @@
             </configuration>
           </execution>
 
-          <execution>
+          <!-- execution>
             <id>ESInterface</id>
             <phase>package</phase>
             <goals><goal>jar</goal></goals>
@@ -174,7 +179,7 @@
                 <manifest><addDefaultSpecificationEntries/></manifest>
               </archive>
             </configuration>
-          </execution>
+          </execution -->
 
           <!-- this must be the project's main artifact -->
           <!-- this is the cream-core jar file -->
@@ -367,12 +372,12 @@
       <scope>compile</scope>
     </dependency>
 
-    <dependency>
+    <!-- dependency>
       <groupId>org.glite.ce</groupId>
       <artifactId>cream-es-skeleton</artifactId>
       <version>1.16.6</version>
       <scope>compile</scope>
-    </dependency>
+    </dependency -->
 
     <dependency>
       <groupId>eu.eu-emi.security</groupId>
