@@ -50,14 +50,6 @@ public class AuthorizationHandler
 
     private static final String CREAM_NS = "http://glite.org/2007/11/ce/cream";
 
-    private static final String ES_ACTIVITY_INFO_NS = "http://www.eu-emi.eu/es/2010/12/activity";
-
-    private static final String ES_ACTIVITY_MANAGE_NS = "http://www.eu-emi.eu/es/2010/12/activitymanagement";
-
-    private static final String ES_CREATE_NS = "http://www.eu-emi.eu/es/2010/12/creation";
-
-    private static final String ES_RESOURCES_NS = "http://www.eu-emi.eu/es/2010/12/resourceinfo";
-
     static final long serialVersionUID = 1273759224;
 
     public AuthorizationHandler() {
@@ -104,47 +96,6 @@ public class AuthorizationHandler
 
                 faultDetail = authzFault.getOMElement(null, soapFactory);
 
-            /*
-            } else if (operation.getNamespaceURI().startsWith(ES_CREATE_NS)) {
-
-                org.glite.ce.creamapi.ws.es.creation.types.AccessControlFault accessFault = new org.glite.ce.creamapi.ws.es.creation.types.AccessControlFault();
-                accessFault.setDescription(message);
-                accessFault.setFailureCode(0);
-                accessFault.setMessage(faultReason);
-                accessFault.setTimestamp(Calendar.getInstance());
-
-                faultDetail = accessFault.getOMElement(null, soapFactory);
-
-            } else if (operation.getNamespaceURI().startsWith(ES_ACTIVITY_INFO_NS)) {
-
-                org.glite.ce.creamapi.ws.es.activityinfo.types.AccessControlFault accessFault = new org.glite.ce.creamapi.ws.es.activityinfo.types.AccessControlFault();
-                accessFault.setDescription(message);
-                accessFault.setFailureCode(0);
-                accessFault.setMessage(faultReason);
-                accessFault.setTimestamp(Calendar.getInstance());
-
-                faultDetail = accessFault.getOMElement(null, soapFactory);
-
-            } else if (operation.getNamespaceURI().startsWith(ES_ACTIVITY_MANAGE_NS)) {
-
-                org.glite.ce.creamapi.ws.es.activitymanagement.types.AccessControlFault accessFault = new org.glite.ce.creamapi.ws.es.activitymanagement.types.AccessControlFault();
-                accessFault.setDescription(message);
-                accessFault.setFailureCode(0);
-                accessFault.setMessage(faultReason);
-                accessFault.setTimestamp(Calendar.getInstance());
-
-                faultDetail = accessFault.getOMElement(null, soapFactory);
-
-            } else if (operation.getNamespaceURI().startsWith(ES_RESOURCES_NS)) {
-
-                org.glite.ce.creamapi.ws.es.resourceinfo.types.AccessControlFault accessFault = new org.glite.ce.creamapi.ws.es.resourceinfo.types.AccessControlFault();
-                accessFault.setDescription(message);
-                accessFault.setFailureCode(0);
-                accessFault.setMessage(faultReason);
-                accessFault.setTimestamp(Calendar.getInstance());
-
-                faultDetail = accessFault.getOMElement(null, soapFactory);
-            */
             } else {
                 logger.error("Unreachable condition for " + operation.toString() + " operation.getNamespaceURI() = "
                         + operation.getNamespaceURI());
