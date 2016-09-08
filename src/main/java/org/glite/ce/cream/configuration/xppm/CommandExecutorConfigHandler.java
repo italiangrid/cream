@@ -24,13 +24,11 @@ import java.util.HashMap;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import javax.xml.xpath.XPathFactoryConfigurationException;
 
 import org.apache.log4j.Logger;
 import org.glite.ce.commonj.configuration.CommonConfigException;
 import org.glite.ce.commonj.configuration.xppm.ConfigurationHandler;
-import org.glite.ce.commonj.configuration.xppm.ConfigurationManager;
 import org.glite.ce.cream.configuration.CommandExecutorConfig;
 import org.glite.ce.creamapi.cmdmanagement.Parameter;
 import org.w3c.dom.Element;
@@ -61,16 +59,13 @@ public class CommandExecutorConfigHandler
 
     private static final String PARA_VALUE_ATTR = "value";
 
-    private static final String POLICY_TAG = "policy";
-
     private XPathExpression expr;
 
     private HashMap<String, CommandExecutorConfig> currentMap;
 
     private HashMap<String, CommandExecutorConfig> tmpMap;
 
-    public CommandExecutorConfigHandler() 
-        throws XPathExpressionException, XPathFactoryConfigurationException {
+    public CommandExecutorConfigHandler() throws XPathExpressionException, XPathFactoryConfigurationException {
         XPath xpath = ConfigurationHandler.getXPathFactory().newXPath();
         expr = xpath.compile(XPATH_STRING);
 
@@ -178,32 +173,4 @@ public class CommandExecutorConfigHandler
 
     }
 
-    public static void main(String[] args) {
-
-        org.apache.log4j.PropertyConfigurator.configure("/tmp/log4j.properties");
-
-        //String[] pNameList = { CommandExecutorConfigHandler.class.getName() };
-        try {
-            //ConfigurationManager cMan = new ConfigurationManager(args[0], pNameList);
-            ConfigurationManager cMan = new ConfigurationManager(args[0]);
-            Object[] tmpArray = cMan.getConfigurationElements(CommandExecutorConfig.class);
-            if (tmpArray == null) {
-                logger.debug("Missing array");
-                return;
-            }
-
-            logger.info("Found executors: " + tmpArray.length);
-
-            for (Object obj : tmpArray) {
-                CommandExecutorConfig item = (CommandExecutorConfig) obj;
-                logger.debug("Found " + item.getName());
-                for (Parameter param : item.getParameters()) {
-                    logger.debug("Parameter " + item.getName() + "[" + param.getName() + "] = " + param.getValue());
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            logger.error(ex.getMessage(), ex);
-        }
-    }
 }
