@@ -96,7 +96,6 @@ public class BLAHNotifierClient extends Thread {
             } catch (SecurityException e) {
                 logger.error("Connection with the remote Notifier [host:port=" + host + ":" + port + "] failed: " + e.getMessage());
             } catch (Exception e) {
-                e.printStackTrace();
                 logger.error("Connection with the remote Notifier [host:port=" + host + ":" + port + "] failed: " + e.getMessage());
             }
 
@@ -118,41 +117,6 @@ public class BLAHNotifierClient extends Thread {
     public String getHost() {
         return host;
     }
-
-//    public Calendar getOlderJobTime() throws Exception {
-//        Calendar olderJobTime = Calendar.getInstance();
-//        int[] jobStatusType = new int[] { JobStatus.HELD, JobStatus.IDLE, JobStatus.REALLY_RUNNING, JobStatus.RUNNING };
-//
-//        try {
-//            String jobId = jobDB.retrieveOlderJobId(jobStatusType, lrms, null);
-//
-//            if (jobId != null) {
-//                JobStatus jobStatus = jobDB.retrieveLastJobStatus(jobId, null);
-//                if (jobStatus != null) {
-//                    if (jobStatus.getType() == JobStatus.REALLY_RUNNING) {
-//                        Job job = jobDB.retrieveJob(jobId, null);
-//                        if (job == null) {
-//                            logger.error("getOlderJobTime error: jobId " + jobId + " not found!");
-//                        } else {
-//                            jobStatus = job.getStatusAt(job.getStatusCount() - 2);
-//                        }
-//                    }
-//
-//                    if (jobStatus != null && jobStatus.getTimestamp().before(olderJobTime)) {
-//                        olderJobTime = jobStatus.getTimestamp();
-//                    }
-//                }
-//            }
-//        } catch (IllegalArgumentException e) {
-//            e.printStackTrace();
-//            throw new CommandException("BLAHNotifierClient error: " + e.getMessage());
-//        } catch (DatabaseException e) {
-//            e.printStackTrace();
-//            throw new CommandException("BLAHNotifierClient error: " + e.getMessage());
-//        }
-//
-//        return olderJobTime;
-//    }
 
     public BLAHJobStatusChangeListener getJobStatusChangeListener() {
         return jobStatusChangeListener;

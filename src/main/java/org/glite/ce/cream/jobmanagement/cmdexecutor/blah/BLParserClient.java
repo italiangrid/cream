@@ -115,10 +115,10 @@ public class BLParserClient extends Thread {
                 }
             }
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
             throw new CommandException("BLParserClient error: " + e.getMessage());
         } catch (DatabaseException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
             throw new CommandException("BLParserClient error: " + e.getMessage());
         }
 

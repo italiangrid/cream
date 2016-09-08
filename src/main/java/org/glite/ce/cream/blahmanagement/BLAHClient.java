@@ -152,7 +152,7 @@ public class BLAHClient {
                         list.add(new BLAHNotifierInfo(lrms, host, port));
                     }
                 } catch (IndexOutOfBoundsException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage(), e);
                 }
             }
         }
@@ -647,19 +647,10 @@ public class BLAHClient {
 
             blahClient.quit();
         } catch (BLAHException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+            logger.error(e1.getMessage(), e1);
             blahClient.terminate();
         }
 
-//        try {
-//            System.out.println("waiting...");
-//            System.in.read();
-//            System.out.println("waiting... done");
-//        } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
     }
 
     public void setJobStatusChangeListener(BLAHJobStatusChangeListener jobStatusChangeListener) {

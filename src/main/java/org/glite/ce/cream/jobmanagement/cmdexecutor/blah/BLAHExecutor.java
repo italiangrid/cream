@@ -106,7 +106,7 @@ public class BLAHExecutor extends AbstractJobExecutor {
 
                 return proc;
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
             return null;
         }
@@ -306,7 +306,7 @@ public class BLAHExecutor extends AbstractJobExecutor {
                     }
                 }
             } catch (IndexOutOfBoundsException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
             return true;
         }
@@ -568,7 +568,7 @@ public class BLAHExecutor extends AbstractJobExecutor {
                         list.add(blParserInfo);
                     }
                 } catch (IndexOutOfBoundsException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage(), e);
                 }
             }
         }

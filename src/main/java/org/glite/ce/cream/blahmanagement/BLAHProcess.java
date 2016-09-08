@@ -80,7 +80,7 @@ public class BLAHProcess extends ThreadLocal<Process> {
 
             return proc;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
         return null;
     }
@@ -306,7 +306,7 @@ public class BLAHProcess extends ThreadLocal<Process> {
                 try {
                     Thread.currentThread().sleep(DELAY);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage(), e);
                 }
             } else {
                 break;

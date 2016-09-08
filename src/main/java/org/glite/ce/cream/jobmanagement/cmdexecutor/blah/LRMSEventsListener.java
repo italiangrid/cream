@@ -112,7 +112,7 @@ public class LRMSEventsListener extends Thread {
                 clientSocket.setSoLinger(true, 10);
                 //clientSocket.setSoTimeout(30000);
             } catch (SocketException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
             }
         }
 
