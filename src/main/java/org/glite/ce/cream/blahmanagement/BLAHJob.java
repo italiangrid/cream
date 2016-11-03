@@ -54,6 +54,10 @@ public class BLAHJob {
     private int smpGranularity = -1;
     private int nodeNumber = -1;
     private int hostNumber = -1;
+    private int micNumber = 0;
+    private int gpuNumber = 0;
+    private String gpuMode = null;
+    private String gpuModel = null;
     private List<String> arguments = null;
 
     public BLAHJob() {
@@ -82,6 +86,22 @@ public class BLAHJob {
 
     public String getGridJobId() {
         return gridJobId;
+    }
+
+    public int getMICNumber() {
+        return micNumber;
+    }
+ 
+    public int getGPUNumber() {
+        return gpuNumber;
+    }
+
+    public String getGPUMode() {
+        return gpuMode;
+    }
+
+    public String getGPUModel() {
+        return gpuModel;
     }
 
     public int getHostNumber() {
@@ -182,6 +202,22 @@ public class BLAHJob {
 
     public void setGridJobId(String gridJobId) {
         this.gridJobId = gridJobId;
+    }
+
+    public void setMICNumber(int micNumber) {
+        this.micNumber = micNumber;
+    }
+
+    public void setGPUNumber(int gpuNumber) {
+        this.gpuNumber = gpuNumber;
+    }
+
+    public void setGPUMode(String gpuMode) {
+        this.gpuMode = gpuMode;
+    }
+
+    public void setGPUModel(String gpuModel) {
+        this.gpuModel = gpuModel;
     }
 
     public void setHostNumber(int hostNumber) {

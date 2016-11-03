@@ -49,9 +49,9 @@ import org.glite.ce.creamapi.cmdmanagement.CommandException;
 import org.glite.ce.creamapi.cmdmanagement.CommandExecutorException;
 import org.glite.ce.creamapi.cmdmanagement.CommandResult;
 import org.glite.ce.creamapi.jobmanagement.Job;
+import org.glite.ce.creamapi.jobmanagement.jdl.JDL;
 import org.glite.ce.creamapi.jobmanagement.cmdexecutor.AbstractJobExecutor;
 import org.glite.ce.creamapi.jobmanagement.db.JobDBInterface;
-import org.glite.jdl.Jdl;
 
 public class BLAHExecutor extends AbstractJobExecutor {
     private static final Logger logger = Logger.getLogger(BLAHExecutor.class.getName());
@@ -645,9 +645,9 @@ public class BLAHExecutor extends AbstractJobExecutor {
             throw new CommandException("The job cannot be submitted because the blparser service is not alive");
         }
 
-        if (job.containsExtraAttribute(Jdl.HOST_NUMBER)) {
+        if (job.containsExtraAttribute(JDL.HOSTNUMBER)) {
             try {
-                if (Integer.parseInt(job.getExtraAttribute(Jdl.HOST_NUMBER)) < 1) {
+                if (Integer.parseInt(job.getExtraAttribute(JDL.HOSTNUMBER)) < 1) {
                     throw new CommandException("wrong value for the HostNumber attribute: use HostNumber >= 1");
                 }
             } catch (Exception ex) {
@@ -688,8 +688,8 @@ public class BLAHExecutor extends AbstractJobExecutor {
             blahpAD.append(";x509UserProxyFQAN=\"").append(job.getExtraAttribute("USER_FQAN")).append("\"");
         }
 
-        if (job.containsExtraAttribute(Jdl.MW_VERSION)) {
-            blahpAD.append(";Env=\"EDG_MW_VERSION=").append(job.getExtraAttribute(Jdl.MW_VERSION)).append("\"");
+        if (job.containsExtraAttribute(JDL.MWVERSION)) {
+            blahpAD.append(";Env=\"EDG_MW_VERSION=").append(job.getExtraAttribute(JDL.MWVERSION)).append("\"");
         }
 
         if (job.getCeId() != null) {
@@ -702,8 +702,8 @@ public class BLAHExecutor extends AbstractJobExecutor {
             blahpAD.append(";ClientJobId=\"").append(blahJobIdPrefix).append(clientJobId).append("\"");
         }
 
-        if (job.containsExtraAttribute(Jdl.WHOLE_NODES)) {
-            if ("TRUE".equalsIgnoreCase(job.getExtraAttribute(Jdl.WHOLE_NODES))) {
+        if (job.containsExtraAttribute(JDL.WHOLENODES)) {
+            if ("TRUE".equalsIgnoreCase(job.getExtraAttribute(JDL.WHOLENODES))) {
                 if (!containsParameterKey("HOST_SMP_SIZE")) {
                     throw new CommandException("HOST_SMP_SIZE parameter not found!");
                 }
@@ -712,17 +712,17 @@ public class BLAHExecutor extends AbstractJobExecutor {
             } else {
                 blahpAD.append(";NodeNumber=").append(job.getNodeNumber());
                 
-                if (job.containsExtraAttribute(Jdl.SMP_GRANULARITY) && job.containsExtraAttribute(Jdl.HOST_NUMBER)) {
+                if (job.containsExtraAttribute(JDL.SMPGRANULARITY) && job.containsExtraAttribute(JDL.HOSTNUMBER)) {
                     throw new CommandException("the SMPGranularity and HostNumber attributes cannot be specified together when WholeNodes=false");
                 }
             }
 
-            if (job.containsExtraAttribute(Jdl.SMP_GRANULARITY)) {
-                blahpAD.append(";SMPGranularity=").append(job.getExtraAttribute(Jdl.SMP_GRANULARITY));
+            if (job.containsExtraAttribute(JDL.SMPGRANULARITY)) {
+                blahpAD.append(";SMPGranularity=").append(job.getExtraAttribute(JDL.SMPGRANULARITY));
             }
 
-            if (job.containsExtraAttribute(Jdl.HOST_NUMBER)) {
-                blahpAD.append(";HostNumber=").append(job.getExtraAttribute(Jdl.HOST_NUMBER));
+            if (job.containsExtraAttribute(JDL.HOSTNUMBER)) {
+                blahpAD.append(";HostNumber=").append(job.getExtraAttribute(JDL.HOSTNUMBER));
             }
         }
 
@@ -756,6 +756,25 @@ public class BLAHExecutor extends AbstractJobExecutor {
                 blahpAD.append(";").append(job.getExtraAttribute("TransferOutputRemaps"));
             }
         }
+
+        if (job.containsExtraAttribute(JDL.MIC_NUMBER)) {
+            blahpAD.append(";MICNumber=").append(job.getExtraAttribute(JDL.MIC_NUMBER));
+        }
+
+        if (job.containsExtraAttribute(JDL.GPU_NUMBER)) {
+            blahpAD.append(";GPUNumber=").append(job.getExtraAttribute(JDL.GPU_NUMBER));
+        }
+        
+        if (job.containsExtraAttribute(JDL.GPU_MODE)) {
+            blahpAD.append(";GPUMode=\"").append(job.getExtraAttribute(JDL.GPU_MODE)).append("\"");       
+        }
+
+        if (job.containsExtraAttribute(JDL.GPU_MODEL)) {
+            String gpuModel = job.getExtraAttribute(JDL.GPU_MODEL);
+            gpuModel = gpuModel.replace(" ", "\\ ");
+            blahpAD.append(";GPUModel=\"").append(gpuModel).append("\"");
+        }
+
 
         blahpAD.append((queue != null && !queue.equals("")) ? ";queue=\"" + queue + "\"]" : "]");
 

@@ -490,6 +490,10 @@ public class BLAHClient {
         String queue = blahJob.getQueue();
         int smpGranularity = blahJob.getSmpGranularity();
         int hostNumber = blahJob.getHostNumber();
+        int gpuNumber = blahJob.getGPUNumber();
+        int micNumber = blahJob.getMICNumber();
+        String gpuMode = blahJob.getGPUMode();
+        String gpuModel = blahJob.getGPUModel();
 
         StringBuffer blahpAD = new StringBuffer("[Cmd=\"");
         blahpAD.append(blahJob.getExecutableFile());
@@ -521,7 +525,31 @@ public class BLAHClient {
         } else {
             blahpAD.append("\";ClientJobId=\"").append(prefix).append(clientJobId).append("\"");
         }
+/*        
+        if (gpuNumber > 0) {        
+            blahpAD.append("\";GPUNumber=\"").append(gpuNumber).append("\"");
+            
+            if (gpuMode != null) {        
+                blahpAD.append("\";GPUMode=\"").append(gpuMode).append("\"");
+            }
+        }    
+*/
+        if (micNumber > 0) {
+            blahpAD.append("\";MICNumber=\"").append(micNumber).append("\"");
+        }
 
+        if (gpuNumber > 0) {
+            blahpAD.append("\";GPUNumber=\"").append(gpuNumber).append("\"");
+        }
+
+        if (gpuMode != null) {
+            blahpAD.append("\";GPUMode=\"").append(gpuMode).append("\"");
+        }
+
+        if (gpuModel != null) {
+            blahpAD.append("\";GPUModel=\"").append(gpuModel).append("\"");
+        }
+ 
         if (blahJob.isWholeNodes()) {
             blahpAD.append(";WholeNodes=true;HostSMPSize=").append(hostSMPSize);
         } else {
@@ -639,7 +667,6 @@ public class BLAHClient {
             blahClient.setAsynchronousMode(false);
             
             list = blahClient.getBLAHNotifierInfo();
-            System.out.println("list size = " + list.size());
             
             for (BLAHNotifierInfo blahNotifierInfo : list) {
                 System.out.println("blahNotifier [lrms=" + blahNotifierInfo.getLRMS() + "; host=" + blahNotifierInfo.getHost() + "; port=" + blahNotifierInfo.getPort() + "]");   
