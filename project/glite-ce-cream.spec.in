@@ -309,6 +309,7 @@ fi
 %changelog
 * Thu Sep 01 2016 CREAM group <cream-support@lists.infn.it> - @PKGVERSION@-@PKGRELEASE@
 - Release for CentOS 7
+- Support for GPUs
 
 * Fri Jul 04 2014 CREAM group <cream-support@lists.infn.it> - 1.16.4-1
 - Replaced C-based voms-client call with java-based one
