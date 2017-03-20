@@ -663,9 +663,6 @@ for lb_logevent_command in "${GLITE_WMS_LOCATION}/bin/glite-lb-logevent" \
      break;
   fi
 done
-if [ ! -x "${lb_logevent_command}" ]; then
-   fatal_error "Cannot find lb_logevent command"
-fi
 
 LB_LOGEVENT=${lb_logevent_command}
 
