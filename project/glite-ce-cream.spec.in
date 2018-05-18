@@ -1,3 +1,12 @@
+%if 0%{?el6}
+%global _tomcat tomcat6
+%global _vomslib /usr/share/java/voms-api-java.jar
+%else
+%global _tomcat tomcat
+%global _vomslib /usr/share/java/voms-api-java/voms-api-java.jar
+%endif
+%global _creamlibdir /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
+
 Summary: Computing Resource Execution And Management service
 Name: @PKGNAME@
 Version: @PKGVERSION@
@@ -18,14 +27,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 AutoReqProv: yes
 Source: %{name}.tar.gz
 
-%if 0%{?el6}
-%global _tomcat tomcat6
-%else
-%global _tomcat tomcat
-%endif
-%global _creamlibdir /var/lib/%{_tomcat}/webapps/ce-cream/WEB-INF/lib
-%global _eslibdir /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/lib
-
 %description
 The Computing Resource Execution And Management service is a web application
 taking care of the any job related operation
@@ -44,16 +45,10 @@ mkdir -p %{buildroot}
 mvn @MVNOPTS@ install
 mkdir -p %{buildroot}/usr/share/java
 cp %{_builddir}/%{name}-%{version}/target/cream-@PKGVERSION@.jar %{buildroot}/usr/share/java/glite-ce-cream-core.jar
-%if 0%{?espack}
-cp %{_builddir}/%{name}-%{version}/target/plugins/cream-activityExecutor.jar %{buildroot}/usr/share/java/glite-ce-cream-activityExecutor.jar
-%endif
 cp %{_builddir}/%{name}-%{version}/target/plugins/cream-blahExecutor.jar %{buildroot}/usr/share/java/glite-ce-cream-blahExecutor.jar
 cp %{_builddir}/%{name}-%{version}/target/plugins/cream-delegationExecutor.jar %{buildroot}/usr/share/java/glite-ce-cream-delegationExecutor.jar
 cp %{_builddir}/%{name}-%{version}/target/cream-client.jar %{buildroot}/usr/share/java/glite-ce-cream-clients.jar
 mkdir -p %{buildroot}/usr/share/glite-ce-cream/services
-%if 0%{?espack}
-cp %{_builddir}/%{name}-%{version}/target/cream-es-interface.jar %{buildroot}/usr/share/glite-ce-cream/services/glite-ce-cream-es.aar
-%endif
 cp %{_builddir}/%{name}-%{version}/target/cream-legacy-interface.jar %{buildroot}/usr/share/glite-ce-cream/services/glite-ce-cream.aar
 mkdir -p %{buildroot}/usr/share/glite-ce-cream/modules
 cp %{_builddir}/%{name}-%{version}/target/cream-authorization.jar %{buildroot}/usr/share/glite-ce-cream/modules/glite-ce-cream-authorization.mar
@@ -68,20 +63,6 @@ sed -e 's|__CHANGE_SERVICE__|/etc/glite-ce-cream/cream-config.xml|g' \
     -e 's|__CHANGE_LOG4J__|/etc/glite-ce-cream/log4j.properties|g' \
     %{_builddir}/%{name}-%{version}/config/cream/axis2.xml > %{buildroot}/etc/glite-ce-cream/axis2.xml
 
-%if 0%{?espack}
-mkdir -p %{buildroot}/etc/glite-ce-cream-es
-cp %{_builddir}/%{name}-%{version}/config/cream-es/db/*.sql %{buildroot}/etc/glite-ce-cream-es
-cp %{_builddir}/%{name}-%{version}/config/cream-es/log4j.properties %{buildroot}/etc/glite-ce-cream-es
-cp %{_builddir}/%{name}-%{version}/config/cream-es/services.properties %{buildroot}/etc/glite-ce-cream-es/service.properties
-cp %{_builddir}/%{name}-%{version}/config/cream-es/*.template %{buildroot}/etc/glite-ce-cream-es
-cp %{_builddir}/%{name}-%{version}/config/cream-es/*.tpl %{buildroot}/etc/glite-ce-cream-es
-mkdir -p %{buildroot}/etc/glite-ce-cream-es/storedprocedures
-cp %{_builddir}/%{name}-%{version}/config/cream-es/db/storedprocedures/*.sql %{buildroot}/etc/glite-ce-cream-es/storedprocedures
-cp %{_builddir}/%{name}-%{version}/config/cream-es/web.xml %{buildroot}/etc/glite-ce-cream-es
-sed -e 's|__CHANGE_SERVICE__|/etc/glite-ce-cream-es/cream-config.xml|g' \
-    -e 's|__CHANGE_LOG4J__|/etc/glite-ce-cream-es/log4j.properties|g' \
-    %{_builddir}/%{name}-%{version}/config/cream-es/axis2.xml > %{buildroot}/etc/glite-ce-cream-es/axis2.xml
-%endif
 
 %clean
 rm -rf %{buildroot}
@@ -98,11 +79,7 @@ find -L %{_creamlibdir} -type l -exec rm -f '{}' \;
 [ -h %{_creamlibdir}/classad.jar ] || ln -s /usr/share/java/jclassads/classad.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/argus-pep-api-java.jar ] || ln -s /usr/share/java/argus-pep-api-java.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/argus-pep-common.jar ] || ln -s /usr/share/java/argus-pep-common.jar %{_creamlibdir}
-if [ -e /usr/share/java/voms-api-java3.jar ] ; then
-    [ -h %{_creamlibdir}/voms-api-java3.jar ] || ln -s /usr/share/java/voms-api-java3.jar %{_creamlibdir}
-else
-    [ -h %{_creamlibdir}/voms-api-java.jar ] || ln -s /usr/share/java/voms-api-java/voms-api-java.jar %{_creamlibdir}
-fi
+[ -h %{_creamlibdir}/voms-api-java.jar ] || ln -s %{_vomslib} %{_creamlibdir}/voms-api-java.jar
 [ -h %{_creamlibdir}/glite-jobid-api-java.jar ] || ln -s /usr/share/java/glite-jobid-api-java.jar %{_creamlibdir}
 if [ -e /usr/lib/java/glite-lb-client-java.jar ] ; then
     [ -h %{_creamlibdir}/glite-lb-client-java.jar ] || ln -s /usr/lib/java/glite-lb-client-java.jar %{_creamlibdir}
@@ -180,11 +157,6 @@ fi
 /usr/share/glite-ce-cream/services/glite-ce-cream.aar
 
 
-
-
-
-
-
 %package core
 Summary: Common classes for CREAM services
 Group: Applications/Internet
@@ -200,116 +172,6 @@ This package contains the core libraries used by CREAM services
 /usr/share/glite-ce-cream/modules/*.mar
 %dir /usr/share/glite-ce-cream/services
 
-
-
-
-
-
-
-%if 0%{?espack}
-%package es
-Summary: The gLite implementation of EMI Execution Service
-Group: Applications/Internet
-Requires: glite-ce-cream-utils, glite-ce-cream-core, glite-ce-blahp, mysql-connector-java
-
-%description es
-This package provides the gLite implementation of Execution Service interface.
-The interface is built on top of the core of the Computing Resource Execution 
-And Management service.
-
-%files es
-%defattr(-,root,root)
-%dir /etc/glite-ce-cream-es/
-%config(noreplace) /etc/glite-ce-cream-es/*.sql
-%config(noreplace) /etc/glite-ce-cream-es/*.template
-%config(noreplace) /etc/glite-ce-cream-es/*.tpl
-%config(noreplace) /etc/glite-ce-cream-es/*.properties
-%config(noreplace) /etc/glite-ce-cream-es/*.xml
-%config(noreplace) /etc/glite-ce-cream-es/storedprocedures/*.sql
-/usr/share/glite-ce-cream/services/glite-ce-cream-es.aar
-
-%post es
-set -e
-
-[ -d /var/lib/%{_tomcat}/webapps/ce-cream-es ] || cp -R /usr/share/axis2/webapp /var/lib/%{_tomcat}/webapps/ce-cream-es
-
-#removing broken links from previous installation
-find -L %{_eslibdir} -type l -exec rm -f '{}' \;
-
-[ -h %{_eslibdir}/cedar.jar ] || ln -s /usr/share/java/jclassads/cedar.jar %{_eslibdir}
-[ -h %{_eslibdir}/classad.jar ] || ln -s /usr/share/java/jclassads/classad.jar %{_eslibdir}
-[ -h %{_eslibdir}/argus-pep-api-java.jar ] || ln -s /usr/share/java/argus-pep-api-java.jar %{_eslibdir}
-[ -h %{_eslibdir}/argus-pep-common.jar ] || ln -s /usr/share/java/argus-pep-common.jar %{_eslibdir}
-if [ -e /usr/share/java/voms-api-java3.jar ] ; then
-    [ -h %{_eslibdir}/voms-api-java3.jar ] || ln -s /usr/share/java/voms-api-java3.jar %{_eslibdir}
-else
-    [ -h %{_eslibdir}/voms-api-java.jar ] || ln -s /usr/share/java/voms-api-java/voms-api-java.jar %{_eslibdir}
-fi
-[ -h %{_eslibdir}/glite-jobid-api-java.jar ] || ln -s /usr/share/java/glite-jobid-api-java.jar %{_eslibdir}
-if [ -e /usr/lib/java/glite-lb-client-java.jar ] ; then
-    [ -h %{_eslibdir}/glite-lb-client-java.jar ] || ln -s /usr/lib/java/glite-lb-client-java.jar %{_eslibdir}
-else
-    [ -h %{_eslibdir}/glite-lb-client-java.jar ] || ln -s /usr/share/java/glite-lb-client-java.jar %{_eslibdir}
-fi
-[ -h %{_eslibdir}/glite-ce-common-java.jar ] || ln -s /usr/share/java/glite-ce-common-java.jar %{_eslibdir}
-[ -h %{_eslibdir}/glite-ce-cream-api-java.jar ] || ln -s /usr/share/java/glite-ce-cream-api-java.jar %{_eslibdir}
-[ -h %{_eslibdir}/glite-ce-cream-blahExecutor.jar ] || ln -s /usr/share/java/glite-ce-cream-blahExecutor.jar %{_eslibdir}
-[ -h %{_eslibdir}/glite-ce-cream-core.jar ] || ln -s /usr/share/java/glite-ce-cream-core.jar %{_eslibdir}
-[ -h %{_eslibdir}/glite-ce-cream-delegationExecutor.jar ] || ln -s /usr/share/java/glite-ce-cream-delegationExecutor.jar %{_eslibdir}
-[ -h %{_eslibdir}/glite-ce-cream-es-skeleton.jar ] || ln -s /usr/share/java/glite-ce-cream-es-skeleton.jar %{_eslibdir}
-[ -h %{_eslibdir}/glite-ce-delegation-skeleton.jar ] || ln -s /usr/share/java/glite-ce-delegation-skeleton.jar %{_eslibdir}
-[ -h %{_eslibdir}/glite-jdl-api-java.jar ] || ln -s /usr/share/java/glite-jdl-api-java.jar %{_eslibdir}
-
-# set allowLinking option for tomcat
-if [ ! -d /var/lib/%{_tomcat}/webapps/ce-cream-es/META-INF ] ; then
-  mkdir /var/lib/%{_tomcat}/webapps/ce-cream-es/META-INF
-  echo '<Context override="true" allowLinking="true"></Context>' > /var/lib/%{_tomcat}/webapps/ce-cream-es/META-INF/context.xml
-fi
-
-ln -sf /usr/share/glite-ce-cream/modules/glite-ce-cream-authorization.mar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/modules
-find /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/modules -name *.mar -exec basename \{\} \; > /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/modules/modules.list
-  
-ln -sf /usr/share/glite-ce-cream/services/glite-ce-cream-es.aar /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services
-find /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services -name *.aar -exec basename \{\} \; > /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/services/services.list
-
-cp /etc/glite-ce-dbtool/creamdb_min_access.conf.template /etc/glite-ce-cream-es/creamdb_min_access.conf
-  
-# cannot use symlinks for the following files, copy is needed:
-cp -f /etc/glite-ce-cream-es/web.xml /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/
-cp -f /etc/glite-ce-cream-es/axis2.xml /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/conf
-chmod 600 /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/conf/axis2.xml
-chown tomcat.tomcat /var/lib/%{_tomcat}/webapps/ce-cream-es/WEB-INF/conf/axis2.xml
-
-if [ $1 -eq 1 ] ; then
-# Creation of the back-end and log dir
-  if [ ! "x`grep tomcat /etc/passwd`" == "x" ] ; then
-    mkdir -p /var/cream_es_sandbox 
-    chown tomcat:tomcat /var/cream_es_sandbox 
-    chmod 775 /var/cream_es_sandbox 
-    
-    mkdir -p /var/log/cream-es
-    chown tomcat:tomcat /var/log/cream-es
-    chmod 755 /var/log/cream-es
-
-  fi
-    
-fi
-
-%preun es
-if [ $1 -eq 0 ] ; then
-
-  if [ -d /var/lib/%{_tomcat}/webapps/ce-cream-es ] ; then 
-    rm -rf /var/lib/%{_tomcat}/webapps/ce-cream-es
-  fi
-    
-  if [ -e /etc/%{_tomcat}/Catalina/localhost/ce-cream-es.xml ] ; then
-    rm -f /etc/%{_tomcat}/Catalina/localhost/ce-cream-es.xml
-  fi
-    
-  rm -f /etc/glite-ce-cream-es/creamdb_min_access.conf
-  
-fi
-%endif
 
 %changelog
 * Thu Sep 01 2016 CREAM group <cream-support@lists.infn.it> - @PKGVERSION@-@PKGRELEASE@
