@@ -74,6 +74,9 @@ set -e
 
 #removing broken links from previous installation
 find -L %{_creamlibdir} -type l -exec rm -f '{}' \;
+#workaround: remove symlinks from previous package
+[ -h %{_creamlibdir}/bcprov.jar ] && rm -f %{_creamlibdir}/bcprov.jar
+[ -h %{_creamlibdir}/bcmail.jar ] && rm -f %{_creamlibdir}/bcmail.jar
 
 [ -h %{_creamlibdir}/cedar.jar ] || ln -s /usr/share/java/jclassads/cedar.jar %{_creamlibdir}
 [ -h %{_creamlibdir}/classad.jar ] || ln -s /usr/share/java/jclassads/classad.jar %{_creamlibdir}
@@ -174,7 +177,10 @@ This package contains the core libraries used by CREAM services
 
 
 %changelog
-* Thu Sep 01 2016 CREAM group <cream-support@lists.infn.it> - @PKGVERSION@-@PKGRELEASE@
+* Tue Jul 17 2018 CREAM group <cream-support@lists.infn.it> - @PKGVERSION@-@PKGRELEASE@
+- Compatibility with new versions of VOMS and CAnL
+
+* Mon Mar 20 2017 CREAM group <cream-support@lists.infn.it> - 1.16.5-3
 - Release for CentOS 7
 - Support for GPUs
 
